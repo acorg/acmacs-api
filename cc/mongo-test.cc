@@ -2,22 +2,12 @@
 #include <string>
 
 #pragma GCC diagnostic push
-#ifdef __clang__
-#pragma GCC diagnostic ignored "-Wdocumentation"
-#pragma GCC diagnostic ignored "-Wdocumentation-deprecated-sync"
-#pragma GCC diagnostic ignored "-Wdocumentation-unknown-command"
-#pragma GCC diagnostic ignored "-Wfloat-equal"
-#pragma GCC diagnostic ignored "-Wshadow"
-#pragma GCC diagnostic ignored "-Wshadow-field-in-constructor"
-#endif
+#include "mongo-diagnostics.hh"
 #include <bsoncxx/builder/stream/document.hpp>
-//#include <bsoncxx/stdx/string_view.hpp>
 #include <bsoncxx/json.hpp>
-
 #include <mongocxx/client.hpp>
 #include <mongocxx/instance.hpp>
 #include <mongocxx/pool.hpp>
-
 #pragma GCC diagnostic pop
 
 // ----------------------------------------------------------------------

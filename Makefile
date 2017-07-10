@@ -8,8 +8,11 @@ MAKEFLAGS = -w
 # ----------------------------------------------------------------------
 
 MONGO_TEST = $(DIST)/mongo-test
+MONGO_FIND = $(DIST)/mongo-find
 
 MONGO_TEST_SOURCES = mongo-test.cc
+MONGO_FIND_SOURCES = mongo-find.cc
+
 MONGO_LDLIBS = -L$(LIB_DIR) -lmongocxx -lbsoncxx
 
 # ----------------------------------------------------------------------
@@ -40,18 +43,18 @@ PKG_INCLUDES += -I/usr/local/opt/openssl/include
 # $$(pkg-config --cflags libuv)
 endif
 
+PROGS = $(MONGO_TEST) $(MONGO_FIND)
+
 # ----------------------------------------------------------------------
 
 BUILD = build
 DIST = $(abspath dist)
 CC = cc
 
-all: check-acmacsd-root $(MONGO_TEST)
+all: check-acmacsd-root $(PROGS)
 
-install: check-acmacsd-root $(MONGO_TEST)
-	@#ln -sf $(ACMACS_WEBSERVER) $(ACMACSD_ROOT)/bin
-	if [ ! -d $(ACMACSD_ROOT)/include/acmacs-webserver ]; then mkdir $(ACMACSD_ROOT)/include/acmacs-webserver; fi
-	ln -sf $(abspath cc)/*.hh $(ACMACSD_ROOT)/include/acmacs-webserver
+install: check-acmacsd-root $(PROGS)
+	@#ln -sf $(ACMACS_) $(ACMACSD_ROOT)/bin
 
 test: install
 	test/test
@@ -63,6 +66,9 @@ test: install
 # ----------------------------------------------------------------------
 
 $(MONGO_TEST): $(patsubst %.cc,$(BUILD)/%.o,$(MONGO_TEST_SOURCES)) | $(DIST)
+	g++ $(LDFLAGS) -o $@ $^ $(MONGO_LDLIBS) $(LDLIBS)
+
+$(MONGO_FIND): $(patsubst %.cc,$(BUILD)/%.o,$(MONGO_FIND_SOURCES)) | $(DIST)
 	g++ $(LDFLAGS) -o $@ $^ $(MONGO_LDLIBS) $(LDLIBS)
 
 # ----------------------------------------------------------------------
