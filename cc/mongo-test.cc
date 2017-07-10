@@ -16,11 +16,26 @@
 #include <mongocxx/instance.hpp>
 #pragma GCC diagnostic pop
 
+// ----------------------------------------------------------------------
+
+static void test_db_from_cxx_driver_doc(mongocxx::client& conn);
+
 int main(int, char**)
 {
     mongocxx::instance inst{};
     mongocxx::client conn{mongocxx::uri{}};
 
+    auto collection = conn["acmacs_web"]["acmacs_version"];
+    auto cursor = collection.find({});
+    for (auto& doc : cursor) {
+        std::cout << bsoncxx::to_json(doc) << std::endl;
+    }
+}
+
+// ----------------------------------------------------------------------
+
+void test_db_from_cxx_driver_doc(mongocxx::client& conn)
+{
     bsoncxx::builder::stream::document document{};
 
     auto collection = conn["testdb"]["testcollection"];
@@ -32,7 +47,11 @@ int main(int, char**)
     for (auto&& doc : cursor) {
         std::cout << bsoncxx::to_json(doc) << std::endl;
     }
-}
+
+} // test_db_from_cxx_driver_doc
+
+// ----------------------------------------------------------------------
+
 
 // ----------------------------------------------------------------------
 /// Local Variables:
