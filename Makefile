@@ -9,9 +9,11 @@ MAKEFLAGS = -w
 
 MONGO_TEST = $(DIST)/mongo-test
 MONGO_FIND = $(DIST)/mongo-find
+MONGO_RAW = $(DIST)/mongo-raw
 
 MONGO_TEST_SOURCES = mongo-test.cc
 MONGO_FIND_SOURCES = mongo-find.cc
+MONGO_RAW_SOURCES = mongo-raw.cc
 
 MONGO_LDLIBS = -L$(LIB_DIR) -lmongocxx -lbsoncxx
 
@@ -43,7 +45,7 @@ PKG_INCLUDES += -I/usr/local/opt/openssl/include
 # $$(pkg-config --cflags libuv)
 endif
 
-PROGS = $(MONGO_TEST) $(MONGO_FIND)
+PROGS = $(MONGO_TEST) $(MONGO_FIND) $(MONGO_RAW)
 
 # ----------------------------------------------------------------------
 
@@ -69,6 +71,9 @@ $(MONGO_TEST): $(patsubst %.cc,$(BUILD)/%.o,$(MONGO_TEST_SOURCES)) | $(DIST)
 	g++ $(LDFLAGS) -o $@ $^ $(MONGO_LDLIBS) $(LDLIBS)
 
 $(MONGO_FIND): $(patsubst %.cc,$(BUILD)/%.o,$(MONGO_FIND_SOURCES)) | $(DIST)
+	g++ $(LDFLAGS) -o $@ $^ $(MONGO_LDLIBS) $(LDLIBS)
+
+$(MONGO_RAW): $(patsubst %.cc,$(BUILD)/%.o,$(MONGO_RAW_SOURCES)) | $(DIST)
 	g++ $(LDFLAGS) -o $@ $^ $(MONGO_LDLIBS) $(LDLIBS)
 
 # ----------------------------------------------------------------------
