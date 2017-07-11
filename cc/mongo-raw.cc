@@ -18,6 +18,17 @@
 #include "acmacs-base/string.hh"
 #include "acmacs-base/iterator.hh"
 #include "acmacs-base/float.hh"
+
+// ----------------------------------------------------------------------
+
+namespace json_writer
+{
+    template <typename RW> class writer;
+}
+
+template <typename RW> json_writer::writer<RW>& operator <<(json_writer::writer<RW>& aWriter, const std::map<std::string, bsoncxx::types::value>& map);
+template <typename RW> json_writer::writer<RW>& operator <<(json_writer::writer<RW>& aWriter, const bsoncxx::array::view& array);
+
 #include "acmacs-base/json-writer.hh"
 
 // ----------------------------------------------------------------------
@@ -71,73 +82,82 @@ inline std::ostream& operator << (std::ostream& out, const bsoncxx::array::view&
     return out << ']';
 }
 
+
+namespace internal
+{
+    template <typename Stream> inline void bson_value_to_stream(Stream& out, const bsoncxx::types::value& aV)
+    {
+        switch (aV.type()) {
+          case bsoncxx::type::k_double:
+              out << aV.get_double().value;
+              break;
+          case bsoncxx::type::k_utf8:
+              out << aV.get_utf8().value.to_string();
+              break;
+          case bsoncxx::type::k_document:
+              bson_symbol(out, "document");
+              break;
+          case bsoncxx::type::k_array:
+              out << aV.get_array().value;
+              break;
+          case bsoncxx::type::k_binary:
+              out << aV.get_binary();
+              break;
+          case bsoncxx::type::k_undefined:
+              bson_symbol(out, "undefined");
+              break;
+          case bsoncxx::type::k_oid:
+              out << aV.get_oid();
+              break;
+          case bsoncxx::type::k_bool:
+              out << aV.get_bool().value;
+              break;
+          case bsoncxx::type::k_date:
+              bson_symbol(out, "date");
+              break;
+          case bsoncxx::type::k_null:
+              bson_symbol(out, "null");
+              break;
+          case bsoncxx::type::k_regex:
+              bson_symbol(out, "regex");
+              break;
+          case bsoncxx::type::k_dbpointer:
+              bson_symbol(out, "dbpointer");
+              break;
+          case bsoncxx::type::k_code:
+              bson_symbol(out, "code");
+              break;
+          case bsoncxx::type::k_symbol:
+              bson_symbol(out, "symbol");
+              break;
+          case bsoncxx::type::k_codewscope:
+              bson_symbol(out, "codewscope");
+              break;
+          case bsoncxx::type::k_int32:
+              out << aV.get_int32().value;
+              break;
+          case bsoncxx::type::k_timestamp:
+              bson_symbol(out, "timestamp");
+              break;
+          case bsoncxx::type::k_int64:
+              out << aV.get_int64().value;
+              break;
+          case bsoncxx::type::k_decimal128:
+              bson_symbol(out, "decimal128"); // aV.get_decimal128().value;
+              break;
+          case bsoncxx::type::k_maxkey:
+              bson_symbol(out, "maxkey");
+              break;
+          case bsoncxx::type::k_minkey:
+              bson_symbol(out, "minkey");
+              break;
+        }
+    }
+}
+
 template <typename Stream> inline Stream& operator << (Stream& out, const bsoncxx::types::value& aV)
 {
-    switch (aV.type()) {
-      case bsoncxx::type::k_double:
-          out << aV.get_double().value;
-          break;
-      case bsoncxx::type::k_utf8:
-          out << aV.get_utf8().value.to_string();
-          break;
-      case bsoncxx::type::k_document:
-          bson_symbol(out, "document");
-          break;
-      case bsoncxx::type::k_array:
-          out << aV.get_array().value;
-          break;
-      case bsoncxx::type::k_binary:
-          out << aV.get_binary();
-          break;
-      case bsoncxx::type::k_undefined:
-          bson_symbol(out, "undefined");
-          break;
-      case bsoncxx::type::k_oid:
-          out << aV.get_oid();
-          break;
-      case bsoncxx::type::k_bool:
-          out << aV.get_bool().value;
-          break;
-      case bsoncxx::type::k_date:
-          bson_symbol(out, "date");
-          break;
-      case bsoncxx::type::k_null:
-          bson_symbol(out, "null");
-          break;
-      case bsoncxx::type::k_regex:
-          bson_symbol(out, "regex");
-          break;
-      case bsoncxx::type::k_dbpointer:
-          bson_symbol(out, "dbpointer");
-          break;
-      case bsoncxx::type::k_code:
-          bson_symbol(out, "code");
-          break;
-      case bsoncxx::type::k_symbol:
-          bson_symbol(out, "symbol");
-          break;
-      case bsoncxx::type::k_codewscope:
-          bson_symbol(out, "codewscope");
-          break;
-      case bsoncxx::type::k_int32:
-          out << aV.get_int32().value;
-          break;
-      case bsoncxx::type::k_timestamp:
-          bson_symbol(out, "timestamp");
-          break;
-      case bsoncxx::type::k_int64:
-          out << aV.get_int64().value;
-          break;
-      case bsoncxx::type::k_decimal128:
-          bson_symbol(out, "decimal128"); // aV.get_decimal128().value;
-          break;
-      case bsoncxx::type::k_maxkey:
-          bson_symbol(out, "maxkey");
-          break;
-      case bsoncxx::type::k_minkey:
-          bson_symbol(out, "minkey");
-          break;
-    }
+    internal::bson_value_to_stream(out, aV);
     return out;
 }
 
@@ -158,6 +178,34 @@ template <typename Stream> inline Stream& operator << (Stream& out, const bsoncx
         bson_symbol(out, "*invalid*");
     return out;
 }
+
+// ----------------------------------------------------------------------
+
+template <typename RW> json_writer::writer<RW>& operator <<(json_writer::writer<RW>& out, const bsoncxx::types::value& aV)
+{
+    internal::bson_value_to_stream(out, aV);
+    return out;
+}
+
+// $$ template to json-writer.hh
+template <typename RW> inline json_writer::writer<RW>& operator <<(json_writer::writer<RW>& aWriter, const bsoncxx::array::view& array)
+{
+    aWriter << json_writer::start_array;
+    for (const auto& e: array)
+        aWriter << e;
+    return aWriter << json_writer::end_array;
+}
+
+// $$ template to json-writer.hh
+template <typename RW> inline json_writer::writer<RW>& operator <<(json_writer::writer<RW>& aWriter, const std::map<std::string, bsoncxx::types::value>& map)
+{
+    aWriter << json_writer::start_object;
+    for (const auto& e: map)
+        aWriter << json_writer::key(e.first) << e.second;
+    return aWriter << json_writer::end_object;
+}
+
+// ----------------------------------------------------------------------
 
 // inline std::string bson_value_to_string(const bsoncxx::types::value& aV)
 // {
@@ -295,6 +343,18 @@ class DocumentFindResults
             return result.str();
         }
 
+    inline std::string json() const
+        {
+            const size_t indent = 1;
+            json_writer::writer<rapidjson::PrettyWriter<rapidjson::StringBuffer>> aWriter("DocumentFindResults");
+            aWriter.SetIndent(' ', static_cast<unsigned int>(indent));
+            aWriter << mRecords;
+            std::string result = aWriter;
+            const std::string ind(indent - 1, ' ');
+            result.insert(1, ind + "\"_\": \"-*- js-indent-level: " + std::to_string(indent) + " -*-\",");
+            return result;
+        }
+
  private:
     std::set<std::string> mExcludeFields;
     std::set<std::string> mFields;
@@ -339,10 +399,7 @@ class CommandUsers : public CommandBase
                 {"_id", "_t", "password", "nonce"}
             };
             std::cout << results.csv() << std::endl;
-            // for (auto doc: aDb["users_groups"].find(Filter{} << "_t" << "acmacs.mongodb_collections.users_groups.User" << Fin)) {
-            //     // std::cout << bsoncxx::to_json(doc) << std::endl;
-            //     std::cout << doc["name"] << ' ' << doc["recent_logins"] << std::endl;
-            // }
+            std::cout << results.json() << std::endl;
         }
 
 }; // class CommandUsers
