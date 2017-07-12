@@ -30,8 +30,16 @@ class CommandBase
     virtual void args(int /*argc*/, char* const /*argv*/[]) {}
 
  protected:
-    using Filter = bsoncxx::builder::stream::document;
-    static constexpr auto Fin = bsoncxx::builder::stream::finalize;
+    using document = bsoncxx::builder::stream::document;
+    static constexpr auto finalize = bsoncxx::builder::stream::finalize;
+
+    inline auto projection_to_exclude_fields(std::initializer_list<std::string>&& fields)
+        {
+            auto proj_doc = document{};
+            for (auto field: fields)
+                proj_doc << field << false;
+            return proj_doc << finalize;
+        }
 
 }; // class CommandBase
 
@@ -40,20 +48,14 @@ class CommandBase
 class DocumentFindResults
 {
  public:
-    // using value_type = bsoncxx::types::value;
     using document_view = bsoncxx::document::view;
 
     inline DocumentFindResults() {}
-    inline DocumentFindResults(mongocxx::v_noabi::cursor&& aCursor, const std::vector<std::string>& aExcludeFields )
-        : mExcludeFields(std::begin(aExcludeFields), std::end(aExcludeFields)) { build(std::move(aCursor)); }
+    inline DocumentFindResults(mongocxx::v_noabi::cursor&& aCursor) { build(std::move(aCursor)); }
 
     void build(mongocxx::v_noabi::cursor&& aCursor)
         {
-            auto exclude_fields = [this](const document_view& record) {
-                return record;
-            };
-            std::transform(std::begin(aCursor), std::end(aCursor), std::back_inserter(mRecords), exclude_fields);
-              //$$ exclude fields
+            std::copy(std::begin(aCursor), std::end(aCursor), std::back_inserter(mRecords));
         }
 
     inline std::string json() const
@@ -70,7 +72,6 @@ class DocumentFindResults
         }
 
  private:
-    std::set<std::string> mExcludeFields;
     std::vector<document_view> mRecords;
 
 }; // class DocumentFindResults
@@ -95,11 +96,10 @@ class CommandUsers : public CommandBase
  public:
     virtual void process(mongocxx::database& aDb)
         {
-            DocumentFindResults results{
-                aDb["users_groups"].find(Filter{} << "_t" << "acmacs.mongodb_collections.users_groups.User" << Fin),
-                {"_id", "_t", "password", "nonce"}
-            };
-            // std::cout << results.csv() << std::endl;
+            auto filter = document{} << "_t" << "acmacs.mongodb_collections.users_groups.User" << finalize;
+            auto options = mongocxx::options::find{};
+            options.projection(projection_to_exclude_fields({"_id", "_t", "password", "nonce"}));
+            DocumentFindResults results{aDb["users_groups"].find(std::move(filter), options)};
             std::cout << results.json() << std::endl;
         }
 
