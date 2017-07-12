@@ -26,8 +26,10 @@ namespace json_writer
     template <typename RW> class writer;
 }
 
-template <typename RW> json_writer::writer<RW>& operator <<(json_writer::writer<RW>& aWriter, const std::map<std::string, bsoncxx::types::value>& map);
 template <typename RW> json_writer::writer<RW>& operator <<(json_writer::writer<RW>& aWriter, const bsoncxx::array::view& array);
+template <typename RW> json_writer::writer<RW>& operator <<(json_writer::writer<RW>& aWriter, const bsoncxx::document::view& document);
+template <typename Stream> inline Stream& operator << (Stream& out, const bsoncxx::types::value& aV);
+template <typename Stream> inline Stream& operator << (Stream& out, const bsoncxx::array::element& aE);
 
 #include "acmacs-base/json-writer.hh"
 
@@ -66,7 +68,8 @@ template <typename Stream> inline Stream& operator << (Stream& out, const bsoncx
     return out;
 }
 
-template <typename Stream = std::ostream> inline Stream& operator << (Stream& out, const bsoncxx::array::element& aE);
+template <typename Stream> Stream& operator << (Stream& out, const bsoncxx::array::element& aE);
+template <typename Stream> Stream& operator << (Stream& out, const bsoncxx::document::element& aE);
 
 inline std::ostream& operator << (std::ostream& out, const bsoncxx::array::view& aArray)
 {
@@ -82,6 +85,20 @@ inline std::ostream& operator << (std::ostream& out, const bsoncxx::array::view&
     return out << ']';
 }
 
+inline std::ostream& operator << (std::ostream& out, const bsoncxx::document::view& aDocument)
+{
+    auto first = std::begin(aDocument), last = std::end(aDocument);
+    out << '{';
+    for (bool insert_separator = false; first != last; ++first) {
+        if (insert_separator)
+            out << ", ";
+        else
+            insert_separator = true;
+        out << *first;
+    }
+    return out << '}';
+}
+
 
 namespace internal
 {
@@ -95,7 +112,7 @@ namespace internal
               out << aV.get_utf8().value.to_string();
               break;
           case bsoncxx::type::k_document:
-              bson_symbol(out, "document");
+              out << aV.get_document().value;
               break;
           case bsoncxx::type::k_array:
               out << aV.get_array().value;
@@ -187,23 +204,31 @@ template <typename RW> json_writer::writer<RW>& operator <<(json_writer::writer<
     return out;
 }
 
-// $$ template to json-writer.hh
 template <typename RW> inline json_writer::writer<RW>& operator <<(json_writer::writer<RW>& aWriter, const bsoncxx::array::view& array)
 {
-    aWriter << json_writer::start_array;
-    for (const auto& e: array)
-        aWriter << e;
-    return aWriter << json_writer::end_array;
+    return json_writer::write_list(aWriter, array);
+//$     aWriter << json_writer::start_array;
+//$     for (const auto& e: array)
+//$         aWriter << e;
+//$     return aWriter << json_writer::end_array;
+}
+
+template <typename RW> inline json_writer::writer<RW>& operator <<(json_writer::writer<RW>& aWriter, const bsoncxx::document::view& document)
+{
+    aWriter << json_writer::start_object;
+    for (const auto& e: document)
+        aWriter << json_writer::key(e.key().to_string()) << e.get_value();
+    return aWriter << json_writer::end_object;
 }
 
 // $$ template to json-writer.hh
-template <typename RW> inline json_writer::writer<RW>& operator <<(json_writer::writer<RW>& aWriter, const std::map<std::string, bsoncxx::types::value>& map)
-{
-    aWriter << json_writer::start_object;
-    for (const auto& e: map)
-        aWriter << json_writer::key(e.first) << e.second;
-    return aWriter << json_writer::end_object;
-}
+//$ template <typename RW> inline json_writer::writer<RW>& operator <<(json_writer::writer<RW>& aWriter, const std::map<std::string, bsoncxx::types::value>& map)
+//$ {
+//$     aWriter << json_writer::start_object;
+//$     for (const auto& e: map)
+//$         aWriter << json_writer::key(e.first) << e.second;
+//$     return aWriter << json_writer::end_object;
+//$ }
 
 // ----------------------------------------------------------------------
 
@@ -398,7 +423,7 @@ class CommandUsers : public CommandBase
                 aDb["users_groups"].find(Filter{} << "_t" << "acmacs.mongodb_collections.users_groups.User" << Fin),
                 {"_id", "_t", "password", "nonce"}
             };
-            std::cout << results.csv() << std::endl;
+            // std::cout << results.csv() << std::endl;
             std::cout << results.json() << std::endl;
         }
 
