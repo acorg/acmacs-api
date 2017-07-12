@@ -107,11 +107,28 @@ class CommandUsers : public CommandBase
 
 // ----------------------------------------------------------------------
 
+class CommandSessions : public CommandBase
+{
+ public:
+    virtual void process(mongocxx::database& aDb)
+        {
+            auto filter = document{} << /* "_t" << "acmacs.mongodb_collections.users_groups.User" << */ finalize;
+            auto options = mongocxx::options::find{};
+              //options.projection(projection_to_exclude_fields({"_id", "_t", "password", "nonce"}));
+            DocumentFindResults results{aDb["sessions"].find(std::move(filter), options)};
+            std::cout << results.json() << std::endl;
+        }
+
+}; // class CommandSessions
+
+// ----------------------------------------------------------------------
+
 static inline std::map<std::string, std::unique_ptr<CommandBase>> make_commands()
 {
     std::map<std::string, std::unique_ptr<CommandBase>> commands;
     commands.emplace("collections", std::make_unique<CommandCollections>());
     commands.emplace("users", std::make_unique<CommandUsers>());
+    commands.emplace("sessions", std::make_unique<CommandSessions>());
     return commands;
 }
 
