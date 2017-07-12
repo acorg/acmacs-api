@@ -328,7 +328,7 @@ class DocumentFindResults
     inline std::string csv() const
         {
             std::ostringstream result;
-            std::transform(std::begin(mFields), std::end(mFields), std::make_ostream_joiner(result, ","), &DocumentFindResults::string_to_csv);
+            std::transform(std::begin(mFields), std::end(mFields), polyfill::make_ostream_joiner(result, ","), &DocumentFindResults::string_to_csv);
             result << '\n';
             auto put_record = [this](const std::map<std::string, value_type>& aRec) {
                 std::ostringstream out_record;;
@@ -336,10 +336,10 @@ class DocumentFindResults
                     auto f = aRec.find(aField);
                     return f == aRec.end() ? std::string{} : DocumentFindResults::value_type_to_csv(f->second);
                 };
-                std::transform(std::begin(this->mFields), std::end(this->mFields), std::make_ostream_joiner(out_record, ","), put_field);
+                std::transform(std::begin(this->mFields), std::end(this->mFields), polyfill::make_ostream_joiner(out_record, ","), put_field);
                 return out_record.str();
             };
-            std::transform(std::begin(mRecords), std::end(mRecords), std::make_ostream_joiner(result, "\n"), put_record);
+            std::transform(std::begin(mRecords), std::end(mRecords), polyfill::make_ostream_joiner(result, "\n"), put_record);
             return result.str();
         }
 
@@ -436,7 +436,7 @@ int main(int argc, char* const argv[])
     else {
         std::cerr << "Unrecognized command: " << argv[1] << std::endl;
         std::cerr << " available commands:\n  ";
-        std::transform(commands.begin(), commands.end(), std::make_ostream_joiner(std::cerr, "\n  "), [](const auto& cmd) { return cmd.first; });
+        std::transform(commands.begin(), commands.end(), polyfill::make_ostream_joiner(std::cerr, "\n  "), [](const auto& cmd) { return cmd.first; });
         return 2;
     }
     return 0;
