@@ -40,7 +40,8 @@ class CommandBase
 class DocumentFindResults
 {
  public:
-    using value_type = bsoncxx::v_noabi::types::value;
+    // using value_type = bsoncxx::types::value;
+    using document_view = bsoncxx::document::view;
 
     inline DocumentFindResults() {}
     inline DocumentFindResults(mongocxx::v_noabi::cursor&& aCursor, const std::vector<std::string>& aExcludeFields )
@@ -48,46 +49,29 @@ class DocumentFindResults
 
     void build(mongocxx::v_noabi::cursor&& aCursor)
         {
-            mJson = json(std::move(aCursor));
-
-            // for (auto record: aCursor) {
-            //     std::map<std::string, value_type> aRecord;
-            //     for (auto field: record) {
-            //         const auto field_name = field.key().to_string();
-            //         if (mExcludeFields.find(field_name) == mExcludeFields.end()) {
-            //             mFields.insert(field_name);
-            //             aRecord.emplace(field.key().to_string(), field.get_value());
-            //         }
-            //     }
-            //     mRecords.push_back(aRecord);
-            // }
+            auto exclude_fields = [this](const document_view& record) {
+                return record;
+            };
+            std::transform(std::begin(aCursor), std::end(aCursor), std::back_inserter(mRecords), exclude_fields);
+              //$$ exclude fields
         }
 
     inline std::string json() const
         {
-              //return json_writer::json(mRecords, "DocumentFindResults", 1);
-            return mJson;
-        }
-
-    inline std::string json(mongocxx::v_noabi::cursor&& aCursor) const
-        {
             const size_t indent = 1;
             json_writer::writer<rapidjson::PrettyWriter<rapidjson::StringBuffer>> aWriter("DocumentFindResults");
             aWriter.SetIndent(' ', static_cast<unsigned int>(indent));
-            aWriter << json_writer::start_object;
-            aWriter << json_writer::key("results");
-            json_writer::write_list(aWriter, std::move(aCursor));
-            aWriter << json_writer::end_object;
+            aWriter << json_writer::start_object
+                    << json_writer::key("results") << mRecords
+                    << json_writer::end_object;
             std::string result = aWriter;
             json_writer::insert_emacs_indent_hint(result, indent);
             return result;
         }
 
  private:
-    std::string mJson;
     std::set<std::string> mExcludeFields;
-    std::set<std::string> mFields;
-    std::vector<std::map<std::string, value_type>> mRecords;
+    std::vector<document_view> mRecords;
 
 }; // class DocumentFindResults
 
