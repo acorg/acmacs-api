@@ -370,14 +370,7 @@ class DocumentFindResults
 
     inline std::string json() const
         {
-            const size_t indent = 1;
-            json_writer::writer<rapidjson::PrettyWriter<rapidjson::StringBuffer>> aWriter("DocumentFindResults");
-            aWriter.SetIndent(' ', static_cast<unsigned int>(indent));
-            aWriter << mRecords;
-            std::string result = aWriter;
-            const std::string ind(indent - 1, ' ');
-            result.insert(1, ind + "\"_\": \"-*- js-indent-level: " + std::to_string(indent) + " -*-\",");
-            return result;
+            return json_writer::json(mRecords, "DocumentFindResults", 1);
         }
 
  private:
