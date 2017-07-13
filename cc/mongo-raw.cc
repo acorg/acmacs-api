@@ -13,12 +13,14 @@
 #include <mongocxx/client.hpp>
 #include <mongocxx/instance.hpp>
 #include <mongocxx/pool.hpp>
+#include <mongocxx/exception/exception.hpp>
 #pragma GCC diagnostic pop
 
 #include "acmacs-base/stream.hh"
 #include "acmacs-base/string.hh"
 #include "acmacs-base/iterator.hh"
 #include "acmacs-base/float.hh"
+#include "acmacs-base/time.hh"
 
 #include "bson-to-json.hh"
 
@@ -119,6 +121,7 @@ class Session
 
     void create_session();
     void find_groups_of_user();
+    void save(size_t expiration_in_seconds);
 
 }; // class Session
 
@@ -199,8 +202,10 @@ void Session::login(std::string aCNonce, std::string aPasswordDigest)
 
 void Session::create_session()
 {
-    const size_t expiration_in_seconds = 3600;
+    const size_t expiration_in_seconds = 3600; // mDb["configuration"] system.sessions.expiration_in_seconds
     find_groups_of_user();
+      // std::cerr << "Groups: " << mGroups << std::endl;
+    save(expiration_in_seconds);
 
     // auto filter = bsoncxx::builder::stream::document{} << "_id" << bsoncxx::oid{aSessionId} << bsoncxx::builder::stream::finalize;
     // auto options = mongocxx::options::find{};
@@ -219,6 +224,80 @@ void Session::create_session()
 
 // ----------------------------------------------------------------------
 
+void Session::save(size_t expiration_in_seconds)
+{
+    using bsoncxx::builder::stream::open_document;
+    using bsoncxx::builder::stream::close_document;
+    using bsoncxx::builder::stream::open_array;
+    using bsoncxx::builder::stream::close_array;
+
+
+    auto put_fields = [&](auto& doc2) {
+        doc2 << "_t" << "acmacs.mongodb_collections.permissions.Session";
+        doc2 << "_id" << bsoncxx::oid{"5967844900be7c983007cc62"};
+        doc2 << "user" << mUser;
+        auto groups = doc2 << "user_and_groups" << open_array;
+        for (const auto& group: mGroups)
+            groups << group;
+        groups << bsoncxx::builder::stream::close_array;
+        doc2 << "I" << "127.0.0.1"
+        << "expiration_in_seconds" << static_cast<std::int32_t>(expiration_in_seconds)
+        << "expires" << time_format(std::chrono::system_clock::now() + std::chrono::seconds{expiration_in_seconds}, "%F %T")
+        << "commands" << 0;
+    };
+
+    mId = "5967844900be7c983007cc62";
+    if (mId.empty()) {
+        auto doc = document{};
+        put_fields(doc);
+        try {
+            auto result = mDb["sessions"].insert_one(doc << finalize);
+            if (!result)
+                throw SessionError{"unacknowledged write during session creation"};
+            if (result->inserted_id().type() == bsoncxx::type::k_oid)
+                mId = result->inserted_id().get_oid().value.to_string();
+            else
+                throw SessionError{"cannot create session: inserted id was not an OID type"};
+        }
+        catch (const mongocxx::exception& err) {
+            throw SessionError{std::string{"cannot create session: "} + err.what()};
+        }
+    }
+    else {
+
+        auto doc = document{} << "$set"
+                << open_document << "expires"
+                << time_format(std::chrono::system_clock::now() + std::chrono::seconds{expiration_in_seconds}, "%F %T")
+                << close_document << finalize;
+                                     auto filter = document{} << "_id" << bsoncxx::oid{mId} << finalize;
+                                                        auto result = mDb["sessions"].update_one(filter.view(), doc.view());
+
+        // auto doc_set = document{} << "$set" << open_document;
+        // put_fields(doc_set);
+        // auto doc = doc_set << close_document;
+        // auto result = mDb["sessions"].update_one(document{} << "_id" << bsoncxx::oid{mId} << finalize, doc << finalize);
+    }
+
+    // // if (!mId.empty())
+    // doc << "_t" << "acmacs.mongodb_collections.permissions.Session";
+    // // if (!mId.empty())
+    // //     doc << "_id" << bsoncxx::oid{mId};
+    // doc << "_id" << bsoncxx::oid{"5967844900be7c983007cc62"};
+    // doc << "user" << mUser;
+    // auto groups = doc << "user_and_groups" << open_array;
+    // for (const auto& group: mGroups)
+    //     groups << group;
+    // groups << bsoncxx::builder::stream::close_array;
+    // doc << "I" << "127.0.0.1"
+    //     << "expiration_in_seconds" << static_cast<std::int32_t>(expiration_in_seconds)
+    //     << "expires" << time_format(std::chrono::system_clock::now() + std::chrono::seconds{expiration_in_seconds}, "%F %T")
+    //     << "commands" << 0;
+    std::cerr << "session_id: " << mId << std::endl;
+
+} // Session::save
+
+// ----------------------------------------------------------------------
+
 void Session::find_groups_of_user()
 {
     auto filter = bsoncxx::builder::stream::document{} << "members" << mUser << bsoncxx::builder::stream::finalize;
@@ -228,7 +307,6 @@ void Session::find_groups_of_user()
     mGroups.clear();
     mGroups.push_back(mUser);
     std::transform(found.begin(), found.end(), std::back_inserter(mGroups), [](const auto& entry) { return entry["name"].get_utf8().value.to_string(); });
-    std::cerr << "Groups: " << mGroups << std::endl;
 
 } // Session::find_groups_of_user
 
