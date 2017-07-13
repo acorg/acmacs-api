@@ -54,6 +54,11 @@ class Session
     std::string mUser;
     std::vector<std::string> mGroups;
 
+    void find_user(std::string aUser);
+
+    using document = bsoncxx::builder::stream::document;
+    static constexpr auto finalize = bsoncxx::builder::stream::finalize;
+
 }; // class Session
 
 // ----------------------------------------------------------------------
@@ -85,6 +90,37 @@ void Session::use_session(std::string aSessionId)
 } // Session::use_session
 
 // ----------------------------------------------------------------------
+
+void Session::find_user(std::string aUser)
+{
+    auto filter = document{} << "name" << aUser << "_t" << "acmacs.mongodb_collections.users_groups.User" << finalize;
+    auto options = mongocxx::options::find{};
+    options.projection(projection_to_exclude_fields({"_id", "_t", "recent_logins", "created", "p", "_m"}));
+    auto found = mDb["users_groups"].find_one(std::move(filter), options);
+    if (!found)
+        throw SessionError{"invalid user or password"};
+    std::cout << json_writer::json(*found, "user", 1) << std::endl;
+
+} // Session::find_user
+
+// ----------------------------------------------------------------------
+
+std::string Session::get_nonce(std::string aUser)
+{
+    find_user(aUser);
+      // new_nonce();
+
+} // Session::get_nonce
+
+// ----------------------------------------------------------------------
+
+void Session::login(std::string aUser, std::string aCNonce, std::string aPasswordDigest)
+{
+
+} // Session::login
+
+// ----------------------------------------------------------------------
+
 
 // ----------------------------------------------------------------------
 // ----------------------------------------------------------------------
@@ -169,6 +205,41 @@ class CommandSession : public CommandBase
 
 // ----------------------------------------------------------------------
 
+class CommandLogin : public CommandBase
+{
+ public:
+    virtual void args(int argc, char* const argv[])
+        {
+            if (argc != 2)
+                throw CommandError{"invalid number of arguments"};
+            mUser = argv[0];
+            mPassword = argv[1];
+        }
+
+    virtual std::string process(mongocxx::database& aDb)
+        {
+            Session session(aDb);
+            auto nonce = session.get_nonce(mUser);
+
+            json_writer::pretty writer{"session"};
+            writer << json_writer::start_object << json_writer::key("session")
+                   << json_writer::start_object
+                   << json_writer::key("session_id") << session.id()
+                   << json_writer::key("user") << session.user()
+                   << json_writer::key("groups") << session.groups()
+                   << json_writer::end_object
+                   << json_writer::end_object;
+            return writer;
+        }
+
+ private:
+    std::string mUser;
+    std::string mPassword;
+
+}; // class CommandLogin
+
+// ----------------------------------------------------------------------
+
 class CommandCollections : public CommandBase
 {
  public:
@@ -202,6 +273,22 @@ class CommandUsers : public CommandBase
 
 // ----------------------------------------------------------------------
 
+class CommandGroups : public CommandBase
+{
+ public:
+    virtual std::string process(mongocxx::database& aDb)
+        {
+            auto filter = document{} << "_t" << "acmacs.mongodb_collections.users_groups.Group" << finalize;
+            auto options = mongocxx::options::find{};
+            options.projection(projection_to_exclude_fields({"_id", "_t"}));
+            DocumentFindResults results{aDb["users_groups"].find(std::move(filter), options)};
+            return results.json();
+        }
+
+}; // class CommandGroups
+
+// ----------------------------------------------------------------------
+
 class CommandSessions : public CommandBase
 {
  public:
@@ -223,8 +310,10 @@ static inline std::map<std::string, std::unique_ptr<CommandBase>> make_commands(
 {
     std::map<std::string, std::unique_ptr<CommandBase>> commands;
     commands.emplace("session", std::make_unique<CommandSession>());
+    commands.emplace("login", std::make_unique<CommandLogin>());
     commands.emplace("collections", std::make_unique<CommandCollections>());
     commands.emplace("users", std::make_unique<CommandUsers>());
+    commands.emplace("groups", std::make_unique<CommandGroups>());
     commands.emplace("sessions", std::make_unique<CommandSessions>());
     return commands;
 }
