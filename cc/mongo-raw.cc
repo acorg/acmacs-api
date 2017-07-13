@@ -22,6 +22,18 @@
 // ----------------------------------------------------------------------
 // ----------------------------------------------------------------------
 
+inline auto projection_to_exclude_fields(std::initializer_list<std::string>&& fields)
+{
+    auto proj_doc = bsoncxx::builder::stream::document{};
+    for (auto field: fields)
+        proj_doc << field << false;
+    return proj_doc << bsoncxx::builder::stream::finalize;
+}
+
+
+// ----------------------------------------------------------------------
+// ----------------------------------------------------------------------
+
 class SessionError : public std::runtime_error { public: using std::runtime_error::runtime_error; };
 
 class Session
@@ -32,8 +44,15 @@ class Session
     std::string get_nonce(std::string aUser);
     void login(std::string aUser, std::string aCNonce, std::string aPasswordDigest);
 
+    inline std::string id() const { return mId; }
+    inline std::string user() const { return mUser; }
+    inline const std::vector<std::string>& groups() const { return mGroups; }
+
  private:
     mongocxx::database& mDb;
+    std::string mId;
+    std::string mUser;
+    std::vector<std::string> mGroups;
 
 }; // class Session
 
@@ -41,6 +60,27 @@ class Session
 
 void Session::use_session(std::string aSessionId)
 {
+    mId.clear();
+    mUser.clear();
+    mGroups.clear();
+
+    auto filter = bsoncxx::builder::stream::document{} << "_id" << bsoncxx::oid{aSessionId} << bsoncxx::builder::stream::finalize;
+    auto options = mongocxx::options::find{};
+    options.projection(projection_to_exclude_fields({"_t", "_m", "I", "expires", "expiration_in_seconds", "commands"}));
+    auto found = mDb["sessions"].find_one(std::move(filter), options);
+    if (!found)
+        throw SessionError{"invalid session"};
+    for (auto entry: found->view()) {
+        const std::string key = entry.key().to_string();
+        if (key == "_id")
+            mId = entry.get_value().get_oid().value.to_string();
+        else if (key == "user")
+            mUser = entry.get_value().get_utf8().value.to_string();
+        else if (key == "user_and_groups") {
+            const auto array = entry.get_value().get_array().value;
+            std::transform(array.begin(), array.end(), std::back_inserter(mGroups), [](const auto& name) -> std::string { return name.get_utf8().value.to_string(); });
+        }
+    }
 
 } // Session::use_session
 
@@ -62,14 +102,6 @@ class CommandBase
  protected:
     using document = bsoncxx::builder::stream::document;
     static constexpr auto finalize = bsoncxx::builder::stream::finalize;
-
-    inline auto projection_to_exclude_fields(std::initializer_list<std::string>&& fields)
-        {
-            auto proj_doc = document{};
-            for (auto field: fields)
-                proj_doc << field << false;
-            return proj_doc << finalize;
-        }
 
 }; // class CommandBase
 
@@ -119,11 +151,15 @@ class CommandSession : public CommandBase
             Session session(aDb);
             session.use_session(mSessionId);
 
-            auto filter = document{} << /* "_t" << "acmacs.mongodb_collections.users_groups.User" << */ finalize;
-            auto options = mongocxx::options::find{};
-              //options.projection(projection_to_exclude_fields({"_id", "_t", "password", "nonce"}));
-            DocumentFindResults results{aDb["sessions"].find(std::move(filter), options)};
-            return results.json();
+            json_writer::pretty writer{"session"};
+            writer << json_writer::start_object << json_writer::key("session")
+                   << json_writer::start_object
+                   << json_writer::key("session_id") << session.id()
+                   << json_writer::key("user") << session.user()
+                   << json_writer::key("groups") << session.groups()
+                   << json_writer::end_object
+                   << json_writer::end_object;
+            return writer;
         }
 
  private:
