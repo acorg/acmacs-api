@@ -15,7 +15,7 @@ MONGO_TEST_SOURCES = mongo-test.cc
 MONGO_FIND_SOURCES = mongo-find.cc
 MONGO_RAW_SOURCES = mongo-raw.cc
 
-MONGO_LDLIBS = -L$(LIB_DIR) -lmongocxx -lbsoncxx
+MONGO_LDLIBS = -L$(LIB_DIR) -lmongocxx -lbsoncxx -L/usr/local/opt/openssl/lib $$(pkg-config --libs libssl)
 
 # ----------------------------------------------------------------------
 

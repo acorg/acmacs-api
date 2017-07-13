@@ -3,7 +3,10 @@
 #include <string>
 #include <memory>
 #include <set>
-#include <iterator> // make_ostream_joiner
+//#include <iterator> // make_ostream_joiner
+#include <random>
+
+#include <openssl/md5.h>
 
 #pragma GCC diagnostic push
 #include "mongo-diagnostics.hh"
@@ -30,6 +33,19 @@ inline auto projection_to_exclude_fields(std::initializer_list<std::string>&& fi
     return proj_doc << bsoncxx::builder::stream::finalize;
 }
 
+// ----------------------------------------------------------------------
+
+inline std::string md5(std::string aSource)
+{
+    unsigned char digest[MD5_DIGEST_LENGTH];
+    MD5(reinterpret_cast<const unsigned char *>(aSource.c_str()), aSource.size(), digest);
+    std::ostringstream os;
+    os << std::hex << std::setfill('0') << std::nouppercase;
+    for(auto c: digest)
+        os << std::setw(2) << static_cast<long long>(c);
+      // std::cerr << "md5 " << aSource << " --> " << os.str() << std::endl;
+    return os.str();
+}
 
 // ----------------------------------------------------------------------
 // ----------------------------------------------------------------------
@@ -41,23 +57,28 @@ class Session
  public:
     inline Session(mongocxx::database& aDb) : mDb(aDb) {}
     void use_session(std::string aSessionId); // throws SessionError
-    std::string get_nonce(std::string aUser);
-    void login(std::string aUser, std::string aCNonce, std::string aPasswordDigest);
+    void find_user(std::string aUser, bool aGetPassword);
+    std::string get_nonce();
+    void login(std::string aCNonce, std::string aPasswordDigest);
 
     inline std::string id() const { return mId; }
     inline std::string user() const { return mUser; }
+    inline std::string display_name() const { return mDisplayName; }
     inline const std::vector<std::string>& groups() const { return mGroups; }
 
  private:
     mongocxx::database& mDb;
     std::string mId;
     std::string mUser;
+    std::string mDisplayName;
+    std::string mPassword;
     std::vector<std::string> mGroups;
-
-    void find_user(std::string aUser);
+    std::string mNonce;
 
     using document = bsoncxx::builder::stream::document;
     static constexpr auto finalize = bsoncxx::builder::stream::finalize;
+
+    void create_session();
 
 }; // class Session
 
@@ -91,7 +112,7 @@ void Session::use_session(std::string aSessionId)
 
 // ----------------------------------------------------------------------
 
-void Session::find_user(std::string aUser)
+void Session::find_user(std::string aUser, bool aGetPassword)
 {
     auto filter = document{} << "name" << aUser << "_t" << "acmacs.mongodb_collections.users_groups.User" << finalize;
     auto options = mongocxx::options::find{};
@@ -100,24 +121,45 @@ void Session::find_user(std::string aUser)
     if (!found)
         throw SessionError{"invalid user or password"};
     std::cout << json_writer::json(*found, "user", 1) << std::endl;
+    for (auto entry: found->view()) {
+        const std::string key = entry.key().to_string();
+        if (key == "name")
+            mUser = entry.get_value().get_utf8().value.to_string();
+        else if (aGetPassword && key == "password")
+            mPassword = entry.get_value().get_utf8().value.to_string();
+        else if (key == "display_name")
+            mDisplayName = entry.get_value().get_utf8().value.to_string();
+    }
 
 } // Session::find_user
 
 // ----------------------------------------------------------------------
 
-std::string Session::get_nonce(std::string aUser)
+std::string Session::get_nonce()
 {
-    find_user(aUser);
-      // new_nonce();
+    std::random_device rd;
+    mNonce = string::to_hex_string(rd() & 0xFFFFFFFF, false);
+    return mNonce;
 
 } // Session::get_nonce
 
 // ----------------------------------------------------------------------
 
-void Session::login(std::string aUser, std::string aCNonce, std::string aPasswordDigest)
+void Session::login(std::string aCNonce, std::string aPasswordDigest)
 {
+    const auto hashed_password = md5(mNonce + ";" + aCNonce + ";" + mPassword);
+    if (aPasswordDigest != hashed_password)
+        throw SessionError{"invalid user or password"};
+    create_session();
 
 } // Session::login
+
+// ----------------------------------------------------------------------
+
+void Session::create_session()
+{
+
+} // Session::create_session
 
 // ----------------------------------------------------------------------
 
@@ -219,14 +261,22 @@ class CommandLogin : public CommandBase
     virtual std::string process(mongocxx::database& aDb)
         {
             Session session(aDb);
-            auto nonce = session.get_nonce(mUser);
+            session.find_user(mUser, true);
+            auto nonce = session.get_nonce();
+              // login(std::string aUser, std::string aCNonce, std::string aPasswordDigest);
+
+            std::random_device rd;
+            const auto cnonce = string::to_hex_string(rd() & 0xFFFFFFFF, false);
+            const auto digest = md5(mUser + ";acmacs-web;" + mPassword);
+            const auto hashed_password = md5(nonce + ";" + cnonce + ";" + digest);
+            session.login(cnonce, hashed_password);
 
             json_writer::pretty writer{"session"};
             writer << json_writer::start_object << json_writer::key("session")
                    << json_writer::start_object
                    << json_writer::key("session_id") << session.id()
                    << json_writer::key("user") << session.user()
-                   << json_writer::key("groups") << session.groups()
+                   << json_writer::key("display_name") << session.display_name()
                    << json_writer::end_object
                    << json_writer::end_object;
             return writer;
