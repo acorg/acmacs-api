@@ -33,6 +33,16 @@ inline auto projection_to_exclude_fields(std::initializer_list<std::string>&& fi
     return proj_doc << bsoncxx::builder::stream::finalize;
 }
 
+inline auto projection_to_include_fields(std::initializer_list<std::string>&& fields, bool aExcludeId = false)
+{
+    auto proj_doc = bsoncxx::builder::stream::document{};
+    for (auto field: fields)
+        proj_doc << field << true;
+    if (aExcludeId)
+        proj_doc << "_id" << false;
+    return proj_doc << bsoncxx::builder::stream::finalize;
+}
+
 // ----------------------------------------------------------------------
 
 inline std::string md5(std::string aSource)
@@ -46,6 +56,35 @@ inline std::string md5(std::string aSource)
       // std::cerr << "md5 " << aSource << " --> " << os.str() << std::endl;
     return os.str();
 }
+
+// ----------------------------------------------------------------------
+
+class DocumentFindResults
+{
+ public:
+    using document_view = bsoncxx::document::view;
+
+    inline DocumentFindResults() {}
+    inline DocumentFindResults(mongocxx::v_noabi::cursor&& aCursor) { build(std::move(aCursor)); }
+
+    void build(mongocxx::v_noabi::cursor&& aCursor)
+        {
+            std::copy(std::begin(aCursor), std::end(aCursor), std::back_inserter(mRecords));
+        }
+
+    inline std::string json() const
+        {
+            json_writer::pretty writer{"DocumentFindResults"};
+            writer << json_writer::start_object
+                    << json_writer::key("results") << mRecords
+                    << json_writer::end_object;
+            return writer << json_writer::finalize;
+        }
+
+ private:
+    std::vector<document_view> mRecords;
+
+}; // class DocumentFindResults
 
 // ----------------------------------------------------------------------
 // ----------------------------------------------------------------------
@@ -79,6 +118,7 @@ class Session
     static constexpr auto finalize = bsoncxx::builder::stream::finalize;
 
     void create_session();
+    void find_groups_of_user();
 
 }; // class Session
 
@@ -151,6 +191,7 @@ void Session::login(std::string aCNonce, std::string aPasswordDigest)
     if (aPasswordDigest != hashed_password)
         throw SessionError{"invalid user or password"};
     create_session();
+      //! user.add_recent_login(session=session)
 
 } // Session::login
 
@@ -158,8 +199,38 @@ void Session::login(std::string aCNonce, std::string aPasswordDigest)
 
 void Session::create_session()
 {
+    const size_t expiration_in_seconds = 3600;
+    find_groups_of_user();
+
+    // auto filter = bsoncxx::builder::stream::document{} << "_id" << bsoncxx::oid{aSessionId} << bsoncxx::builder::stream::finalize;
+    // auto options = mongocxx::options::find{};
+    // options.projection(projection_to_exclude_fields({"_t", "_m", "I", "expires", "expiration_in_seconds", "commands"}));
+    // auto found = mDb["configuration"].find_one(std::move(filter), options);
+        // session = Session(user=user, user_and_groups=mongodb_collections.users_groups.find_groups_of_user(session=guest_session(), user=user) | {user}, I=ip_address, changed_user=changed_user, commands=0)
+        // if not expiration_in_seconds:
+        //     expiration_in_seconds = mongodb_collections.configuration.find_setting(session=session, name='system.sessions.expiration_in_seconds')
+        // session.expiration_in_seconds = expiration_in_seconds
+        // session.touch()
+        // session.save(session=None)
+        // # module_logger.info('new session {} user: {} groups: {} expires: {}'.format(session._id, session.user, session.user_and_groups, session.expires))
+        // history.SessionLog(session=session, user_agent=user_agent, changed_user=changed_user).save(session=None)
 
 } // Session::create_session
+
+// ----------------------------------------------------------------------
+
+void Session::find_groups_of_user()
+{
+    auto filter = bsoncxx::builder::stream::document{} << "members" << mUser << bsoncxx::builder::stream::finalize;
+    auto options = mongocxx::options::find{};
+    options.projection(projection_to_include_fields({"name"}, true));
+    auto found = mDb["users_groups"].find(std::move(filter), options);
+    mGroups.clear();
+    mGroups.push_back(mUser);
+    std::transform(found.begin(), found.end(), std::back_inserter(mGroups), [](const auto& entry) { return entry["name"].get_utf8().value.to_string(); });
+    std::cerr << "Groups: " << mGroups << std::endl;
+
+} // Session::find_groups_of_user
 
 // ----------------------------------------------------------------------
 
@@ -182,35 +253,6 @@ class CommandBase
     static constexpr auto finalize = bsoncxx::builder::stream::finalize;
 
 }; // class CommandBase
-
-// ----------------------------------------------------------------------
-
-class DocumentFindResults
-{
- public:
-    using document_view = bsoncxx::document::view;
-
-    inline DocumentFindResults() {}
-    inline DocumentFindResults(mongocxx::v_noabi::cursor&& aCursor) { build(std::move(aCursor)); }
-
-    void build(mongocxx::v_noabi::cursor&& aCursor)
-        {
-            std::copy(std::begin(aCursor), std::end(aCursor), std::back_inserter(mRecords));
-        }
-
-    inline std::string json() const
-        {
-            json_writer::pretty writer{"DocumentFindResults"};
-            writer << json_writer::start_object
-                    << json_writer::key("results") << mRecords
-                    << json_writer::end_object;
-            return writer << json_writer::finalize;
-        }
-
- private:
-    std::vector<document_view> mRecords;
-
-}; // class DocumentFindResults
 
 // ----------------------------------------------------------------------
 
