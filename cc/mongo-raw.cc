@@ -20,13 +20,43 @@
 #include "bson-to-json.hh"
 
 // ----------------------------------------------------------------------
+// ----------------------------------------------------------------------
+
+class SessionError : public std::runtime_error { public: using std::runtime_error::runtime_error; };
+
+class Session
+{
+ public:
+    inline Session(mongocxx::database& aDb) : mDb(aDb) {}
+    void use_session(std::string aSessionId); // throws SessionError
+    std::string get_nonce(std::string aUser);
+    void login(std::string aUser, std::string aCNonce, std::string aPasswordDigest);
+
+ private:
+    mongocxx::database& mDb;
+
+}; // class Session
+
+// ----------------------------------------------------------------------
+
+void Session::use_session(std::string aSessionId)
+{
+
+} // Session::use_session
+
+// ----------------------------------------------------------------------
+
+// ----------------------------------------------------------------------
+// ----------------------------------------------------------------------
+
+class CommandError : public std::runtime_error { public: using std::runtime_error::runtime_error; };
 
 class CommandBase
 {
  public:
     virtual inline ~CommandBase() {}
 
-    virtual void process(mongocxx::database& aDb) = 0;
+    virtual std::string process(mongocxx::database& aDb) = 0;
     virtual void args(int /*argc*/, char* const /*argv*/[]) {}
 
  protected:
@@ -60,15 +90,11 @@ class DocumentFindResults
 
     inline std::string json() const
         {
-            const size_t indent = 1;
-            json_writer::writer<rapidjson::PrettyWriter<rapidjson::StringBuffer>> aWriter("DocumentFindResults");
-            aWriter.SetIndent(' ', static_cast<unsigned int>(indent));
-            aWriter << json_writer::start_object
+            json_writer::pretty writer{"DocumentFindResults"};
+            writer << json_writer::start_object
                     << json_writer::key("results") << mRecords
                     << json_writer::end_object;
-            std::string result = aWriter;
-            json_writer::insert_emacs_indent_hint(result, indent);
-            return result;
+            return writer << json_writer::finalize;
         }
 
  private:
@@ -78,13 +104,46 @@ class DocumentFindResults
 
 // ----------------------------------------------------------------------
 
+class CommandSession : public CommandBase
+{
+ public:
+    virtual void args(int argc, char* const argv[])
+        {
+            if (argc != 1)
+                throw CommandError{"invalid number of arguments"};
+            mSessionId = argv[0];
+        }
+
+    virtual std::string process(mongocxx::database& aDb)
+        {
+            Session session(aDb);
+            session.use_session(mSessionId);
+
+            auto filter = document{} << /* "_t" << "acmacs.mongodb_collections.users_groups.User" << */ finalize;
+            auto options = mongocxx::options::find{};
+              //options.projection(projection_to_exclude_fields({"_id", "_t", "password", "nonce"}));
+            DocumentFindResults results{aDb["sessions"].find(std::move(filter), options)};
+            return results.json();
+        }
+
+ private:
+    std::string mSessionId;
+
+}; // class CommandSession
+
+// ----------------------------------------------------------------------
+
 class CommandCollections : public CommandBase
 {
  public:
-    virtual void process(mongocxx::database& aDb)
+    virtual std::string process(mongocxx::database& aDb)
         {
+            json_writer::pretty writer{"collections"};
+            writer << json_writer::start_object << json_writer::key("collections") << json_writer::start_array;
             for (auto doc: aDb.list_collections())
-                std::cout << doc["name"].get_utf8().value.to_string() << std::endl;
+                writer << doc["name"].get_utf8().value.to_string();
+            writer << json_writer::end_array << json_writer::end_object;
+            return writer;
         }
 
 }; // class CommandCollections
@@ -94,13 +153,13 @@ class CommandCollections : public CommandBase
 class CommandUsers : public CommandBase
 {
  public:
-    virtual void process(mongocxx::database& aDb)
+    virtual std::string process(mongocxx::database& aDb)
         {
             auto filter = document{} << "_t" << "acmacs.mongodb_collections.users_groups.User" << finalize;
             auto options = mongocxx::options::find{};
             options.projection(projection_to_exclude_fields({"_id", "_t", "password", "nonce"}));
             DocumentFindResults results{aDb["users_groups"].find(std::move(filter), options)};
-            std::cout << results.json() << std::endl;
+            return results.json();
         }
 
 }; // class CommandUsers
@@ -110,22 +169,24 @@ class CommandUsers : public CommandBase
 class CommandSessions : public CommandBase
 {
  public:
-    virtual void process(mongocxx::database& aDb)
+    virtual std::string process(mongocxx::database& aDb)
         {
             auto filter = document{} << /* "_t" << "acmacs.mongodb_collections.users_groups.User" << */ finalize;
             auto options = mongocxx::options::find{};
               //options.projection(projection_to_exclude_fields({"_id", "_t", "password", "nonce"}));
             DocumentFindResults results{aDb["sessions"].find(std::move(filter), options)};
-            std::cout << results.json() << std::endl;
+            return results.json();
         }
 
 }; // class CommandSessions
 
 // ----------------------------------------------------------------------
+// ----------------------------------------------------------------------
 
 static inline std::map<std::string, std::unique_ptr<CommandBase>> make_commands()
 {
     std::map<std::string, std::unique_ptr<CommandBase>> commands;
+    commands.emplace("session", std::make_unique<CommandSession>());
     commands.emplace("collections", std::make_unique<CommandCollections>());
     commands.emplace("users", std::make_unique<CommandUsers>());
     commands.emplace("sessions", std::make_unique<CommandSessions>());
@@ -148,8 +209,15 @@ int main(int argc, char* const argv[])
     auto commands = make_commands();
     auto command = commands.find(argv[1]);
     if (command != commands.end()) {
-        command->second->args(argc - 2, argv + 2);
-        command->second->process(db);
+        try {
+            command->second->args(argc - 2, argv + 2);
+            auto result = command->second->process(db);
+            std::cout << result << std::endl;
+        }
+        catch (CommandError& err) {
+            std::cerr << "Command \"" << argv[1] << "\" error: " << err.what() << std::endl;
+            return 3;
+        }
     }
     else {
         std::cerr << "Unrecognized command: " << argv[1] << std::endl;
