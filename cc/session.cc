@@ -145,6 +145,22 @@ void Session::find_groups_of_user()
 } // Session::find_groups_of_user
 
 // ----------------------------------------------------------------------
+
+Session::bson_doc Session::read_permissions() const
+{
+    auto doc = bson_doc{};
+    auto groups = doc << "p.r" << bson_open_document << "$in" << bson_open_array;
+    for (const auto& group: mGroups)
+        groups << group;
+    groups << bson_close_array << bson_close_document;
+    return doc;
+
+} // Session::read_permissions
+
+// ----------------------------------------------------------------------
+
+
+// ----------------------------------------------------------------------
 /// Local Variables:
 /// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
 /// End:

@@ -25,6 +25,8 @@ class Session : public StoredInMongodb
 
     inline void increment_commands() { ++mCommands; }
 
+    bson_doc read_permissions() const;
+
  protected:
     virtual void add_fields_for_creation(bson_doc& aDoc);
     virtual void add_fields_for_updating(bson_doc& aDoc);

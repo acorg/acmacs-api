@@ -9,12 +9,29 @@
 
 // ----------------------------------------------------------------------
 
-void parse_command_line(int argc, char* const argv[], Session& aSession, std::vector<std::vector<std::string>>& aCommands);
+class CommandBase;
+static void parse_command_line(int argc, char* const argv[], Session& aSession, std::vector<std::vector<std::string>>& aCommands);
+static std::map<std::string, std::unique_ptr<CommandBase>> make_commands();
+
+// ----------------------------------------------------------------------
+
+class CommandBase
+{
+ public:
+    class Error : public std::runtime_error { public: using std::runtime_error::runtime_error; };
+
+    virtual inline ~CommandBase() {}
+
+    virtual std::string process(Session& aSession) = 0;
+    virtual void args(const std::vector<std::string>& /*args*/) {} // args[0] is a command name
+
+}; // class CommandBase
 
 // ----------------------------------------------------------------------
 
 int main(int argc, char* const argv[])
 {
+    int exit_code = 0;
     try {
         mongocxx::instance inst{};
         mongocxx::pool pool{mongocxx::uri{}};
@@ -25,14 +42,36 @@ int main(int argc, char* const argv[])
         std::vector<std::vector<std::string>> commands;
         parse_command_line(argc, argv, session, commands);
         if (!commands.empty()) {
-            std::cerr << commands << std::endl;
+            auto command_processors = make_commands();
+            for (const auto& command: commands) {
+                auto command_processor = command_processors.find(command[0]);
+                if (command_processor != command_processors.end()) {
+                    try {
+                        command_processor->second->args(command);
+                        auto result = command_processor->second->process(session);
+                        std::cout << result << std::endl;
+                    }
+                    catch (CommandBase::Error& err) {
+                        std::cerr << "Command " << command << " error: " << err.what() << std::endl;
+                        return 3;
+                    }
+
+                }
+                else {
+                    std::cerr << "Unrecognized command: " << command << std::endl;
+                    std::cerr << " available commands:\n  ";
+                    std::transform(command_processors.begin(), command_processors.end(), polyfill::make_ostream_joiner(std::cerr, "\n  "), [](const auto& cmd) { return cmd.first; });
+                    exit_code = 2;
+                    break;
+                }
+            }
         }
-        return 0;
     }
     catch (std::exception& err) {
         std::cerr << "ERROR: " << err.what() << std::endl;
-        return 1;
+        exit_code = 1;
     }
+    return exit_code;
 }
 
 // ----------------------------------------------------------------------
@@ -107,6 +146,36 @@ void parse_command_line(int argc, char* const argv[], Session& aSession, std::ve
     }
     if (aCommands.back().empty())
         throw std::runtime_error{"empty command in the command line"};
+}
+
+// ----------------------------------------------------------------------
+
+class CommandUsers : public CommandBase
+{
+ public:
+    virtual std::string process(Session& aSession)
+        {
+            DocumentFindResults results{aSession.db(), "users_groups",
+                        (DocumentFindResults::bson_doc{} << "_t" << "acmacs.mongodb_collections.users_groups.User" <<
+                         bsoncxx::builder::concatenate(aSession.read_permissions().view()) << DocumentFindResults::bson_finalize),
+                        DocumentFindResults::exclude{"_id", "_t", "password", "nonce"}};
+            return results.json();
+        }
+
+}; // class CommandUsers
+
+// ----------------------------------------------------------------------
+
+static inline std::map<std::string, std::unique_ptr<CommandBase>> make_commands()
+{
+    std::map<std::string, std::unique_ptr<CommandBase>> commands;
+    commands.emplace("users", std::make_unique<CommandUsers>());
+    // commands.emplace("session", std::make_unique<CommandSession>());
+    // commands.emplace("login", std::make_unique<CommandLogin>());
+    // commands.emplace("collections", std::make_unique<CommandCollections>());
+    // commands.emplace("groups", std::make_unique<CommandGroups>());
+    // commands.emplace("sessions", std::make_unique<CommandSessions>());
+    return commands;
 }
 
 // ----------------------------------------------------------------------

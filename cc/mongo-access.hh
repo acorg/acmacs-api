@@ -110,6 +110,10 @@ class MongodbAccess
             return time_format_gm(std::chrono::system_clock::now() + std::chrono::seconds{aSeconds}, "%F %T");
         }
 
+      // ----------------------------------------------------------------------
+
+    inline mongocxx::database& db() { return mDb; }
+
  private:
     mongocxx::database& mDb;
 
