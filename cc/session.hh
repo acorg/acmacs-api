@@ -6,16 +6,17 @@
 
 // ----------------------------------------------------------------------
 
-class SessionError : public std::runtime_error { public: using std::runtime_error::runtime_error; };
-
 class Session : public StoredInMongodb
 {
  public:
+    class Error : public std::runtime_error { public: using std::runtime_error::runtime_error; };
+
     inline Session(mongocxx::database& aDb) : StoredInMongodb{aDb, "sessions"}, mCommands{0}, mExpirationInSeconds{3600} {}
-    void use_session(std::string aSessionId); // throws SessionError
+    void use_session(std::string aSessionId); // throws Error
+    void login(std::string aUser, std::string aPassword);
     void find_user(std::string aUser, bool aGetPassword);
     std::string get_nonce();
-    void login(std::string aCNonce, std::string aPasswordDigest);
+    void login_with_password_digest(std::string aCNonce, std::string aPasswordDigest);
 
     inline std::string id() const { return mId; }
     inline std::string user() const { return mUser; }

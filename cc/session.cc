@@ -16,7 +16,7 @@ void Session::use_session(std::string aSessionId)
     auto found = find_one((bson_doc{} << "_id" << bsoncxx::oid{aSessionId} << "expires" << bson_open_document << "$gte" << time_now() << bson_close_document << bson_finalize),
                           exclude{"_t", "_m", "I", "expires", "expiration_in_seconds"});
     if (!found)
-        throw SessionError{"invalid session"};
+        throw Error{"invalid session"};
     for (auto entry: found->view()) {
         const std::string key = entry.key().to_string();
         if (key == "_id")
@@ -42,8 +42,8 @@ void Session::find_user(std::string aUser, bool aGetPassword)
 {
     auto found = find_one("users_groups", bson_doc{} << "name" << aUser << "_t" << "acmacs.mongodb_collections.users_groups.User" << bson_finalize, exclude{"_id", "_t", "recent_logins", "created", "p", "_m"});
     if (!found)
-        throw SessionError{"invalid user or password"};
-    std::cout << json_writer::json(*found, "user", 1) << std::endl;
+        throw Error{"invalid user or password"};
+      // std::cerr << json_writer::json(*found, "user", 1) << std::endl;
     for (auto entry: found->view()) {
         const std::string key = entry.key().to_string();
         if (key == "name")
@@ -58,6 +58,20 @@ void Session::find_user(std::string aUser, bool aGetPassword)
 
 // ----------------------------------------------------------------------
 
+void Session::login(std::string aUser, std::string aPassword)
+{
+    find_user(aUser, true);
+    const auto nonce = get_nonce();
+    std::random_device rd;
+    const auto cnonce = string::to_hex_string(rd() & 0xFFFFFFFF, false);
+    const auto digest = md5(mUser + ";acmacs-web;" + aPassword);
+    const auto hashed_password = md5(nonce + ";" + cnonce + ";" + digest);
+    login_with_password_digest(cnonce, hashed_password);
+
+} // Session::login
+
+// ----------------------------------------------------------------------
+
 std::string Session::get_nonce()
 {
     std::random_device rd;
@@ -68,15 +82,15 @@ std::string Session::get_nonce()
 
 // ----------------------------------------------------------------------
 
-void Session::login(std::string aCNonce, std::string aPasswordDigest)
+void Session::login_with_password_digest(std::string aCNonce, std::string aPasswordDigest)
 {
     const auto hashed_password = md5(mNonce + ";" + aCNonce + ";" + mPassword);
     if (aPasswordDigest != hashed_password)
-        throw SessionError{"invalid user or password"};
+        throw Error{"invalid user or password"};
     create_session();
       //! user.add_recent_login(session=session)
 
-} // Session::login
+} // Session::login_with_password_digest
 
 // ----------------------------------------------------------------------
 
@@ -84,7 +98,7 @@ void Session::create_session()
 {
     find_groups_of_user();
       // std::cerr << "Groups: " << mGroups << std::endl;
-    create();
+    mId = create();
 
         // history.SessionLog(session=session, user_agent=user_agent, changed_user=changed_user).save(session=None)
 

@@ -87,7 +87,7 @@ class CommandLogin : public CommandBase
             const auto cnonce = string::to_hex_string(rd() & 0xFFFFFFFF, false);
             const auto digest = md5(mUser + ";acmacs-web;" + mPassword);
             const auto hashed_password = md5(nonce + ";" + cnonce + ";" + digest);
-            session.login(cnonce, hashed_password);
+            session.login_with_password_digest(cnonce, hashed_password);
 
             json_writer::pretty writer{"session"};
             writer << json_writer::start_object << json_writer::key("session")

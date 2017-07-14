@@ -10,10 +10,12 @@ MAKEFLAGS = -w
 MONGO_TEST = $(DIST)/mongo-test
 MONGO_FIND = $(DIST)/mongo-find
 MONGO_RAW = $(DIST)/mongo-raw
+MONGO_DIRECT = $(DIST)/mongo-direct
 
 MONGO_TEST_SOURCES = mongo-test.cc
 MONGO_FIND_SOURCES = mongo-find.cc
 MONGO_RAW_SOURCES = mongo-raw.cc session.cc
+MONGO_DIRECT_SOURCES = mongo-direct.cc session.cc
 
 MONGO_LDLIBS = -L$(LIB_DIR) -lmongocxx -lbsoncxx -L/usr/local/opt/openssl/lib $$(pkg-config --libs libssl)
 
@@ -45,7 +47,7 @@ PKG_INCLUDES += -I/usr/local/opt/openssl/include
 # $$(pkg-config --cflags libuv)
 endif
 
-PROGS = $(MONGO_TEST) $(MONGO_FIND) $(MONGO_RAW)
+PROGS = $(MONGO_TEST) $(MONGO_FIND) $(MONGO_RAW) $(MONGO_DIRECT)
 
 # ----------------------------------------------------------------------
 
@@ -74,6 +76,9 @@ $(MONGO_FIND): $(patsubst %.cc,$(BUILD)/%.o,$(MONGO_FIND_SOURCES)) | $(DIST)
 	g++ $(LDFLAGS) -o $@ $^ $(MONGO_LDLIBS) $(LDLIBS)
 
 $(MONGO_RAW): $(patsubst %.cc,$(BUILD)/%.o,$(MONGO_RAW_SOURCES)) | $(DIST)
+	g++ $(LDFLAGS) -o $@ $^ $(MONGO_LDLIBS) $(LDLIBS)
+
+$(MONGO_DIRECT): $(patsubst %.cc,$(BUILD)/%.o,$(MONGO_DIRECT_SOURCES)) | $(DIST)
 	g++ $(LDFLAGS) -o $@ $^ $(MONGO_LDLIBS) $(LDLIBS)
 
 # ----------------------------------------------------------------------
