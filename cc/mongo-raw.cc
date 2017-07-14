@@ -181,14 +181,34 @@ class DocumentFindResults : public DbAccess
 }; // class DocumentFindResults
 
 // ----------------------------------------------------------------------
+
+class StoredInDb : public DbAccess
+{
+ public:
+    inline StoredInDb(mongocxx::database& aDb, const char* aCollection) : DbAccess{aDb}, mCollection{aCollection} {}
+
+    using DbAccess::find;
+    inline auto find(doc_value&& aFilter, const find_options& aOptions = find_options{}) { return DbAccess::find(mCollection, std::move(aFilter), aOptions); }
+    inline auto find() { return DbAccess::find(mCollection); }
+    using DbAccess::find_one;
+    inline auto find_one(doc_value&& aFilter, const find_options& aOptions = find_options{}) { return DbAccess::find_one(mCollection, std::move(aFilter), aOptions); }
+    inline auto insert_one(doc_value&& aDoc) { return DbAccess::insert_one(mCollection, std::move(aDoc)); }
+    inline auto update_one(doc_value&& aFilter, doc_value&& aDoc) { return DbAccess::update_one(mCollection, std::move(aFilter), std::move(aDoc)); }
+
+ private:
+    const char* mCollection;
+
+}; // class StoredInDb
+
+// ----------------------------------------------------------------------
 // ----------------------------------------------------------------------
 
 class SessionError : public std::runtime_error { public: using std::runtime_error::runtime_error; };
 
-class Session : public DbAccess
+class Session : public StoredInDb
 {
  public:
-    inline Session(mongocxx::database& aDb) : DbAccess{aDb}, mCommands{0} {}
+    inline Session(mongocxx::database& aDb) : StoredInDb{aDb, "sessions"}, mCommands{0} {}
     void use_session(std::string aSessionId); // throws SessionError
     void find_user(std::string aUser, bool aGetPassword);
     std::string get_nonce();
@@ -224,8 +244,7 @@ void Session::use_session(std::string aSessionId)
     mUser.clear();
     mGroups.clear();
 
-    auto found = find_one("sessions",
-                          (bson_doc{} << "_id" << bsoncxx::oid{aSessionId} << "expires" << bson_open_document << "$gte" << time_now() << bson_close_document << bson_finalize),
+    auto found = find_one((bson_doc{} << "_id" << bsoncxx::oid{aSessionId} << "expires" << bson_open_document << "$gte" << time_now() << bson_close_document << bson_finalize),
                           exclude{"_t", "_m", "I", "expires", "expiration_in_seconds", "commands"});
     if (!found)
         throw SessionError{"invalid session"};
@@ -338,7 +357,7 @@ void Session::save(std::int32_t expiration_in_seconds)
         auto doc = bson_doc{};
         put_fields(doc);
         try {
-            auto result = insert_one("sessions", doc << bson_finalize);
+            auto result = insert_one(doc << bson_finalize);
             if (!result)
                 throw SessionError{"unacknowledged write during session creation"};
             if (result->inserted_id().type() == bsoncxx::type::k_oid)
@@ -359,7 +378,7 @@ void Session::save(std::int32_t expiration_in_seconds)
                 << "commands" << static_cast<std::int32_t>(mCommands)
                 << bson_close_document
                 << bson_finalize;
-        auto result = update_one("sessions", bson_doc{} << "_id" << bsoncxx::oid{mId} << bson_finalize, std::move(doc));
+        auto result = update_one(bson_doc{} << "_id" << bsoncxx::oid{mId} << bson_finalize, std::move(doc));
 
         // auto doc_set = bson_doc{} << "$set" << open_document;
         // put_fields(doc_set);
@@ -389,10 +408,6 @@ void Session::save(std::int32_t expiration_in_seconds)
 
 void Session::find_groups_of_user()
 {
-    // auto filter = bson_doc{} << "members" << mUser << bson_finalize;
-    // auto options = mongocxx::options::find{};
-    // options.projection(projection_to_include_fields({"name"}, true));
-    // auto found = mDb["users_groups"].find(std::move(filter), options);
     auto found = find("users_groups", bson_doc{} << "members" << mUser << bson_finalize, include_exclude{{"name"}, {"_id"}});
     mGroups.clear();
     mGroups.push_back(mUser);
