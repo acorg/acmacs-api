@@ -96,7 +96,7 @@ class SessionError : public std::runtime_error { public: using std::runtime_erro
 class Session
 {
  public:
-    inline Session(mongocxx::database& aDb) : mDb(aDb) {}
+    inline Session(mongocxx::database& aDb) : mDb(aDb), mCommands{0} {}
     void use_session(std::string aSessionId); // throws SessionError
     void find_user(std::string aUser, bool aGetPassword);
     std::string get_nonce();
@@ -107,6 +107,8 @@ class Session
     inline std::string display_name() const { return mDisplayName; }
     inline const std::vector<std::string>& groups() const { return mGroups; }
 
+    inline void increment_commands() { ++mCommands; }
+
  private:
     mongocxx::database& mDb;
     std::string mId;
@@ -115,13 +117,14 @@ class Session
     std::string mPassword;
     std::vector<std::string> mGroups;
     std::string mNonce;
+    std::int32_t mCommands;
 
     using document = bsoncxx::builder::stream::document;
     static constexpr auto finalize = bsoncxx::builder::stream::finalize;
 
     void create_session();
     void find_groups_of_user();
-    void save(size_t expiration_in_seconds);
+    void save(std::int32_t expiration_in_seconds);
 
 }; // class Session
 
@@ -149,6 +152,8 @@ void Session::use_session(std::string aSessionId)
             const auto array = entry.get_value().get_array().value;
             std::transform(array.begin(), array.end(), std::back_inserter(mGroups), [](const auto& name) -> std::string { return name.get_utf8().value.to_string(); });
         }
+        else if (key == "commands")
+            mCommands = entry.get_value().get_int32().value;
     }
 
 } // Session::use_session
@@ -202,7 +207,7 @@ void Session::login(std::string aCNonce, std::string aPasswordDigest)
 
 void Session::create_session()
 {
-    const size_t expiration_in_seconds = 3600; // mDb["configuration"] system.sessions.expiration_in_seconds
+    const std::int32_t expiration_in_seconds = 3600; // mDb["configuration"] system.sessions.expiration_in_seconds
     find_groups_of_user();
       // std::cerr << "Groups: " << mGroups << std::endl;
     save(expiration_in_seconds);
@@ -224,7 +229,7 @@ void Session::create_session()
 
 // ----------------------------------------------------------------------
 
-void Session::save(size_t expiration_in_seconds)
+void Session::save(std::int32_t expiration_in_seconds)
 {
     using bsoncxx::builder::stream::open_document;
     using bsoncxx::builder::stream::close_document;
@@ -234,19 +239,19 @@ void Session::save(size_t expiration_in_seconds)
 
     auto put_fields = [&](auto& doc2) {
         doc2 << "_t" << "acmacs.mongodb_collections.permissions.Session";
-        doc2 << "_id" << bsoncxx::oid{"5967844900be7c983007cc62"};
+        doc2 << "_m" << time_format_gm(std::chrono::system_clock::now(), "%F %T");
         doc2 << "user" << mUser;
         auto groups = doc2 << "user_and_groups" << open_array;
         for (const auto& group: mGroups)
             groups << group;
         groups << bsoncxx::builder::stream::close_array;
-        doc2 << "I" << "127.0.0.1"
-        << "expiration_in_seconds" << static_cast<std::int32_t>(expiration_in_seconds)
-        << "expires" << time_format(std::chrono::system_clock::now() + std::chrono::seconds{expiration_in_seconds}, "%F %T")
-        << "commands" << 0;
+          // doc2 << "I" << "127.0.0.1"
+        doc2 << "expiration_in_seconds" << expiration_in_seconds
+        << "expires" << time_format_gm(std::chrono::system_clock::now() + std::chrono::seconds{expiration_in_seconds}, "%F %T")
+        << "commands" << mCommands;
     };
 
-    mId = "5967844900be7c983007cc62";
+    // mId = "59686c17a2589ec658d3a5db";
     if (mId.empty()) {
         auto doc = document{};
         put_fields(doc);
@@ -266,9 +271,12 @@ void Session::save(size_t expiration_in_seconds)
     else {
 
         auto doc = document{} << "$set"
-                << open_document << "expires"
-                << time_format(std::chrono::system_clock::now() + std::chrono::seconds{expiration_in_seconds}, "%F %T")
-                << close_document << finalize;
+                << open_document
+                << "_m" << time_format_gm(std::chrono::system_clock::now(), "%F %T")
+                << "expires" << time_format_gm(std::chrono::system_clock::now() + std::chrono::seconds{expiration_in_seconds}, "%F %T")
+                << "commands" << static_cast<std::int32_t>(mCommands)
+                << close_document
+                << finalize;
                                      auto filter = document{} << "_id" << bsoncxx::oid{mId} << finalize;
                                                         auto result = mDb["sessions"].update_one(filter.view(), doc.view());
 
@@ -290,7 +298,7 @@ void Session::save(size_t expiration_in_seconds)
     // groups << bsoncxx::builder::stream::close_array;
     // doc << "I" << "127.0.0.1"
     //     << "expiration_in_seconds" << static_cast<std::int32_t>(expiration_in_seconds)
-    //     << "expires" << time_format(std::chrono::system_clock::now() + std::chrono::seconds{expiration_in_seconds}, "%F %T")
+    //     << "expires" << time_format_gm(std::chrono::system_clock::now() + std::chrono::seconds{expiration_in_seconds}, "%F %T")
     //     << "commands" << 0;
     std::cerr << "session_id: " << mId << std::endl;
 
