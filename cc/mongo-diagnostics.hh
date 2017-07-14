@@ -1,6 +1,7 @@
 #pragma once
 
 #ifdef __clang__
+#pragma GCC diagnostic ignored "-Wdeprecated"
 #pragma GCC diagnostic ignored "-Wdocumentation"
 #pragma GCC diagnostic ignored "-Wdocumentation-deprecated-sync"
 #pragma GCC diagnostic ignored "-Wdocumentation-unknown-command"

@@ -222,9 +222,10 @@ class StoredInDb : public DbAccess
       // throws Error
     inline void update(std::string aId)
         {
-            auto doc = bson_doc{} << "$set" << bson_open_document;
-            add_fields_for_updating(doc);
-            auto result = update_one(bson_doc{} << "_id" << bsoncxx::oid{aId} << bson_finalize, doc << bson_close_document << bson_finalize);
+            auto doc_set = bson_doc{};
+            add_fields_for_updating(doc_set);
+            auto result = update_one(bson_doc{} << "_id" << bsoncxx::oid{aId} << bson_finalize,
+                                     bson_doc{} << "$set" << bson_open_document << bsoncxx::builder::concatenate(doc_set.view()) << bson_close_document << bson_finalize);
             if (!result)
                 throw Error{"unacknowledged write during doc updating"};
         }
@@ -234,7 +235,7 @@ class StoredInDb : public DbAccess
             aDoc << "_m" << time_now();
         }
 
-    virtual inline void add_fields_for_updating(bson_key_context& aDoc)
+    virtual inline void add_fields_for_updating(bson_doc& aDoc)
         {
             aDoc << "_m" << time_now();
         }
@@ -267,7 +268,7 @@ class Session : public StoredInDb
 
  protected:
     virtual void add_fields_for_creation(bson_doc& aDoc);
-    virtual void add_fields_for_updating(bson_key_context& aDoc);
+    virtual void add_fields_for_updating(bson_doc& aDoc);
 
  private:
     std::string mId;
@@ -293,7 +294,7 @@ void Session::use_session(std::string aSessionId)
     mGroups.clear();
 
     auto found = find_one((bson_doc{} << "_id" << bsoncxx::oid{aSessionId} << "expires" << bson_open_document << "$gte" << time_now() << bson_close_document << bson_finalize),
-                          exclude{"_t", "_m", "I", "expires", "expiration_in_seconds", "commands"});
+                          exclude{"_t", "_m", "I", "expires", "expiration_in_seconds"});
     if (!found)
         throw SessionError{"invalid session"};
     for (auto entry: found->view()) {
@@ -311,7 +312,7 @@ void Session::use_session(std::string aSessionId)
     }
 
     increment_commands();
-      //update(mId);
+    update(mId);
 
 } // Session::use_session
 
@@ -319,9 +320,6 @@ void Session::use_session(std::string aSessionId)
 
 void Session::find_user(std::string aUser, bool aGetPassword)
 {
-    // auto filter = document{} << "name" << aUser << "_t" << "acmacs.mongodb_collections.users_groups.User" << finalize;
-    // auto options = mongocxx::options::find{};
-    // options.projection(projection_to_exclude_fields({"_id", "_t", "recent_logins", "created", "p", "_m"}));
     auto found = find_one("users_groups", bson_doc{} << "name" << aUser << "_t" << "acmacs.mongodb_collections.users_groups.User" << bson_finalize, exclude{"_id", "_t", "recent_logins", "created", "p", "_m"});
     if (!found)
         throw SessionError{"invalid user or password"};
@@ -393,84 +391,13 @@ void Session::add_fields_for_creation(bson_doc& aDoc)
 
 // ----------------------------------------------------------------------
 
-void Session::add_fields_for_updating(bson_key_context& aDoc)
+void Session::add_fields_for_updating(bson_doc& aDoc)
 {
     StoredInDb::add_fields_for_updating(aDoc);
     aDoc << "expires" << time_in_seconds(mExpirationInSeconds)
-         << "commands" << static_cast<std::int32_t>(mCommands);
+         << "commands" << mCommands;
 
 } // Session::add_fields_for_updating
-
-// ----------------------------------------------------------------------
-
-// void Session::save(std::int32_t expiration_in_seconds)
-// {
-
-//     auto put_fields = [&](auto& doc2) {
-//         doc2 << "_t" << "acmacs.mongodb_collections.permissions.Session";
-//         doc2 << "_m" << time_now();
-//         doc2 << "user" << mUser;
-//         auto groups = doc2 << "user_and_groups" << bson_open_array;
-//         for (const auto& group: mGroups)
-//             groups << group;
-//         groups << bson_close_array;
-//           // doc2 << "I" << "127.0.0.1"
-//         doc2 << "expiration_in_seconds" << expiration_in_seconds
-//         << "expires" << time_in_seconds(expiration_in_seconds)
-//         << "commands" << mCommands;
-//     };
-
-//     // mId = "596885c0a2589ec658d3a5e9";
-//     if (mId.empty()) {
-//         auto doc = bson_doc{};
-//         put_fields(doc);
-//         try {
-//             auto result = insert_one(doc << bson_finalize);
-//             if (!result)
-//                 throw SessionError{"unacknowledged write during session creation"};
-//             if (result->inserted_id().type() == bsoncxx::type::k_oid)
-//                 mId = result->inserted_id().get_oid().value.to_string();
-//             else
-//                 throw SessionError{"cannot create session: inserted id was not an OID type"};
-//         }
-//         catch (const mongocxx::exception& err) {
-//             throw SessionError{std::string{"cannot create session: "} + err.what()};
-//         }
-//     }
-//     else {
-
-//         auto doc = bson_doc{} << "$set"
-//                 << bson_open_document
-//                 << "_m" << time_now()
-//                 << "expires" << time_in_seconds(expiration_in_seconds)
-//                 << "commands" << static_cast<std::int32_t>(mCommands)
-//                 << bson_close_document
-//                 << bson_finalize;
-//         auto result = update_one(bson_doc{} << "_id" << bsoncxx::oid{mId} << bson_finalize, std::move(doc));
-
-//         // auto doc_set = bson_doc{} << "$set" << open_document;
-//         // put_fields(doc_set);
-//         // auto doc = doc_set << close_document;
-//         // auto result = mDb["sessions"].update_one(bson_doc{} << "_id" << bsoncxx::oid{mId} << finalize, doc << finalize);
-//     }
-
-//     // // if (!mId.empty())
-//     // doc << "_t" << "acmacs.mongodb_collections.permissions.Session";
-//     // // if (!mId.empty())
-//     // //     doc << "_id" << bsoncxx::oid{mId};
-//     // doc << "_id" << bsoncxx::oid{"5967844900be7c983007cc62"};
-//     // doc << "user" << mUser;
-//     // auto groups = doc << "user_and_groups" << open_array;
-//     // for (const auto& group: mGroups)
-//     //     groups << group;
-//     // groups << bsoncxx::builder::stream::close_array;
-//     // doc << "I" << "127.0.0.1"
-//     //     << "expiration_in_seconds" << static_cast<std::int32_t>(expiration_in_seconds)
-//     //     << "expires" << time_format_gm(std::chrono::system_clock::now() + std::chrono::seconds{expiration_in_seconds}, "%F %T")
-//     //     << "commands" << 0;
-//     std::cerr << "session_id: " << mId << std::endl;
-
-// } // Session::save
 
 // ----------------------------------------------------------------------
 
@@ -482,9 +409,6 @@ void Session::find_groups_of_user()
     std::transform(found.begin(), found.end(), std::back_inserter(mGroups), [](const auto& entry) { return entry["name"].get_utf8().value.to_string(); });
 
 } // Session::find_groups_of_user
-
-// ----------------------------------------------------------------------
-
 
 // ----------------------------------------------------------------------
 // ----------------------------------------------------------------------
