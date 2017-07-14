@@ -61,7 +61,7 @@ void parse_command_line(int argc, char* const argv[], Session& aSession, std::ve
               session = optarg;
               break;
           case 'h':
-              std::cerr << "Usage: " << argv[0] << " [--user|-u <username>] [--password|-p <password>] [--session|-s <session-id>] <command> [arg ...] [-- <command> [arg ...]] ..." << std::endl;
+              std::cerr << "Usage: " << argv[0] << " [--user|-u <username>] [--password|-p <password>] [--session|-s <session-id>] <command> [arg ...] [/ <command> [arg ...]] ..." << std::endl;
               aCommands.clear();
               return;
           default:
@@ -96,7 +96,7 @@ void parse_command_line(int argc, char* const argv[], Session& aSession, std::ve
       // extract commands
     aCommands.emplace_back();
     for (; argc > 0; --argc, ++argv) {
-        if (std::string{argv[0]} == "--") {
+        if (std::string{argv[0]} == "/") {
             if (aCommands.back().empty())
                 throw std::runtime_error{"empty command in the command line"};
             aCommands.emplace_back();
