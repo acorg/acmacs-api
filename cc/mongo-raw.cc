@@ -27,26 +27,6 @@
 // ----------------------------------------------------------------------
 // ----------------------------------------------------------------------
 
-inline auto projection_to_exclude_fields(std::initializer_list<std::string>&& fields)
-{
-    auto proj_doc = bsoncxx::builder::stream::document{};
-    for (auto field: fields)
-        proj_doc << field << false;
-    return proj_doc << bsoncxx::builder::stream::finalize;
-}
-
-inline auto projection_to_include_fields(std::initializer_list<std::string>&& fields, bool aExcludeId = false)
-{
-    auto proj_doc = bsoncxx::builder::stream::document{};
-    for (auto field: fields)
-        proj_doc << field << true;
-    if (aExcludeId)
-        proj_doc << "_id" << false;
-    return proj_doc << bsoncxx::builder::stream::finalize;
-}
-
-// ----------------------------------------------------------------------
-
 inline std::string md5(std::string aSource)
 {
     unsigned char digest[MD5_DIGEST_LENGTH];
@@ -60,18 +40,130 @@ inline std::string md5(std::string aSource)
 }
 
 // ----------------------------------------------------------------------
+// ----------------------------------------------------------------------
 
-class DocumentFindResults
+class DbAccess
 {
  public:
-    using document_view = bsoncxx::document::view;
+    inline DbAccess(mongocxx::database& aDb) : mDb(aDb) {}
+    virtual inline ~DbAccess() {}
 
-    inline DocumentFindResults() {}
-    inline DocumentFindResults(mongocxx::v_noabi::cursor&& aCursor) { build(std::move(aCursor)); }
+    using bson_doc = bsoncxx::builder::stream::document;
+    static constexpr auto bson_finalize = bsoncxx::builder::stream::finalize;
+    static constexpr auto bson_open_document = bsoncxx::builder::stream::open_document;
+    static constexpr auto bson_close_document = bsoncxx::builder::stream::close_document;
+    static constexpr auto bson_open_array = bsoncxx::builder::stream::open_array;
+    static constexpr auto bson_close_array = bsoncxx::builder::stream::close_array;
 
-    void build(mongocxx::v_noabi::cursor&& aCursor)
+    using doc_value = bsoncxx::document::value;
+    using doc_view = bsoncxx::document::view;
+    using cursor = mongocxx::cursor;
+    using find_options = mongocxx::options::find;
+
+      // ----------------------------------------------------------------------
+
+    class exclude
+    {
+     public:
+        inline exclude(std::initializer_list<std::string>&& fields)
+            {
+                auto proj_doc = bson_doc{};
+                std::for_each(std::begin(fields), std::end(fields), [&proj_doc](const auto& field) { proj_doc << field << false; });
+                mOptions.projection(proj_doc << bson_finalize);
+            }
+
+        template <typename ... Args> inline exclude(Args&& ...) : exclude({Args::value...}) {}
+
+        inline operator const find_options& () const { return mOptions; }
+
+     private:
+        find_options mOptions;
+
+    }; // class exclude
+
+    class include_exclude
+    {
+     public:
+        inline include_exclude(std::initializer_list<std::string>&& include, std::initializer_list<std::string>&& exclude)
+            {
+                auto proj_doc = bson_doc{};
+                std::for_each(std::begin(include), std::end(include), [&proj_doc](const auto& field) { proj_doc << field << true; });
+                std::for_each(std::begin(exclude), std::end(exclude), [&proj_doc](const auto& field) { proj_doc << field << false; });
+                mOptions.projection(proj_doc << bson_finalize);
+            }
+
+        inline operator const find_options& () const { return mOptions; }
+
+     private:
+        find_options mOptions;
+
+    }; // class include_exclude
+
+      // ----------------------------------------------------------------------
+
+    inline auto find(const char* aCollection, doc_value&& aFilter, const find_options& aOptions = find_options{})
         {
-            std::copy(std::begin(aCursor), std::end(aCursor), std::back_inserter(mRecords));
+            return mDb[aCollection].find(std::move(aFilter), aOptions);
+        }
+
+    inline auto find(const char* aCollection)
+        {
+            return mDb[aCollection].find({});
+        }
+
+    inline auto find_one(const char* aCollection, doc_value&& aFilter, const find_options& aOptions = find_options{})
+        {
+            return mDb[aCollection].find_one(std::move(aFilter), aOptions);
+        }
+
+    inline auto insert_one(const char* aCollection, doc_value&& aDoc)
+        {
+            return mDb[aCollection].insert_one(std::move(aDoc));
+        }
+
+    inline auto update_one(const char* aCollection, doc_value&& aFilter, doc_value&& aDoc)
+        {
+            return mDb[aCollection].update_one(std::move(aFilter), std::move(aDoc));
+        }
+
+      // ----------------------------------------------------------------------
+
+    inline std::string time_now() const
+        {
+            return time_format_gm(std::chrono::system_clock::now(), "%F %T");
+        }
+
+    inline std::string time_in_seconds(std::int32_t aSeconds) const
+        {
+            return time_format_gm(std::chrono::system_clock::now() + std::chrono::seconds{aSeconds}, "%F %T");
+        }
+
+ private:
+    mongocxx::database& mDb;
+
+}; // class DbAccess
+
+// ----------------------------------------------------------------------
+
+class DocumentFindResults : public DbAccess
+{
+ public:
+
+    inline DocumentFindResults(mongocxx::database& aDb) : DbAccess{aDb} {}
+    inline DocumentFindResults(mongocxx::database& aDb, const char* aCollection) : DbAccess{aDb} { build(aCollection); }
+    inline DocumentFindResults(mongocxx::database& aDb, const char* aCollection, doc_value&& aFilter, const find_options& aOptions = find_options{})
+        : DbAccess{aDb} { build(aCollection, std::move(aFilter), aOptions); }
+
+    inline void build(const char* aCollection, doc_value&& aFilter, const find_options& aOptions = find_options{})
+        {
+            auto found = find(aCollection, std::move(aFilter), aOptions);
+            std::copy(std::begin(found), std::end(found), std::back_inserter(mRecords));
+        }
+
+    inline void build(const char* aCollection)
+        {
+            auto found = find(aCollection);
+            std::copy(std::begin(found), std::end(found), std::back_inserter(mRecords));
         }
 
     inline std::string json() const
@@ -84,7 +176,7 @@ class DocumentFindResults
         }
 
  private:
-    std::vector<document_view> mRecords;
+    std::vector<doc_view> mRecords;
 
 }; // class DocumentFindResults
 
@@ -93,10 +185,10 @@ class DocumentFindResults
 
 class SessionError : public std::runtime_error { public: using std::runtime_error::runtime_error; };
 
-class Session
+class Session : public DbAccess
 {
  public:
-    inline Session(mongocxx::database& aDb) : mDb(aDb), mCommands{0} {}
+    inline Session(mongocxx::database& aDb) : DbAccess{aDb}, mCommands{0} {}
     void use_session(std::string aSessionId); // throws SessionError
     void find_user(std::string aUser, bool aGetPassword);
     std::string get_nonce();
@@ -110,7 +202,6 @@ class Session
     inline void increment_commands() { ++mCommands; }
 
  private:
-    mongocxx::database& mDb;
     std::string mId;
     std::string mUser;
     std::string mDisplayName;
@@ -118,9 +209,6 @@ class Session
     std::vector<std::string> mGroups;
     std::string mNonce;
     std::int32_t mCommands;
-
-    using document = bsoncxx::builder::stream::document;
-    static constexpr auto finalize = bsoncxx::builder::stream::finalize;
 
     void create_session();
     void find_groups_of_user();
@@ -136,10 +224,9 @@ void Session::use_session(std::string aSessionId)
     mUser.clear();
     mGroups.clear();
 
-    auto filter = bsoncxx::builder::stream::document{} << "_id" << bsoncxx::oid{aSessionId} << bsoncxx::builder::stream::finalize;
-    auto options = mongocxx::options::find{};
-    options.projection(projection_to_exclude_fields({"_t", "_m", "I", "expires", "expiration_in_seconds", "commands"}));
-    auto found = mDb["sessions"].find_one(std::move(filter), options);
+    auto found = find_one("sessions",
+                          (bson_doc{} << "_id" << bsoncxx::oid{aSessionId} << "expires" << bson_open_document << "$gte" << time_now() << bson_close_document << bson_finalize),
+                          exclude{"_t", "_m", "I", "expires", "expiration_in_seconds", "commands"});
     if (!found)
         throw SessionError{"invalid session"};
     for (auto entry: found->view()) {
@@ -162,10 +249,10 @@ void Session::use_session(std::string aSessionId)
 
 void Session::find_user(std::string aUser, bool aGetPassword)
 {
-    auto filter = document{} << "name" << aUser << "_t" << "acmacs.mongodb_collections.users_groups.User" << finalize;
-    auto options = mongocxx::options::find{};
-    options.projection(projection_to_exclude_fields({"_id", "_t", "recent_logins", "created", "p", "_m"}));
-    auto found = mDb["users_groups"].find_one(std::move(filter), options);
+    // auto filter = document{} << "name" << aUser << "_t" << "acmacs.mongodb_collections.users_groups.User" << finalize;
+    // auto options = mongocxx::options::find{};
+    // options.projection(projection_to_exclude_fields({"_id", "_t", "recent_logins", "created", "p", "_m"}));
+    auto found = find_one("users_groups", bson_doc{} << "name" << aUser << "_t" << "acmacs.mongodb_collections.users_groups.User" << bson_finalize, exclude{"_id", "_t", "recent_logins", "created", "p", "_m"});
     if (!found)
         throw SessionError{"invalid user or password"};
     std::cout << json_writer::json(*found, "user", 1) << std::endl;
@@ -231,32 +318,27 @@ void Session::create_session()
 
 void Session::save(std::int32_t expiration_in_seconds)
 {
-    using bsoncxx::builder::stream::open_document;
-    using bsoncxx::builder::stream::close_document;
-    using bsoncxx::builder::stream::open_array;
-    using bsoncxx::builder::stream::close_array;
-
 
     auto put_fields = [&](auto& doc2) {
         doc2 << "_t" << "acmacs.mongodb_collections.permissions.Session";
-        doc2 << "_m" << time_format_gm(std::chrono::system_clock::now(), "%F %T");
+        doc2 << "_m" << time_now();
         doc2 << "user" << mUser;
-        auto groups = doc2 << "user_and_groups" << open_array;
+        auto groups = doc2 << "user_and_groups" << bson_open_array;
         for (const auto& group: mGroups)
             groups << group;
-        groups << bsoncxx::builder::stream::close_array;
+        groups << bson_close_array;
           // doc2 << "I" << "127.0.0.1"
         doc2 << "expiration_in_seconds" << expiration_in_seconds
-        << "expires" << time_format_gm(std::chrono::system_clock::now() + std::chrono::seconds{expiration_in_seconds}, "%F %T")
+        << "expires" << time_in_seconds(expiration_in_seconds)
         << "commands" << mCommands;
     };
 
-    // mId = "59686c17a2589ec658d3a5db";
+    // mId = "596885c0a2589ec658d3a5e9";
     if (mId.empty()) {
-        auto doc = document{};
+        auto doc = bson_doc{};
         put_fields(doc);
         try {
-            auto result = mDb["sessions"].insert_one(doc << finalize);
+            auto result = insert_one("sessions", doc << bson_finalize);
             if (!result)
                 throw SessionError{"unacknowledged write during session creation"};
             if (result->inserted_id().type() == bsoncxx::type::k_oid)
@@ -270,20 +352,19 @@ void Session::save(std::int32_t expiration_in_seconds)
     }
     else {
 
-        auto doc = document{} << "$set"
-                << open_document
-                << "_m" << time_format_gm(std::chrono::system_clock::now(), "%F %T")
-                << "expires" << time_format_gm(std::chrono::system_clock::now() + std::chrono::seconds{expiration_in_seconds}, "%F %T")
+        auto doc = bson_doc{} << "$set"
+                << bson_open_document
+                << "_m" << time_now()
+                << "expires" << time_in_seconds(expiration_in_seconds)
                 << "commands" << static_cast<std::int32_t>(mCommands)
-                << close_document
-                << finalize;
-                                     auto filter = document{} << "_id" << bsoncxx::oid{mId} << finalize;
-                                                        auto result = mDb["sessions"].update_one(filter.view(), doc.view());
+                << bson_close_document
+                << bson_finalize;
+        auto result = update_one("sessions", bson_doc{} << "_id" << bsoncxx::oid{mId} << bson_finalize, std::move(doc));
 
-        // auto doc_set = document{} << "$set" << open_document;
+        // auto doc_set = bson_doc{} << "$set" << open_document;
         // put_fields(doc_set);
         // auto doc = doc_set << close_document;
-        // auto result = mDb["sessions"].update_one(document{} << "_id" << bsoncxx::oid{mId} << finalize, doc << finalize);
+        // auto result = mDb["sessions"].update_one(bson_doc{} << "_id" << bsoncxx::oid{mId} << finalize, doc << finalize);
     }
 
     // // if (!mId.empty())
@@ -308,10 +389,11 @@ void Session::save(std::int32_t expiration_in_seconds)
 
 void Session::find_groups_of_user()
 {
-    auto filter = bsoncxx::builder::stream::document{} << "members" << mUser << bsoncxx::builder::stream::finalize;
-    auto options = mongocxx::options::find{};
-    options.projection(projection_to_include_fields({"name"}, true));
-    auto found = mDb["users_groups"].find(std::move(filter), options);
+    // auto filter = bson_doc{} << "members" << mUser << bson_finalize;
+    // auto options = mongocxx::options::find{};
+    // options.projection(projection_to_include_fields({"name"}, true));
+    // auto found = mDb["users_groups"].find(std::move(filter), options);
+    auto found = find("users_groups", bson_doc{} << "members" << mUser << bson_finalize, include_exclude{{"name"}, {"_id"}});
     mGroups.clear();
     mGroups.push_back(mUser);
     std::transform(found.begin(), found.end(), std::back_inserter(mGroups), [](const auto& entry) { return entry["name"].get_utf8().value.to_string(); });
@@ -335,8 +417,8 @@ class CommandBase
     virtual void args(int /*argc*/, char* const /*argv*/[]) {}
 
  protected:
-    using document = bsoncxx::builder::stream::document;
-    static constexpr auto finalize = bsoncxx::builder::stream::finalize;
+    using bson_doc = bsoncxx::builder::stream::document;
+    static constexpr auto bson_finalize = bsoncxx::builder::stream::finalize;
 
 }; // class CommandBase
 
@@ -440,10 +522,9 @@ class CommandUsers : public CommandBase
  public:
     virtual std::string process(mongocxx::database& aDb)
         {
-            auto filter = document{} << "_t" << "acmacs.mongodb_collections.users_groups.User" << finalize;
-            auto options = mongocxx::options::find{};
-            options.projection(projection_to_exclude_fields({"_id", "_t", "password", "nonce"}));
-            DocumentFindResults results{aDb["users_groups"].find(std::move(filter), options)};
+            DocumentFindResults results{aDb, "users_groups",
+                        (DocumentFindResults::bson_doc{} << "_t" << "acmacs.mongodb_collections.users_groups.User" << DocumentFindResults::bson_finalize),
+                        DocumentFindResults::exclude{"_id", "_t", "password", "nonce"}};
             return results.json();
         }
 
@@ -456,10 +537,9 @@ class CommandGroups : public CommandBase
  public:
     virtual std::string process(mongocxx::database& aDb)
         {
-            auto filter = document{} << "_t" << "acmacs.mongodb_collections.users_groups.Group" << finalize;
-            auto options = mongocxx::options::find{};
-            options.projection(projection_to_exclude_fields({"_id", "_t"}));
-            DocumentFindResults results{aDb["users_groups"].find(std::move(filter), options)};
+            DocumentFindResults results{aDb, "users_groups",
+                        (DocumentFindResults::bson_doc{} << "_t" << "acmacs.mongodb_collections.users_groups.Group" << DocumentFindResults::bson_finalize),
+                        DocumentFindResults::exclude{"_id", "_t"}};
             return results.json();
         }
 
@@ -472,11 +552,7 @@ class CommandSessions : public CommandBase
  public:
     virtual std::string process(mongocxx::database& aDb)
         {
-            auto filter = document{} << /* "_t" << "acmacs.mongodb_collections.users_groups.User" << */ finalize;
-            auto options = mongocxx::options::find{};
-              //options.projection(projection_to_exclude_fields({"_id", "_t", "password", "nonce"}));
-            DocumentFindResults results{aDb["sessions"].find(std::move(filter), options)};
-            return results.json();
+            return DocumentFindResults{aDb, "sessions"}.json();
         }
 
 }; // class CommandSessions
