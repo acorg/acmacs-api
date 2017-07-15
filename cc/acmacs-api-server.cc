@@ -18,7 +18,7 @@ class RootPage : public WsppHttpLocationHandler
         {
             bool handled = false;
             if (aLocation == "/") {
-                aResponse.body = std::string{"<html><head><script src=\"/js/myscript.js\"></script></head><body><h1>acmacs-api-server</h1></body></html>"};
+                aResponse.body = std::string{"<html><head><script src=\"/js/acmacs-api-client.js\"></script></head><body><h1>acmacs-api-server</h1></body></html>"};
                 handled = true;
             }
             return handled;
@@ -47,7 +47,7 @@ class AcmacsAPIServer : public WsppWebsocketLocationHandler
 
     virtual inline void opening(std::string)
         {
-            send("{\"hello\": \"acmacs-api-server-v1\"");
+            send("{\"hello\": \"acmacs-api-server-v1\"}");
         }
 
     virtual inline void message(std::string aMessage)
@@ -97,14 +97,14 @@ int main(int argc, char* const argv[])
     Wspp wspp{hostname, port, 3 /* std::thread::hardware_concurrency() */, "/Users/eu/AD/sources/acmacs-webserver/ssl/self-signed.crt", "/Users/eu/AD/sources/acmacs-webserver/ssl/self-signed.key", "/Users/eu/AD/sources/acmacs-webserver/ssl/dh.pem"};
     wspp.setup_logging("/tmp/acmacs-api-server.access.log", "/tmp/acmacs-api-server.error.log");
     wspp.add_location_handler(std::make_shared<RootPage>());
-    wspp.add_location_handler(std::make_shared<WsppHttpLocationHandlerFile>("/js/myscript.js", std::vector<std::string>{"/Users/eu/AD/sources/acmacs-webserver/f/myscript.js.gz"}));
+    wspp.add_location_handler(std::make_shared<WsppHttpLocationHandlerFile>("/js/acmacs-api-client.js", std::vector<std::string>{"dist/acmacs-api-client.js.gz"}));
+    wspp.add_location_handler(std::make_shared<WsppHttpLocationHandlerFile>("/js/acmacs-api-client.js.gz.map", std::vector<std::string>{"dist/acmacs-api-client.js.gz.map"}));
     wspp.add_location_handler(std::make_shared<WsppHttpLocationHandlerFile>("/favicon.ico", std::vector<std::string>{"/Users/eu/AD/sources/acmacs-webserver/favicon.ico"}));
     wspp.add_location_handler(std::make_shared<AcmacsAPIServer>());
 
     wspp.run();
     return 0;
 }
-
 
 // ----------------------------------------------------------------------
 /// Local Variables:

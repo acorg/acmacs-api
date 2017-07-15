@@ -12,15 +12,22 @@ MONGO_FIND = $(DIST)/mongo-find
 MONGO_RAW = $(DIST)/mongo-raw
 MONGO_DIRECT = $(DIST)/mongo-direct
 ACMACS_API_SERVER = $(DIST)/acmacs-api-server
+ACMACS_API_CLIENT = $(DIST)/acmacs-api-client.js.gz
 
 MONGO_TEST_SOURCES = mongo-test.cc
 MONGO_FIND_SOURCES = mongo-find.cc
 MONGO_RAW_SOURCES = mongo-raw.cc session.cc
 MONGO_DIRECT_SOURCES = mongo-direct.cc session.cc
 ACMACS_API_SERVER_SOURCES = acmacs-api-server.cc session.cc
+ACMACS_API_CLIENT_SOURCES = acmacs-api-client.cc
 
 MONGO_LDLIBS = -L$(LIB_DIR) -lmongocxx -lbsoncxx -L/usr/local/opt/openssl/lib $$(pkg-config --libs libssl)
 ACMACS_API_SERVER_LIBS = $(MONGO_LDLIBS) -lacmacswebserver
+
+# ----------------------------------------------------------------------
+
+CHEERP = /opt/cheerp/bin/clang++ -target cheerp  -Wno-unknown-pragmas
+CHEERP_FLAGS = -std=c++1z -I. -Iinclude -g $(OPTIMIZATION) $(WEVERYTHING)
 
 # ----------------------------------------------------------------------
 
@@ -50,7 +57,7 @@ PKG_INCLUDES += -I/usr/local/opt/openssl/include
 # $$(pkg-config --cflags libuv)
 endif
 
-PROGS = $(MONGO_TEST) $(MONGO_FIND) $(MONGO_RAW) $(MONGO_DIRECT) $(ACMACS_API_SERVER)
+PROGS = $(MONGO_TEST) $(MONGO_FIND) $(MONGO_RAW) $(MONGO_DIRECT) $(ACMACS_API_SERVER) $(ACMACS_API_CLIENT)
 
 # ----------------------------------------------------------------------
 
@@ -86,6 +93,9 @@ $(MONGO_DIRECT): $(patsubst %.cc,$(BUILD)/%.o,$(MONGO_DIRECT_SOURCES)) | $(DIST)
 
 $(ACMACS_API_SERVER): $(patsubst %.cc,$(BUILD)/%.o,$(ACMACS_API_SERVER_SOURCES)) | $(DIST)
 	g++ $(LDFLAGS) -o $@ $^ $(ACMACS_API_SERVER_LIBS) $(LDLIBS)
+
+$(ACMACS_API_CLIENT): $(patsubst %,client/%,$(ACMACS_API_CLIENT_SOURCES)) | $(DIST)
+	$(CHEERP) $(CHEERP_FLAGS) -cheerp-sourcemap=$@.map -o - $^ | /usr/bin/gzip -9 >$@
 
 # ----------------------------------------------------------------------
 
