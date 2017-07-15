@@ -27,6 +27,11 @@ class Session : public StoredInMongodb
 
     bson_doc read_permissions() const;
 
+    inline bool is_admin() const
+        {
+            return std::find_if(std::begin(mGroups), std::end(mGroups), [](const auto& group) { return group == "admin"; }) != std::end(mGroups);
+        }
+
  protected:
     virtual void add_fields_for_creation(bson_doc& aDoc);
     virtual void add_fields_for_updating(bson_doc& aDoc);

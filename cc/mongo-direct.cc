@@ -23,7 +23,8 @@ class CommandBase
     virtual inline ~CommandBase() {}
 
     virtual std::string process(Session& aSession) = 0;
-    virtual void args(const std::vector<std::string>& args) { if (args.size() != 1) throw Error{"too many arguments for the command"}; } // args[0] is a command name
+    virtual inline void check_permissions(Session&) {}
+    virtual inline void args(const std::vector<std::string>& args) { if (args.size() != 1) throw Error{"too many arguments for the command"}; } // args[0] is a command name
 
 }; // class CommandBase
 
@@ -47,8 +48,10 @@ int main(int argc, char* const argv[])
                 auto command_processor = command_processors.find(command[0]);
                 if (command_processor != command_processors.end()) {
                     try {
-                        command_processor->second->args(command);
-                        auto result = command_processor->second->process(session);
+                        auto& cmd = *command_processor->second;
+                        cmd.args(command);
+                        cmd.check_permissions(session);
+                        auto result = cmd.process(session);
                         std::cout << result << std::endl;
                     }
                     catch (CommandBase::Error& err) {
@@ -150,7 +153,20 @@ void parse_command_line(int argc, char* const argv[], Session& aSession, std::ve
 
 // ----------------------------------------------------------------------
 
-class CommandUsers : public CommandBase
+class PrivilegedCommand : public CommandBase
+{
+ public:
+    virtual inline void check_permissions(Session& aSession)
+        {
+            if (!aSession.is_admin())
+                throw Error{"permissions denied"};
+        }
+
+}; // class PivelegedCommand
+
+// ----------------------------------------------------------------------
+
+class CommandUsers : public PrivilegedCommand
 {
  public:
     virtual std::string process(Session& aSession)
@@ -166,7 +182,7 @@ class CommandUsers : public CommandBase
 
 // ----------------------------------------------------------------------
 
-class CommandGroups : public CommandBase
+class CommandGroups : public PrivilegedCommand
 {
  public:
     virtual std::string process(Session& aSession)
