@@ -11,13 +11,16 @@ MONGO_TEST = $(DIST)/mongo-test
 MONGO_FIND = $(DIST)/mongo-find
 MONGO_RAW = $(DIST)/mongo-raw
 MONGO_DIRECT = $(DIST)/mongo-direct
+ACMACS_API_SERVER = $(DIST)/acmacs-api-server
 
 MONGO_TEST_SOURCES = mongo-test.cc
 MONGO_FIND_SOURCES = mongo-find.cc
 MONGO_RAW_SOURCES = mongo-raw.cc session.cc
 MONGO_DIRECT_SOURCES = mongo-direct.cc session.cc
+ACMACS_API_SERVER_SOURCES = acmacs-api-server.cc session.cc
 
 MONGO_LDLIBS = -L$(LIB_DIR) -lmongocxx -lbsoncxx -L/usr/local/opt/openssl/lib $$(pkg-config --libs libssl)
+ACMACS_API_SERVER_LIBS = $(MONGO_LDLIBS) -lacmacswebserver
 
 # ----------------------------------------------------------------------
 
@@ -47,7 +50,7 @@ PKG_INCLUDES += -I/usr/local/opt/openssl/include
 # $$(pkg-config --cflags libuv)
 endif
 
-PROGS = $(MONGO_TEST) $(MONGO_FIND) $(MONGO_RAW) $(MONGO_DIRECT)
+PROGS = $(MONGO_TEST) $(MONGO_FIND) $(MONGO_RAW) $(MONGO_DIRECT) $(ACMACS_API_SERVER)
 
 # ----------------------------------------------------------------------
 
@@ -80,6 +83,9 @@ $(MONGO_RAW): $(patsubst %.cc,$(BUILD)/%.o,$(MONGO_RAW_SOURCES)) | $(DIST)
 
 $(MONGO_DIRECT): $(patsubst %.cc,$(BUILD)/%.o,$(MONGO_DIRECT_SOURCES)) | $(DIST)
 	g++ $(LDFLAGS) -o $@ $^ $(MONGO_LDLIBS) $(LDLIBS)
+
+$(ACMACS_API_SERVER): $(patsubst %.cc,$(BUILD)/%.o,$(ACMACS_API_SERVER_SOURCES)) | $(DIST)
+	g++ $(LDFLAGS) -o $@ $^ $(ACMACS_API_SERVER_LIBS) $(LDLIBS)
 
 # ----------------------------------------------------------------------
 
