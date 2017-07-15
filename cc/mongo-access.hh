@@ -21,11 +21,12 @@ class MongodbAccess
     virtual inline ~MongodbAccess() {}
 
     using bson_doc = bsoncxx::builder::stream::document;
-    static constexpr auto bson_finalize = bsoncxx::builder::stream::finalize;
-    static constexpr auto bson_open_document = bsoncxx::builder::stream::open_document;
-    static constexpr auto bson_close_document = bsoncxx::builder::stream::close_document;
-    static constexpr auto bson_open_array = bsoncxx::builder::stream::open_array;
-    static constexpr auto bson_close_array = bsoncxx::builder::stream::close_array;
+    static constexpr const auto bson_finalize = bsoncxx::builder::stream::finalize;
+    static constexpr const auto bson_open_document = bsoncxx::builder::stream::open_document;
+    static constexpr const auto bson_close_document = bsoncxx::builder::stream::close_document;
+    static constexpr const auto bson_open_array = bsoncxx::builder::stream::open_array;
+    static constexpr const auto bson_close_array = bsoncxx::builder::stream::close_array;
+    static constexpr const auto bson_null = bsoncxx::types::b_null{};
 
     using doc_value = bsoncxx::document::value;
     using doc_view = bsoncxx::document::view;
@@ -123,6 +124,16 @@ class MongodbAccess
 
 class DocumentFindResults : public MongodbAccess
 {
+ private:
+    template <typename Writer> inline std::string json_w() const
+        {
+            Writer writer{"DocumentFindResults"};
+            writer << json_writer::start_object
+                    << json_writer::key("results") << mRecords
+                    << json_writer::end_object;
+            return writer << json_writer::finalize;
+        }
+
  public:
 
     inline DocumentFindResults(mongocxx::database& aDb) : MongodbAccess{aDb} {}
@@ -142,13 +153,9 @@ class DocumentFindResults : public MongodbAccess
             std::copy(std::begin(found), std::end(found), std::back_inserter(mRecords));
         }
 
-    inline std::string json() const
+    inline std::string json(bool pretty = true) const
         {
-            json_writer::pretty writer{"DocumentFindResults"};
-            writer << json_writer::start_object
-                    << json_writer::key("results") << mRecords
-                    << json_writer::end_object;
-            return writer << json_writer::finalize;
+            return pretty ? json_w<json_writer::pretty>() : json_w<json_writer::compact>();
         }
 
  private:
