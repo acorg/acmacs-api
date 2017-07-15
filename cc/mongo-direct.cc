@@ -23,7 +23,7 @@ class CommandBase
     virtual inline ~CommandBase() {}
 
     virtual std::string process(Session& aSession) = 0;
-    virtual void args(const std::vector<std::string>& /*args*/) {} // args[0] is a command name
+    virtual void args(const std::vector<std::string>& args) { if (args.size() != 1) throw Error{"too many arguments for the command"}; } // args[0] is a command name
 
 }; // class CommandBase
 
@@ -158,7 +158,7 @@ class CommandUsers : public CommandBase
             DocumentFindResults results{aSession.db(), "users_groups",
                         (DocumentFindResults::bson_doc{} << "_t" << "acmacs.mongodb_collections.users_groups.User" <<
                          bsoncxx::builder::concatenate(aSession.read_permissions().view()) << DocumentFindResults::bson_finalize),
-                        DocumentFindResults::exclude{"_id", "_t", "password", "nonce"}};
+                        DocumentFindResults::exclude{"_id", "_t", "_m", "password", "nonce"}};
             return results.json();
         }
 
@@ -166,14 +166,30 @@ class CommandUsers : public CommandBase
 
 // ----------------------------------------------------------------------
 
+class CommandGroups : public CommandBase
+{
+ public:
+    virtual std::string process(Session& aSession)
+        {
+            DocumentFindResults results{aSession.db(), "users_groups",
+                        (DocumentFindResults::bson_doc{} << "_t" << "acmacs.mongodb_collections.users_groups.Group" <<
+                         bsoncxx::builder::concatenate(aSession.read_permissions().view()) << DocumentFindResults::bson_finalize),
+                        DocumentFindResults::exclude{"_id", "_t", "_m"}};
+            return results.json();
+        }
+
+}; // class CommandGroups
+
+// ----------------------------------------------------------------------
+
 static inline std::map<std::string, std::unique_ptr<CommandBase>> make_commands()
 {
     std::map<std::string, std::unique_ptr<CommandBase>> commands;
     commands.emplace("users", std::make_unique<CommandUsers>());
+    commands.emplace("groups", std::make_unique<CommandGroups>());
     // commands.emplace("session", std::make_unique<CommandSession>());
     // commands.emplace("login", std::make_unique<CommandLogin>());
     // commands.emplace("collections", std::make_unique<CommandCollections>());
-    // commands.emplace("groups", std::make_unique<CommandGroups>());
     // commands.emplace("sessions", std::make_unique<CommandSessions>());
     return commands;
 }
