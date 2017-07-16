@@ -66,6 +66,21 @@ class AcmacsAPIServer : public WsppWebsocketLocationHandler
 
 // ----------------------------------------------------------------------
 
+class AcmacsAPISettings : public ServerSettings
+{
+ public:
+    std::string mongodb_uri;    // empty for default
+
+ protected:
+    virtual void update_import_data(json_importer::data<ServerSettings>& aData)
+        {
+            aData.emplace("mongodb_uri", json_importer::field(&AcmacsAPISettings::mongodb_uri));
+        }
+
+};
+
+// ----------------------------------------------------------------------
+
 int main(int argc, char* const argv[])
 {
     if (argc != 2 || std::string{"-h"} == argv[1] || std::string{"--help"} == argv[1]) {
@@ -73,7 +88,7 @@ int main(int argc, char* const argv[])
         return 1;
     }
 
-    ServerSettings settings;
+    AcmacsAPISettings settings;
     settings.read_from_file(argv[1]);
     Wspp wspp{settings};
 
