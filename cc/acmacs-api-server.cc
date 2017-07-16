@@ -48,13 +48,13 @@ class AcmacsAPIServer : public WsppWebsocketLocationHandler
 
     virtual inline void opening(std::string)
         {
-            send("{\"hello\": \"acmacs-api-server-v1\"}");
+            send(R"({"hello": "acmacs-api-server-v1"})");
         }
 
     virtual inline void message(std::string aMessage)
         {
             std::cerr << std::this_thread::get_id() << " message: \"" << aMessage << '"' << std::endl;
-            send("{\"E\": \"unrecognized message\"}", websocketpp::frame::opcode::text);
+            send(R"({"E": "unrecognized message"})", websocketpp::frame::opcode::text);
         }
 
     virtual void after_close(std::string)
