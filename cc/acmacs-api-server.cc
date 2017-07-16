@@ -62,21 +62,14 @@ class AcmacsAPIServer : public WsppWebsocketLocationHandler
               //std::cout << std::this_thread::get_id() << " MyWS after_close" << std::endl;
         }
 
-}; // class MyWS
+}; // class AcmacsAPIServer
 
 // ----------------------------------------------------------------------
 
 class AcmacsAPISettings : public ServerSettings
 {
  public:
-    std::string mongodb_uri;    // empty for default
-
- protected:
-    virtual void update_import_data(json_importer::data<ServerSettings>& aData)
-        {
-            aData.emplace("mongodb_uri", json_importer::field(&AcmacsAPISettings::mongodb_uri));
-        }
-
+    inline auto mongodb_uri() const { return get(mDoc, "mongodb_uri", std::string{}); }
 };
 
 // ----------------------------------------------------------------------
@@ -89,7 +82,7 @@ int main(int argc, char* const argv[])
     }
 
     AcmacsAPISettings settings;
-    settings.read_from_file(argv[1]);
+    settings.read(argv[1]);
     Wspp wspp{settings};
 
     wspp.add_location_handler(std::make_shared<RootPage>());
