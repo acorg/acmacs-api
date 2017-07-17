@@ -15,11 +15,13 @@
 class RootPage : public WsppHttpLocationHandler
 {
  public:
-    virtual inline bool handle(std::string aLocation, WsppHttpResponseData& aResponse)
+    virtual inline bool handle(const HttpResource& aResource, WsppHttpResponseData& aResponse)
         {
             bool handled = false;
-            if (aLocation == "/") {
-                aResponse.body = std::string{"<html><head><script src=\"/js/acmacs-api-client.js\"></script></head><body><h1>acmacs-api-server</h1></body></html>"};
+            if (aResource.location() == "/") {
+                aResponse.body = R"(<html><head><script src="/js/acmacs-api-client.js"></script>)";
+                aResponse.body += "<script>ARGV = " + json_writer::compact_json(aResource.argv(), "argv") + "</script>";
+                aResponse.body += "</head><body><h1>acmacs-api-server</h1></body></html>";
                 handled = true;
             }
             return handled;
