@@ -8,8 +8,11 @@
 
 namespace client
 {
-      //using Argv = std::map<String, std::vector<String>>;
-    extern Object& ARGV;
+    struct Argv : public Object
+    {
+        String* get_S();
+    };
+    extern Argv* ARGV;
     Array* object_keys(Object*);
     Array* object_keys(Object&);
 }
@@ -46,7 +49,9 @@ void on_load()
       // var ws = new WebSocket("wss://" + host_port + "/myws", "protocolOne");
     auto* ws = new WebSocket("wss://localhost:1169/api");
     ws->set_onmessage(cheerp::Callback(on_message));
-    console.log("ARGV", JSON.stringify(ARGV), static_cast<String*>((*ARGV[String{"S"}])[0]));
+    console.log("ARGV", JSON.stringify(ARGV));
+      //console.log("ARGV", JSON.stringify(ARGV), static_cast<String*>((*ARGV[String{"S"}])[0]));
+    console.log("ARGV[S]", static_cast<String*>(ARGV->get_S()));
 
 }
 
