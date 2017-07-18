@@ -23,6 +23,7 @@ namespace client
         String* get_hello();
     };
 
+    struct EchoMessage : public Object {};
 }
 
 // ----------------------------------------------------------------------
@@ -35,13 +36,33 @@ static void on_load();
 
 // ----------------------------------------------------------------------
 
-class OnMessage
+inline String* operator ""_S(const char* src, size_t) { return new String{src}; }
+
+//inline String operator "" _s(const char* src, size_t) { return {src}; }
+// inline String* operator + (String&& s1, String* s2) { return s1.concat(s2); }
+// inline String* operator + (String& s1, String* s2) { return s1.concat(s2); }
+// inline String* operator + (const char* s1, String& s2) { return String{s1}.concat(s2); }
+// inline bool operator == (String&& s1, String* s2) { return &s1 == s2; }
+// inline bool operator == (String* s1, String&& s2) { return s1 == &s2; }
+
+// ----------------------------------------------------------------------
+
+template <typename MessageType> class OnMessage
 {
  public:
     inline OnMessage(WebSocket* aWS) : mWS{aWS} {}
-    // inline virtual ~OnMessage() {}
+    OnMessage(const OnMessage&) = default;
+    inline virtual ~OnMessage() {}
+
+    inline void operator()(MessageEvent* aEvent)
+        {
+            auto data = static_cast<String*>(aEvent->get_data());
+              //console.log("WaitingForHello::on_message", data);
+            process_message(static_cast<MessageType*>(JSON.parse(data)));
+        }
 
  protected:
+    virtual void process_message(MessageType* aMessage) = 0;
     inline void send(Object* aData) { mWS->send(aData); }
     inline void send(const char* aData) { mWS->send(new String{aData}); }
 
@@ -51,35 +72,33 @@ class OnMessage
     WebSocket* mWS;
 };
 
-class EchoResponder : public OnMessage
+class EchoResponder : public OnMessage<EchoMessage>
 {
  public:
     using OnMessage::OnMessage;
 
-    inline void operator()(MessageEvent* aEvent)
+ protected:
+    virtual void process_message(EchoMessage* aMessage)
         {
-            auto data = static_cast<String*>(aEvent->get_data());
-            console.log("EchoResponder::on_message", data);
+            console.log("EchoResponder: "_S->concat(JSON.stringify(aMessage)));
         }
 };
 
-class WaitingForHello : public OnMessage
+class WaitingForHello : public OnMessage<HelloFromServer>
 {
  public:
     using OnMessage::OnMessage;
 
-    inline void operator()(MessageEvent* aEvent)
+ protected:
+    virtual void process_message(HelloFromServer* aMessage)
         {
-            auto data = static_cast<String*>(aEvent->get_data());
-            console.log("WaitingForHello::on_message", data);
-              // console.log(JSON.stringify(aEvent->get_data()));
-            auto server_version = static_cast<HelloFromServer*>(JSON.parse(data))->get_hello();
-            if (server_version == new String{"acmacs-api-server-v1"}) {
+            auto server_version = aMessage->get_hello();
+            if ("acmacs-api-server-v1"_S == server_version) {
                 transfer<EchoResponder>();
                 send(R"({"C": "echo", "V": "WaitingForHello"})");
             }
             else {
-                window.alert(String{"Unsupported server version: "}.concat(data));
+                window.alert("Unsupported server version: "_S->concat(server_version));
             }
         }
 };
