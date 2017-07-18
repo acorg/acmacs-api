@@ -215,7 +215,7 @@ class CommandCharts : public CommandBase
                         (bson_doc{} <<
                          "$or" << bson_open_array
                          << bson_open_document << "parent" << bson_open_document << "$exists" << false << bson_close_document << bson_close_document
-                         << bson_open_document << "parent" << bson_open_document << "$eq" << bson_null << bson_close_document << bson_close_document
+                         << bson_open_document << "parent" << bson_open_document << "$eq" << CommandBase::bson_null << bson_close_document << bson_close_document
                          << bson_close_array
                          << bsoncxx::builder::concatenate(aSession.read_permissions().view()) << bson_finalize),
                         MongodbAccess::exclude{"_id", "_t", "table", "conformance", "search"}};
