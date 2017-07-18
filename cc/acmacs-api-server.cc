@@ -2,6 +2,7 @@
 #include <getopt.h>
 
 #include "acmacs-base/stream.hh"
+#include "acmacs-base/rapidjson.hh"
 
 #include "acmacs-webserver/server.hh"
 #include "acmacs-webserver/server-settings.hh"
@@ -55,8 +56,16 @@ class AcmacsAPIServer : public WsppWebsocketLocationHandler
 
     virtual inline void message(std::string aMessage)
         {
-            std::cerr << std::this_thread::get_id() << " message: \"" << aMessage << '"' << std::endl;
-            send(R"({"E": "unrecognized message"})", websocketpp::frame::opcode::text);
+              // std::cerr << std::this_thread::get_id() << " message: \"" << aMessage << '"' << std::endl;
+            rapidjson::Document msg;
+            msg.Parse(aMessage.c_str(), aMessage.size());
+            auto command = get<std::string>(msg, "C");
+            if (command == "echo") {
+                send(aMessage);
+            }
+            else {
+                send(R"({"E": "unrecognized message"})", websocketpp::frame::opcode::text);
+            }
         }
 
     virtual void after_close(std::string)

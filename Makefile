@@ -57,7 +57,8 @@ PKG_INCLUDES += -I/usr/local/opt/openssl/include
 # $$(pkg-config --cflags libuv)
 endif
 
-PROGS = $(MONGO_TEST) $(MONGO_FIND) $(MONGO_RAW) $(MONGO_DIRECT) $(ACMACS_API_SERVER) $(ACMACS_API_CLIENT)
+PROGS = $(MONGO_DIRECT) $(ACMACS_API_SERVER) $(ACMACS_API_CLIENT)
+# $(MONGO_TEST) $(MONGO_FIND) $(MONGO_RAW)
 
 # ----------------------------------------------------------------------
 
@@ -65,7 +66,7 @@ BUILD = build
 DIST = $(abspath dist)
 CC = cc
 
-all: check-acmacsd-root $(PROGS)
+all: check-acmacsd-root kill-server $(PROGS)
 
 install: check-acmacsd-root $(PROGS)
 	@#ln -sf $(ACMACS_) $(ACMACSD_ROOT)/bin
@@ -89,10 +90,12 @@ $(MONGO_RAW): $(patsubst %.cc,$(BUILD)/%.o,$(MONGO_RAW_SOURCES)) | $(DIST)
 	g++ $(LDFLAGS) -o $@ $^ $(MONGO_LDLIBS) $(LDLIBS)
 
 $(MONGO_DIRECT): $(patsubst %.cc,$(BUILD)/%.o,$(MONGO_DIRECT_SOURCES)) | $(DIST)
-	g++ $(LDFLAGS) -o $@ $^ $(MONGO_LDLIBS) $(LDLIBS)
+	@echo $@ '<--' $^
+	@g++ $(LDFLAGS) -o $@ $^ $(MONGO_LDLIBS) $(LDLIBS)
 
 $(ACMACS_API_SERVER): $(patsubst %.cc,$(BUILD)/%.o,$(ACMACS_API_SERVER_SOURCES)) | $(DIST)
-	g++ $(LDFLAGS) -o $@ $^ $(ACMACS_API_SERVER_LIBS) $(LDLIBS)
+	@echo $@ '<--' $^
+	@g++ $(LDFLAGS) -o $@ $^ $(ACMACS_API_SERVER_LIBS) $(LDLIBS)
 
 $(ACMACS_API_CLIENT): $(patsubst %,client/%,$(ACMACS_API_CLIENT_SOURCES)) | $(DIST)
 	$(CHEERP) $(CHEERP_FLAGS) -cheerp-sourcemap=$@.map -o - $^ | gzip -9 >$@
@@ -117,6 +120,9 @@ check-acmacsd-root:
 ifndef ACMACSD_ROOT
 	$(error ACMACSD_ROOT is not set)
 endif
+
+kill-server:
+	if [ `uname` == "Darwin" ]; then killall acmacs-api-server 2>/dev/null || true; fi
 
 $(DIST):
 	mkdir -p $(DIST)
