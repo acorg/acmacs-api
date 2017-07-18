@@ -95,7 +95,8 @@ class WaitingForHello : public OnMessage<HelloFromServer>
             auto server_version = aMessage->get_hello();
             if ("acmacs-api-server-v1"_S == server_version) {
                 transfer<EchoResponder>();
-                send(R"({"C": "echo", "V": "WaitingForHello"})");
+                  // send(R"({"C": "echo", "V": "WaitingForHello"})");
+                send(R"({"C": "users"})");
             }
             else {
                 window.alert("Unsupported server version: "_S->concat(server_version));

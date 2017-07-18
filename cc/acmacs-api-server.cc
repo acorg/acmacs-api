@@ -1,4 +1,5 @@
 #include <iostream>
+#include <memory>
 #include <getopt.h>
 
 #include "acmacs-base/stream.hh"
@@ -35,10 +36,22 @@ class RootPage : public WsppHttpLocationHandler
 class AcmacsAPIServer : public WsppWebsocketLocationHandler
 {
  public:
-    inline AcmacsAPIServer() : WsppWebsocketLocationHandler{} {}
-    inline AcmacsAPIServer(const AcmacsAPIServer& aSrc) : WsppWebsocketLocationHandler{aSrc} {}
+    inline AcmacsAPIServer(mongocxx::pool& aPool) : WsppWebsocketLocationHandler{}, mPool{aPool} {}
+    inline AcmacsAPIServer(const AcmacsAPIServer& aSrc) : WsppWebsocketLocationHandler{aSrc}, mPool{aSrc.mPool} {}
 
  protected:
+    inline auto connection()
+        {
+            if (!mConnection)
+                mConnection = mPool.acquire();
+            return mConnection;
+        }
+
+    inline auto db(const char* aName = "acmacs_web")
+        {
+            return (*connection())[aName];
+        }
+
     virtual std::shared_ptr<WsppWebsocketLocationHandler> clone() const
         {
             return std::make_shared<AcmacsAPIServer>(*this);
@@ -63,6 +76,20 @@ class AcmacsAPIServer : public WsppWebsocketLocationHandler
             if (command == "echo") {
                 send(aMessage);
             }
+            else if (command == "users") {
+                try {
+                    auto acmacs_web_db = db();
+                    DocumentFindResults results{acmacs_web_db, "users_groups",
+                                (DocumentFindResults::bson_doc{} << "_t" << "acmacs.mongodb_collections.users_groups.User"
+                                   // << bsoncxx::builder::concatenate(aSession.read_permissions().view())
+                                 << DocumentFindResults::bson_finalize),
+                                MongodbAccess::exclude{"_id", "_t", "_m", "password", "nonce"}};
+                    send("{\"R\": " + results.json() + "}");
+                }
+                catch (DocumentFindResults::Error& err) {
+                    send(std::string{"{\"E\": \""} + err.what() + "\"}");
+                }
+            }
             else {
                 send(R"({"E": "unrecognized message"})", websocketpp::frame::opcode::text);
             }
@@ -73,6 +100,10 @@ class AcmacsAPIServer : public WsppWebsocketLocationHandler
               //std::cout << std::this_thread::get_id() << " MyWS after_close" << std::endl;
         }
 
+ private:
+    mongocxx::pool& mPool;
+    std::shared_ptr<mongocxx::client> mConnection;
+
 }; // class AcmacsAPIServer
 
 // ----------------------------------------------------------------------
@@ -80,7 +111,14 @@ class AcmacsAPIServer : public WsppWebsocketLocationHandler
 class AcmacsAPISettings : public ServerSettings
 {
  public:
-    inline auto mongodb_uri() const { return get(mDoc, "mongodb_uri", std::string{}); }
+    inline auto mongodb_uri() const
+        {
+
+            auto uri = get(mDoc, "mongodb_uri", std::string{});
+            if (uri.empty())
+                uri = "mongodb://localhost:27017/";
+            return uri;
+        }
 };
 
 // ----------------------------------------------------------------------
@@ -96,8 +134,12 @@ int main(int argc, char* const argv[])
     settings.read(argv[1]);
     Wspp wspp{settings};
 
+    mongocxx::instance inst{};
+    std::cerr << "mongodb_uri: [" << settings.mongodb_uri() << "]" << std::endl;
+    mongocxx::pool pool{mongocxx::uri{settings.mongodb_uri()}};
+
     wspp.add_location_handler(std::make_shared<RootPage>());
-    wspp.add_location_handler(std::make_shared<AcmacsAPIServer>());
+    wspp.add_location_handler(std::make_shared<AcmacsAPIServer>(pool));
 
     wspp.run();
 

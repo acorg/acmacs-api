@@ -5,7 +5,8 @@
 #include <mongocxx/client.hpp>
 #include <mongocxx/instance.hpp>
 #include <mongocxx/pool.hpp>
-#include <mongocxx/exception/exception.hpp>
+//#include <mongocxx/exception/exception.hpp>
+#include <mongocxx/exception/query_exception.hpp>
 #pragma GCC diagnostic pop
 
 #include "acmacs-base/time.hh"
@@ -135,6 +136,7 @@ class DocumentFindResults : public MongodbAccess
         }
 
  public:
+    class Error : public std::runtime_error { public: using std::runtime_error::runtime_error; };
 
     inline DocumentFindResults(mongocxx::database& aDb) : MongodbAccess{aDb} {}
     inline DocumentFindResults(mongocxx::database& aDb, const char* aCollection) : MongodbAccess{aDb} { build(aCollection); }
@@ -143,14 +145,24 @@ class DocumentFindResults : public MongodbAccess
 
     inline void build(const char* aCollection, doc_value&& aFilter, const find_options& aOptions = find_options{})
         {
-            auto found = find(aCollection, std::move(aFilter), aOptions);
-            std::copy(std::begin(found), std::end(found), std::back_inserter(mRecords));
+            try {
+                auto found = find(aCollection, std::move(aFilter), aOptions);
+                std::copy(std::begin(found), std::end(found), std::back_inserter(mRecords));
+            }
+            catch (mongocxx::query_exception& err) {
+                throw_error(err);
+            }
         }
 
     inline void build(const char* aCollection)
         {
-            auto found = find(aCollection);
-            std::copy(std::begin(found), std::end(found), std::back_inserter(mRecords));
+            try {
+                auto found = find(aCollection);
+                std::copy(std::begin(found), std::end(found), std::back_inserter(mRecords));
+            }
+            catch (mongocxx::query_exception& err) {
+                throw_error(err);
+            }
         }
 
     inline std::string json(bool pretty = true) const
@@ -160,6 +172,15 @@ class DocumentFindResults : public MongodbAccess
 
  private:
     std::vector<doc_view> mRecords;
+
+    [[noreturn]] inline void throw_error(mongocxx::query_exception& err)
+        {
+            const std::string what = err.what();
+            if (what.substr(0, 26) == "No suitable servers found:")
+                throw Error{"Acmacs mongodb server is down"};
+            else
+                throw Error{what};
+        }
 
 }; // class DocumentFindResults
 
