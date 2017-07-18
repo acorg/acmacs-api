@@ -95,7 +95,7 @@ $(ACMACS_API_SERVER): $(patsubst %.cc,$(BUILD)/%.o,$(ACMACS_API_SERVER_SOURCES))
 	g++ $(LDFLAGS) -o $@ $^ $(ACMACS_API_SERVER_LIBS) $(LDLIBS)
 
 $(ACMACS_API_CLIENT): $(patsubst %,client/%,$(ACMACS_API_CLIENT_SOURCES)) | $(DIST)
-	$(CHEERP) $(CHEERP_FLAGS) -cheerp-sourcemap=$@.map -o - $^ | /usr/bin/gzip -9 >$@
+	$(CHEERP) $(CHEERP_FLAGS) -cheerp-sourcemap=$@.map -o - $^ | gzip -9 >$@
 
 # ----------------------------------------------------------------------
 
