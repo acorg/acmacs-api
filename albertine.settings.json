@@ -1,0 +1,17 @@
+{
+    "host": "localhost",
+    "port": 1169,
+    "mongodb_uri": "mongodb://localhost:37017/",
+    "number_of_threads": 3,
+    "certificate_chain_file": "/Users/eu/AD/sources/acmacs-webserver/ssl/self-signed.crt",
+    "private_key_file": "/Users/eu/AD/sources/acmacs-webserver/ssl/self-signed.key",
+    "tmp_dh_file": "/Users/eu/AD/sources/acmacs-webserver/ssl/dh.pem",
+    "log_access": "/tmp/acmacs-api-server.access.log",
+    "log_error": "/tmp/acmacs-api-server.error.log",
+    "locations": [
+        {"location": "/js/acmacs-api-client.js", "files": ["dist/acmacs-api-client.js.gz"]},
+        {"location": "/js/acmacs-api-client.js.gz.map", "files": ["dist/acmacs-api-client.js.gz.map"]},
+        {"location": "/js/client/acmacs-api-client.cc", "files": ["client/acmacs-api-client.cc"]},
+        {"location": "/favicon.ico", "files": ["/Users/eu/AD/sources/acmacs-webserver/favicon.ico"]}
+        ]
+}

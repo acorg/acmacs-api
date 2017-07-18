@@ -6,15 +6,27 @@
 
 // ----------------------------------------------------------------------
 
+inline client::String* operator ""_S(const char* src, size_t) { return new client::String{src}; }
+
+// ----------------------------------------------------------------------
+
 namespace client
 {
     struct Argv : public Object
     {
-        String* get_S();
+        Array* get_S();
+        Array* get_U();        // user
+        Array* get_P();        // password
+
+        inline String* session() { return static_cast<String*>((*get_S())[0]); }
     };
     extern Argv* ARGV;
     Array* object_keys(Object*);
     Array* object_keys(Object&);
+
+      // ----------------------------------------------------------------------
+
+    bool is_string(Object*);
 
       // ----------------------------------------------------------------------
 
@@ -24,6 +36,16 @@ namespace client
     };
 
     struct EchoMessage : public Object {};
+
+    struct LoginData : public Object
+    {
+        inline LoginData(String* aS) { set_C("login"_S); set_S(aS); }
+        void set_S(String*);
+        void set_C(String*);
+        void set_U(String*);
+        void set_P(String*);
+    };
+
 }
 
 // ----------------------------------------------------------------------
@@ -35,8 +57,6 @@ static void on_load();
 // static void on_message(MessageEvent* aEvent);
 
 // ----------------------------------------------------------------------
-
-inline String* operator ""_S(const char* src, size_t) { return new String{src}; }
 
 //inline String operator "" _s(const char* src, size_t) { return {src}; }
 // inline String* operator + (String&& s1, String* s2) { return s1.concat(s2); }
@@ -63,10 +83,28 @@ template <typename MessageType> class OnMessage
 
  protected:
     virtual void process_message(MessageType* aMessage) = 0;
-    inline void send(Object* aData) { mWS->send(aData); }
-    inline void send(const char* aData) { mWS->send(new String{aData}); }
+    inline void send(Object* aData)
+        {
+            if (!is_string(aData))
+                aData = JSON.stringify(aData);
+            mWS->send(aData);
+        }
 
-    template <typename NewHandler> inline void transfer() { mWS->set_onmessage(cheerp::Callback(NewHandler{mWS})); }
+    inline void send(const char* aData)
+        {
+            mWS->send(new String{aData});
+        }
+
+    template <typename NewHandler> inline void transfer()
+        {
+            mWS->set_onmessage(cheerp::Callback(NewHandler{mWS}));
+        }
+
+    template <typename NewHandler> inline void transfer_send(Object* aMessage)
+        {
+            transfer<NewHandler>();
+            send(aMessage);
+        }
 
  private:
     WebSocket* mWS;
@@ -94,14 +132,25 @@ class WaitingForHello : public OnMessage<HelloFromServer>
         {
             auto server_version = aMessage->get_hello();
             if ("acmacs-api-server-v1"_S == server_version) {
-                transfer<EchoResponder>();
-                  // send(R"({"C": "echo", "V": "WaitingForHello"})");
-                send(R"({"C": "users"})");
+                transfer_send<EchoResponder>(new LoginData{ARGV->session()});
             }
             else {
                 window.alert("Unsupported server version: "_S->concat(server_version));
             }
         }
+
+    // virtual void process_message(HelloFromServer* aMessage)
+    //     {
+    //         auto server_version = aMessage->get_hello();
+    //         if ("acmacs-api-server-v1"_S == server_version) {
+    //             transfer<EchoResponder>();
+    //               // send(R"({"C": "echo", "V": "WaitingForHello"})");
+    //             send(R"({"C": "users"})");
+    //         }
+    //         else {
+    //             window.alert("Unsupported server version: "_S->concat(server_version));
+    //         }
+    //     }
 };
 
 // ----------------------------------------------------------------------
@@ -111,6 +160,8 @@ void webMain()
     window.set_onload(cheerp::Callback(on_load));
 
     __asm__("window.object_keys = Object.keys;");
+      // https://stackoverflow.com/questions/4059147/check-if-a-variable-is-a-string
+    __asm__("window.is_string = function(obj) { return Object.prototype.toString.call(obj) === '[object String]'; }");
 }
 
 // ----------------------------------------------------------------------
@@ -132,7 +183,7 @@ void on_load()
     ws->set_onmessage(cheerp::Callback(WaitingForHello(ws)));
     console.log("ARGV", JSON.stringify(ARGV));
       //console.log("ARGV", JSON.stringify(ARGV), static_cast<String*>((*ARGV[String{"S"}])[0]));
-    console.log("ARGV[S]", static_cast<String*>(ARGV->get_S()));
+    console.log("ARGV[S]", JSON.stringify(ARGV->get_S()));
 
 }
 

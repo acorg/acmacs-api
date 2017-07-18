@@ -69,7 +69,7 @@ class AcmacsAPIServer : public WsppWebsocketLocationHandler
 
     virtual inline void message(std::string aMessage)
         {
-              // std::cerr << std::this_thread::get_id() << " message: \"" << aMessage << '"' << std::endl;
+            std::cerr << std::this_thread::get_id() << " MSG: " << aMessage.substr(0, 80) << std::endl;
             rapidjson::Document msg;
             msg.Parse(aMessage.c_str(), aMessage.size());
             auto command = get<std::string>(msg, "C");
