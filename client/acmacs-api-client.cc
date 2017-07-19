@@ -26,7 +26,9 @@ namespace client
 
       // ----------------------------------------------------------------------
 
+      // see __asm__ below
     bool is_string(Object*);
+    Object* make_undefined(); // don't know how to make undefined in cheerp 1.3 otherwise
 
       // ----------------------------------------------------------------------
 
@@ -97,7 +99,7 @@ template <typename MessageType> class OnMessage
     inline void send(Object* aData)
         {
             if (!is_string(aData))
-                aData = JSON.stringify(aData);
+                aData = JSON.stringify(aData, cheerp::Callback(&OnMessage::stringify_replacer));
             console.log("send:", static_cast<String*>(aData));
             mWS->send(aData);
         }
@@ -120,6 +122,13 @@ template <typename MessageType> class OnMessage
 
  private:
     WebSocket* mWS;
+
+    static inline Object* stringify_replacer(String* key, Object* value)
+        {
+            if (key == "i0"_S)
+                value = make_undefined();
+            return value;
+        }
 };
 
 class EchoResponder : public OnMessage<EchoMessage>
@@ -175,6 +184,7 @@ void webMain()
     __asm__("window.object_keys = Object.keys;");
       // https://stackoverflow.com/questions/4059147/check-if-a-variable-is-a-string
     __asm__("window.is_string = function(obj) { return Object.prototype.toString.call(obj) === '[object String]'; }");
+    __asm__("window.make_undefined = function() { return undefined; }");
 }
 
 // ----------------------------------------------------------------------
