@@ -47,6 +47,7 @@ class Command : public json_importer::Object
  protected:
     void send(std::string aMessage, websocketpp::frame::opcode::value op_code = websocketpp::frame::opcode::text);
     mongocxx::database db();
+    Session& session();
 
  private:
     AcmacsAPIServer& mServer;
@@ -87,7 +88,7 @@ class Command_login : public Command
 
     virtual void run();
 
-    inline std::string session() const { return get_string("S"); }
+    inline std::string session_id() const { return get_string("S"); }
     inline std::string user() const { return get_string("U"); }
     inline std::string password() const { return get_string("P"); }
 
@@ -138,8 +139,10 @@ CommandFactory::CommandFactory()
 class AcmacsAPIServer : public WsppWebsocketLocationHandler
 {
  public:
-    inline AcmacsAPIServer(mongocxx::pool& aPool, CommandFactory& aCommandFactory) : WsppWebsocketLocationHandler{}, mPool{aPool}, mCommandFactory{aCommandFactory} {}
-    inline AcmacsAPIServer(const AcmacsAPIServer& aSrc) : WsppWebsocketLocationHandler{aSrc}, mPool{aSrc.mPool}, mCommandFactory{aSrc.mCommandFactory} {}
+    inline AcmacsAPIServer(mongocxx::pool& aPool, CommandFactory& aCommandFactory)
+        : WsppWebsocketLocationHandler{}, mPool{aPool}, mCommandFactory{aCommandFactory}, mSession{db()} {}
+    inline AcmacsAPIServer(const AcmacsAPIServer& aSrc)
+        : WsppWebsocketLocationHandler{aSrc}, mPool{aSrc.mPool}, mCommandFactory{aSrc.mCommandFactory}, mSession{aSrc.mSession} {}
 
  protected:
     inline auto connection()
@@ -149,9 +152,16 @@ class AcmacsAPIServer : public WsppWebsocketLocationHandler
             return mConnection;
         }
 
-    inline auto db(const char* aName = "acmacs_web")
+    inline mongocxx::database db(const char* aName)
         {
             return (*connection())[aName];
+        }
+
+    inline mongocxx::database& db()
+        {
+            if (!mAcmacsWebDb)
+                mAcmacsWebDb = db("acmacs_web");
+            return mAcmacsWebDb;
         }
 
     virtual std::shared_ptr<WsppWebsocketLocationHandler> clone() const
@@ -207,12 +217,23 @@ class AcmacsAPIServer : public WsppWebsocketLocationHandler
 
  private:
     mongocxx::pool& mPool;
+    mongocxx::database mAcmacsWebDb;
     CommandFactory& mCommandFactory;
     std::shared_ptr<mongocxx::client> mConnection;
+    Session mSession;
+
+    inline Session& session() { return mSession; }
 
     friend class Command;
 
 }; // class AcmacsAPIServer
+
+// ----------------------------------------------------------------------
+
+Session& Command::session()
+{
+    return mServer.session();
+}
 
 // ----------------------------------------------------------------------
 
@@ -254,11 +275,11 @@ void Command_users::run()
 void Command_login::run()
 {
     try {
-        const auto session_id = session();
+        const auto session_id_ = session_id();
         const auto username = user();
-        if (!session_id.empty()) {
+        if (!session_id_.empty()) {
             try {
-                // aSession.use_session(session);
+                session().use_session(session_id_);
             }
             catch (std::exception& err) {
                 if (username.empty())
@@ -271,6 +292,7 @@ void Command_login::run()
         //     // // aSession.login(user, password);
         //     // // std::cout << "--session " << aSession.id() << std::endl;
         // }
+        send(std::string{"{\"R\":\"session\",\"S\":\"" + session().id() + "\"}"});
     }
     catch (std::exception& err) {
         send(std::string{"{\"E\": \""} + err.what() + "\"}");

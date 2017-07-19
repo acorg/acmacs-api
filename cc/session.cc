@@ -7,11 +7,20 @@
 
 // ----------------------------------------------------------------------
 
-void Session::use_session(std::string aSessionId)
+void Session::reset()
 {
+    std::unique_lock<decltype(mAccess)> lock{mAccess};
     mId.clear();
     mUser.clear();
     mGroups.clear();
+
+} // Session::reset
+
+// ----------------------------------------------------------------------
+
+void Session::use_session(std::string aSessionId)
+{
+    reset();
 
     auto found = find_one((bson_doc{} << "_id" << bsoncxx::oid{aSessionId} << "expires" << bson_open_document << "$gte" << time_now() << bson_close_document << bson_finalize),
                           exclude{"_t", "_m", "I", "expires", "expiration_in_seconds"});
@@ -19,6 +28,7 @@ void Session::use_session(std::string aSessionId)
         throw Error{"invalid session"};
     for (auto entry: found->view()) {
         const std::string key = entry.key().to_string();
+        std::unique_lock<decltype(mAccess)> lock{mAccess};
         if (key == "_id")
             mId = entry.get_value().get_oid().value.to_string();
         else if (key == "user")
@@ -46,6 +56,7 @@ void Session::find_user(std::string aUser, bool aGetPassword)
       // std::cerr << json_writer::json(*found, "user", 1) << std::endl;
     for (auto entry: found->view()) {
         const std::string key = entry.key().to_string();
+        std::unique_lock<decltype(mAccess)> lock{mAccess};
         if (key == "name")
             mUser = entry.get_value().get_utf8().value.to_string();
         else if (aGetPassword && key == "password")
@@ -64,7 +75,9 @@ void Session::login(std::string aUser, std::string aPassword)
     const auto nonce = get_nonce();
     std::random_device rd;
     const auto cnonce = string::to_hex_string(rd() & 0xFFFFFFFF, false);
+    std::unique_lock<decltype(mAccess)> lock{mAccess};
     const auto digest = md5(mUser + ";acmacs-web;" + aPassword);
+    lock.unlock();
     const auto hashed_password = md5(nonce + ";" + cnonce + ";" + digest);
     login_with_password_digest(cnonce, hashed_password);
 
@@ -75,6 +88,7 @@ void Session::login(std::string aUser, std::string aPassword)
 std::string Session::get_nonce()
 {
     std::random_device rd;
+    std::unique_lock<decltype(mAccess)> lock{mAccess};
     mNonce = string::to_hex_string(rd() & 0xFFFFFFFF, false);
     return mNonce;
 
@@ -82,10 +96,18 @@ std::string Session::get_nonce()
 
 // ----------------------------------------------------------------------
 
+std::string Session::hashed_password(std::string aCNonce)
+{
+    std::unique_lock<decltype(mAccess)> lock{mAccess};
+    return md5(mNonce + ";" + aCNonce + ";" + mPassword);
+
+} // Session::hashed_password
+
+// ----------------------------------------------------------------------
+
 void Session::login_with_password_digest(std::string aCNonce, std::string aPasswordDigest)
 {
-    const auto hashed_password = md5(mNonce + ";" + aCNonce + ";" + mPassword);
-    if (aPasswordDigest != hashed_password)
+    if (aPasswordDigest != hashed_password(aCNonce))
         throw Error{"invalid user or password"};
     create_session();
       //! user.add_recent_login(session=session)
@@ -98,7 +120,9 @@ void Session::create_session()
 {
     find_groups_of_user();
       // std::cerr << "Groups: " << mGroups << std::endl;
-    mId = create();
+    const auto id = create();
+    std::unique_lock<decltype(mAccess)> lock{mAccess};
+    mId = id;
 
         // history.SessionLog(session=session, user_agent=user_agent, changed_user=changed_user).save(session=None)
 
@@ -138,6 +162,7 @@ void Session::add_fields_for_updating(bson_doc& aDoc)
 void Session::find_groups_of_user()
 {
     auto found = find("users_groups", bson_doc{} << "members" << mUser << bson_finalize, include_exclude{{"name"}, {"_id"}});
+    std::unique_lock<decltype(mAccess)> lock{mAccess};
     mGroups.clear();
     mGroups.push_back(mUser);
     std::transform(found.begin(), found.end(), std::back_inserter(mGroups), [](const auto& entry) { return entry["name"].get_utf8().value.to_string(); });
@@ -150,15 +175,13 @@ Session::bson_doc Session::read_permissions() const
 {
     auto doc = bson_doc{};
     auto groups = doc << "p.r" << bson_open_document << "$in" << bson_open_array;
+    std::unique_lock<decltype(mAccess)> lock{mAccess};
     for (const auto& group: mGroups)
         groups << group;
     groups << bson_close_array << bson_close_document;
     return doc;
 
 } // Session::read_permissions
-
-// ----------------------------------------------------------------------
-
 
 // ----------------------------------------------------------------------
 /// Local Variables:

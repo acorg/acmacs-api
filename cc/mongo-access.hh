@@ -19,6 +19,7 @@ class MongodbAccess
 {
  public:
     inline MongodbAccess(mongocxx::database& aDb) : mDb(aDb) {}
+    inline MongodbAccess(const MongodbAccess& aSrc) : mDb(aSrc.mDb) {}
     virtual inline ~MongodbAccess() {}
 
     using bson_doc = bsoncxx::builder::stream::document;

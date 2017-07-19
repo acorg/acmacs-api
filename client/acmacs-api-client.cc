@@ -100,7 +100,7 @@ template <typename MessageType> class OnMessage
         {
             if (!is_string(aData))
                 aData = JSON.stringify(aData, cheerp::Callback(&OnMessage::stringify_replacer));
-            console.log("send:", static_cast<String*>(aData));
+            console.log("Send: "_S->concat(static_cast<String*>(aData)));
             mWS->send(aData);
         }
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <thread>
 
 #include "mongo-access.hh"
 
@@ -11,7 +12,12 @@ class Session : public StoredInMongodb
  public:
     class Error : public std::runtime_error { public: using std::runtime_error::runtime_error; };
 
-    inline Session(mongocxx::database& aDb) : StoredInMongodb{aDb, "sessions"}, mCommands{0}, mExpirationInSeconds{3600} {}
+    inline Session(mongocxx::database& aDb)
+        : StoredInMongodb{aDb, "sessions"}, mCommands{0}, mExpirationInSeconds{3600} {}
+    inline Session(const Session& aSrc)
+        : StoredInMongodb{aSrc}, mId{aSrc.mId}, mUser{aSrc.mUser}, mDisplayName{aSrc.mDisplayName},
+          mGroups{aSrc.mGroups}, mCommands{aSrc.mCommands}, mExpirationInSeconds{aSrc.mExpirationInSeconds} {}
+
     void use_session(std::string aSessionId); // throws Error
     void login(std::string aUser, std::string aPassword);
     void find_user(std::string aUser, bool aGetPassword);
@@ -37,6 +43,7 @@ class Session : public StoredInMongodb
     virtual void add_fields_for_updating(bson_doc& aDoc);
 
  private:
+    mutable std::mutex mAccess;
     std::string mId;
     std::string mUser;
     std::string mDisplayName;
@@ -48,6 +55,8 @@ class Session : public StoredInMongodb
 
     void create_session();
     void find_groups_of_user();
+    void reset();
+    std::string hashed_password(std::string aCNonce);
 
 }; // class Session
 
