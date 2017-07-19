@@ -33,6 +33,43 @@ class RootPage : public WsppHttpLocationHandler
 
 // ----------------------------------------------------------------------
 
+class Command : public json_importer::Object
+{
+ public:
+    inline Command(json_importer::Object&& aSrc) : json_importer::Object{std::move(aSrc)} {}
+
+    inline std::string command_name() const { return get_string("C"); }
+
+}; // class Command
+
+// ----------------------------------------------------------------------
+
+class Command_unknown : public Command
+{
+ public:
+    using Command::Command;
+
+}; // class Command_users
+
+// ----------------------------------------------------------------------
+
+class Command_users : public Command
+{
+ public:
+    using Command::Command;
+
+}; // class Command_users
+
+// ----------------------------------------------------------------------
+
+std::shared_ptr<Command> command_factory(std::string aMessage)
+{
+    json_importer::Object msg{aMessage};
+    auto command = msg.get_string("C");
+}
+
+// ----------------------------------------------------------------------
+
 class AcmacsAPIServer : public WsppWebsocketLocationHandler
 {
  public:
@@ -70,9 +107,9 @@ class AcmacsAPIServer : public WsppWebsocketLocationHandler
     virtual inline void message(std::string aMessage)
         {
             std::cerr << std::this_thread::get_id() << " MSG: " << aMessage.substr(0, 80) << std::endl;
-            rapidjson::Document msg;
-            msg.Parse(aMessage.c_str(), aMessage.size());
-            auto command = get<std::string>(msg, "C");
+            json_importer::Object msg{aMessage};
+            auto command = msg.get_string("C");
+
             if (command == "echo") {
                 send(aMessage);
             }
@@ -114,7 +151,7 @@ class AcmacsAPISettings : public ServerSettings
     inline auto mongodb_uri() const
         {
 
-            auto uri = get(mDoc, "mongodb_uri", std::string{});
+            auto uri = json_importer::get(mDoc, "mongodb_uri", std::string{});
             if (uri.empty())
                 uri = "mongodb://localhost:27017/";
             return uri;
