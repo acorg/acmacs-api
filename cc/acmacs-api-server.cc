@@ -80,6 +80,21 @@ class Command_users : public Command
 
 // ----------------------------------------------------------------------
 
+class Command_login : public Command
+{
+ public:
+    using Command::Command;
+
+    virtual void run();
+
+    inline std::string session() const { return get_string("S"); }
+    inline std::string user() const { return get_string("U"); }
+    inline std::string password() const { return get_string("P"); }
+
+}; // class Command_users
+
+// ----------------------------------------------------------------------
+
 class CommandFactory
 {
  public:
@@ -113,6 +128,7 @@ class CommandFactory
 CommandFactory::CommandFactory()
     : mFactory{
     {"users", &CommandFactory::make<Command_users>},
+    {"login", &CommandFactory::make<Command_login>},
 }
 {
 }
@@ -232,6 +248,35 @@ void Command_users::run()
     }
 
 } // Command_users::run
+
+// ----------------------------------------------------------------------
+
+void Command_login::run()
+{
+    try {
+        const auto session_id = session();
+        const auto username = user();
+        if (!session_id.empty()) {
+            try {
+                // aSession.use_session(session);
+            }
+            catch (std::exception& err) {
+                if (username.empty())
+                    throw std::runtime_error{std::string{"invalid session-id: "} + err.what()};
+                else
+                    std::cerr << "Invalid session: " << err.what() << std::endl;
+            }
+        }
+        // if (aSession.id().empty() && !username.empty()) {
+        //     // // aSession.login(user, password);
+        //     // // std::cout << "--session " << aSession.id() << std::endl;
+        // }
+    }
+    catch (std::exception& err) {
+        send(std::string{"{\"E\": \""} + err.what() + "\"}");
+    }
+
+} // Command_login::run
 
 // ----------------------------------------------------------------------
 
