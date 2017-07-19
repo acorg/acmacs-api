@@ -21,7 +21,7 @@ class RootPage : public WsppHttpLocationHandler
         {
             bool handled = false;
             if (aResource.location() == "/") {
-                aResponse.body = R"(<html><head><script src="/js/acmacs-api-client.js"></script>)";
+                aResponse.body = R"(<html><head><script src="/js/acmacs-api-client.js"></script><script src="/js/md5.js"></script>)";
                 aResponse.body += "<script>ARGV = " + json_writer::compact_json(aResource.argv(), "argv") + "</script>";
                 aResponse.body += "</head><body><h1>acmacs-api-server</h1></body></html>";
                 handled = true;

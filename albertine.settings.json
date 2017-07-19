@@ -12,6 +12,7 @@
         {"location": "/js/acmacs-api-client.js", "files": ["dist/acmacs-api-client.js.gz"]},
         {"location": "/js/acmacs-api-client.js.gz.map", "files": ["dist/acmacs-api-client.js.gz.map"]},
         {"location": "/js/client/acmacs-api-client.cc", "files": ["client/acmacs-api-client.cc"]},
+        {"location": "/js/md5.js", "files": ["js/md5.js.gz"]},
         {"location": "/favicon.ico", "files": ["/Users/eu/AD/sources/acmacs-webserver/favicon.ico"]}
         ]
 }

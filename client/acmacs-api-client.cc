@@ -26,6 +26,10 @@ namespace client
 
       // ----------------------------------------------------------------------
 
+    String* md5(String*);
+
+      // ----------------------------------------------------------------------
+
       // see __asm__ below
     bool is_string(Object*);
     Object* make_undefined(); // don't know how to make undefined in cheerp 1.3 otherwise
