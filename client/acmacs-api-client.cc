@@ -37,11 +37,21 @@ namespace client
 
     struct EchoMessage : public Object {};
 
-    struct LoginData : public Object
+    struct CommandData : public Object
     {
-        inline LoginData(String* aS) { set_C("login"_S); set_S(aS); }
-        void set_S(String*);
+        inline CommandData(String* aCmd) { set_C(aCmd) ; }
         void set_C(String*);
+    };
+
+    struct UsersData : public CommandData
+    {
+        inline UsersData() : CommandData{"users"_S} {}
+    };
+
+    struct LoginData : public CommandData
+    {
+        inline LoginData(String* aS) : CommandData{"login"_S} { set_S(aS); }
+        void set_S(String*);
         void set_U(String*);
         void set_P(String*);
     };
@@ -83,10 +93,12 @@ template <typename MessageType> class OnMessage
 
  protected:
     virtual void process_message(MessageType* aMessage) = 0;
+
     inline void send(Object* aData)
         {
             if (!is_string(aData))
                 aData = JSON.stringify(aData);
+            console.log("send:", static_cast<String*>(aData));
             mWS->send(aData);
         }
 
@@ -132,7 +144,8 @@ class WaitingForHello : public OnMessage<HelloFromServer>
         {
             auto server_version = aMessage->get_hello();
             if ("acmacs-api-server-v1"_S == server_version) {
-                transfer_send<EchoResponder>(new LoginData{ARGV->session()});
+                  // transfer_send<EchoResponder>(new LoginData{ARGV->session()});
+                transfer_send<EchoResponder>(new UsersData{});
             }
             else {
                 window.alert("Unsupported server version: "_S->concat(server_version));
