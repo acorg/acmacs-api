@@ -1,8 +1,11 @@
 #pragma once
 
+#include <functional>
+
 #include <cheerp/client.h>
 #include <cheerp/clientlib.h>
 
+#include "weak-tables-off.hh"
 #include "asm.hh"
 #include "string.hh"
 
@@ -13,7 +16,7 @@ template <typename MessageType> class OnMessage;
 class OnMessageBase
 {
  public:
-    using TransferTo = OnMessageBase* (*)(client::WebSocket*);
+    using TransferTo = std::function<OnMessageBase* (client::WebSocket*)>;
 
     inline OnMessageBase(client::WebSocket* aWS) : mWS{aWS} {}
     OnMessageBase(const OnMessageBase&) = default;
@@ -52,14 +55,9 @@ class OnMessageBase
             send(aMessage);
         }
 
-    // inline void transfer_to(OnMessageBase* aHandler)
-    //     {
-    //         mWS->set_onmessage(cheerp::Callback([&aHandler](client::MessageEvent* aEvent) { (*aHandler)(aEvent); }));
-    //     }
-
     inline void transfer_to(TransferTo aHandlerMaker)
         {
-            auto* handler = (*aHandlerMaker)(mWS);
+            auto* handler = aHandlerMaker(mWS);
             mWS->set_onmessage(cheerp::Callback([&handler](client::MessageEvent* aEvent) { (*handler)(aEvent); }));
         }
 

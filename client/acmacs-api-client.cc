@@ -28,9 +28,6 @@ using namespace client;
 
 void webMain();
 static void on_load();
-// static void on_message(MessageEvent* aEvent);
-
-// ----------------------------------------------------------------------
 
 // ----------------------------------------------------------------------
 
@@ -45,6 +42,8 @@ class EchoResponder : public OnMessage<EchoMessage>
             console_log("EchoResponder: ", aMessage);
         }
 };
+
+// ----------------------------------------------------------------------
 
 void webMain()
 {
@@ -61,18 +60,13 @@ inline Object* get_value(Object* obj, String&& key)
 
 // ----------------------------------------------------------------------
 
-inline OnMessageBase* make_echo_responder(client::WebSocket* aWS)
-{
-    return new EchoResponder{aWS};
-}
-
 void on_load()
 {
     console.log("acmacs-api-client");
       // var host_port = window.location.href.match(/https?:\/\/([^\/]+)/i)[1];
       // var ws = new WebSocket("wss://" + host_port + "/myws", "protocolOne");
     auto* ws = new WebSocket("wss://localhost:1169/api");
-    login(ws, &make_echo_responder);
+    login(ws, [](client::WebSocket* aWS) { return new EchoResponder{aWS}; });
     // ws->set_onmessage(cheerp::Callback(on_message));
 
     static_cast<EventTarget&>(window).set_("session", new Session{});
