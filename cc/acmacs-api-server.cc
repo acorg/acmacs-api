@@ -152,6 +152,20 @@ class Command_login_nonce : public Command
 
 // ----------------------------------------------------------------------
 
+class Command_login_digest : public Command
+{
+ public:
+    using Command::Command;
+
+    virtual void run();
+
+    inline std::string cnonce() const { return get_string("cnonce"); }
+    inline std::string digest() const { return get_string("digest"); }
+
+}; // class Command_users
+
+// ----------------------------------------------------------------------
+
 class CommandFactory
 {
  public:
@@ -187,6 +201,7 @@ CommandFactory::CommandFactory()
     {"users", &CommandFactory::make<Command_users>},
     {"login_session", &CommandFactory::make<Command_login_session>},
     {"login_nonce", &CommandFactory::make<Command_login_nonce>},
+    {"login_digest", &CommandFactory::make<Command_login_digest>},
 }
 {
 }
@@ -386,6 +401,20 @@ void Command_login_nonce::run()
     }
 
 } // Command_login_nonce::run
+
+// ----------------------------------------------------------------------
+
+void Command_login_digest::run()
+{
+    try {
+        session().login_with_password_digest(cnonce(), digest());
+        send(JOS{} << JOKV{"R", "session"} << JOKV{"S", session().id()} << JOKV{"user", session().user()} << JOKV{"display_name", session().display_name()});
+    }
+    catch (std::exception& err) {
+        send(JOE(err.what()));
+    }
+
+} // Command_login_digest::run
 
 // ----------------------------------------------------------------------
 

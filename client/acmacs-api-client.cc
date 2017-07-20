@@ -17,6 +17,7 @@ namespace client
     Object* make_undefined(); // don't know how to make undefined in cheerp 1.3 otherwise
     bool is_undefined(Object*);
     bool is_undefined(Object&);
+    String* make_cnonce();
 
       // ----------------------------------------------------------------------
 
@@ -26,16 +27,16 @@ namespace client
         Array* get_U();        // user
         Array* get_P();        // password
 
-        inline String* to_string(Array& value)
+        inline String* to_string(Array& value, String* defaul)
             {
                 if (is_undefined(value) || value.get_length() == 0)
-                    return static_cast<String*>(make_undefined());
+                    return defaul; // static_cast<String*>(make_undefined());
                 return static_cast<String*>(value[0]);
             }
 
-        inline String* session() { return to_string(*get_S()); }
-        inline String* user() { return to_string(*get_U()); }
-        inline String* password() { return to_string(*get_P()); }
+        inline String* session() { return to_string(*get_S(), static_cast<String*>(make_undefined())); }
+        inline String* user() { return to_string(*get_U(), ""_S); }
+        inline String* password() { return to_string(*get_P(), ""_S); }
     };
 
     extern Argv* ARGV;
@@ -104,6 +105,13 @@ namespace client
     {
         inline GetNonceCommandData(String* aUser) : CommandData{"login_nonce"_S} { set_user(aUser); }
         void set_user(String*);
+    };
+
+    struct LoginPasswordCommandData : public CommandData
+    {
+        inline LoginPasswordCommandData(String* cnonce, String* digest) : CommandData{"login_digest"_S} { set_cnonce(cnonce); set_digest(digest); }
+        void set_cnonce(String*);
+        void set_digest(String*);
     };
 
     struct LoginNonceData : public ResponseData
@@ -232,11 +240,15 @@ class LoginNonce : public OnMessage<LoginNonceData>
  protected:
     virtual void process_message(LoginNonceData* aMessage)
         {
-            if (!is_undefined(aMessage->get_E())) {
-                window.alert("Login failed: "_S->concat(aMessage->get_E()));
+            if (is_undefined(aMessage->get_E())) {
+                auto* snonce = aMessage->get_login_nonce();
+                auto* cnonce = make_cnonce();
+                auto* digest_password = md5(ARGV->user()->concat(";acmacs-web;")->concat(ARGV->password()));
+                auto* digest = md5(snonce->concat(";")->concat(cnonce)->concat(";")->concat(digest_password));
+                transfer_send<LoggedIn>(new LoginPasswordCommandData{cnonce, digest});
             }
             else {
-                console.log("LoginNonce: "_S->concat(aMessage->get_login_nonce()));
+                window.alert("Login failed: "_S->concat(aMessage->get_E()));
             }
         }
 };
@@ -297,6 +309,8 @@ void webMain()
     __asm__("window.is_string = function(obj) { return Object.prototype.toString.call(obj) === '[object String]'; }");
     __asm__("window.make_undefined = function() { return undefined; }");
     __asm__("window.is_undefined = function(obj) { return obj === undefined; }");
+    __asm__("window.make_cnonce = function() { return Math.floor(Math.random() * 0xFFFFFFFF).toString(16); }");
+
 }
 
 // ----------------------------------------------------------------------
