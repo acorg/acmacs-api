@@ -26,7 +26,13 @@ namespace client
 
       // ----------------------------------------------------------------------
 
+    String* md5(String*);
+
+      // ----------------------------------------------------------------------
+
+      // see __asm__ below
     bool is_string(Object*);
+    Object* make_undefined(); // don't know how to make undefined in cheerp 1.3 otherwise
 
       // ----------------------------------------------------------------------
 
@@ -37,11 +43,21 @@ namespace client
 
     struct EchoMessage : public Object {};
 
-    struct LoginData : public Object
+    struct CommandData : public Object
     {
-        inline LoginData(String* aS) { set_C("login"_S); set_S(aS); }
-        void set_S(String*);
+        inline CommandData(String* aCmd) { set_C(aCmd) ; }
         void set_C(String*);
+    };
+
+    struct UsersData : public CommandData
+    {
+        inline UsersData() : CommandData{"users"_S} {}
+    };
+
+    struct LoginData : public CommandData
+    {
+        inline LoginData(String* aS) : CommandData{"login"_S} { set_S(aS); }
+        void set_S(String*);
         void set_U(String*);
         void set_P(String*);
     };
@@ -83,10 +99,12 @@ template <typename MessageType> class OnMessage
 
  protected:
     virtual void process_message(MessageType* aMessage) = 0;
+
     inline void send(Object* aData)
         {
             if (!is_string(aData))
-                aData = JSON.stringify(aData);
+                aData = JSON.stringify(aData, cheerp::Callback(&OnMessage::stringify_replacer));
+            console.log("Send: "_S->concat(static_cast<String*>(aData)));
             mWS->send(aData);
         }
 
@@ -108,6 +126,13 @@ template <typename MessageType> class OnMessage
 
  private:
     WebSocket* mWS;
+
+    static inline Object* stringify_replacer(String* key, Object* value)
+        {
+            if (key == "i0"_S)
+                value = make_undefined();
+            return value;
+        }
 };
 
 class EchoResponder : public OnMessage<EchoMessage>
@@ -133,6 +158,7 @@ class WaitingForHello : public OnMessage<HelloFromServer>
             auto server_version = aMessage->get_hello();
             if ("acmacs-api-server-v1"_S == server_version) {
                 transfer_send<EchoResponder>(new LoginData{ARGV->session()});
+                  // transfer_send<EchoResponder>(new UsersData{});
             }
             else {
                 window.alert("Unsupported server version: "_S->concat(server_version));
@@ -162,6 +188,7 @@ void webMain()
     __asm__("window.object_keys = Object.keys;");
       // https://stackoverflow.com/questions/4059147/check-if-a-variable-is-a-string
     __asm__("window.is_string = function(obj) { return Object.prototype.toString.call(obj) === '[object String]'; }");
+    __asm__("window.make_undefined = function() { return undefined; }");
 }
 
 // ----------------------------------------------------------------------
