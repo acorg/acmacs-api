@@ -18,11 +18,24 @@ inline client::Object* stringify_replacer(client::String* key, client::Object* v
     return value;
 }
 
+inline client::String* stringify(client::Object* value)
+{
+    return client::JSON.stringify(value, cheerp::Callback(&stringify_replacer));
+}
+
+inline client::String* to_string(client::Object* value)
+{
+    return is_string(value) ? static_cast<client::String*>(value) : stringify(value);
+}
+
+// ----------------------------------------------------------------------
+
 inline client::String* concat(client::String* first, client::Object* second)
 {
-    if (!is_string(second))
-        second = client::JSON.stringify(second, cheerp::Callback(&stringify_replacer));
-    return first->concat(static_cast<client::String*>(second));
+    // if (!is_string(second))
+    //     second = client::JSON.stringify(second, cheerp::Callback(&stringify_replacer));
+    // return first->concat(static_cast<client::String*>(second));
+    return first->concat(to_string(second));
 }
 
 inline client::String* concat(client::String* first, client::String* second)
