@@ -33,6 +33,21 @@ namespace client
       // see __asm__ below
     bool is_string(Object*);
     Object* make_undefined(); // don't know how to make undefined in cheerp 1.3 otherwise
+    bool is_undefined(Object*);
+
+      // ----------------------------------------------------------------------
+
+    struct Session : public Object
+    {
+        String* get_id();
+        void set_id(String*);
+        String* get_user();
+        void set_user(String*);
+        String* get_display_name();
+        void set_display_name(String*);
+    };
+
+    extern Session* session;
 
       // ----------------------------------------------------------------------
 
@@ -62,6 +77,18 @@ namespace client
         void set_P(String*);
     };
 
+    struct ResponseData : public Object
+    {
+        String* get_R();
+        String* get_E();
+    };
+
+    struct LoggedInData : public ResponseData
+    {
+        String* get_S();
+        String* get_user();
+        String* get_display_name();
+    };
 }
 
 // ----------------------------------------------------------------------
@@ -147,7 +174,28 @@ class EchoResponder : public OnMessage<EchoMessage>
         }
 };
 
-class WaitingForHello : public OnMessage<HelloFromServer>
+class LoggedIn : public OnMessage<LoggedInData>
+{
+ public:
+    using OnMessage::OnMessage;
+
+ protected:
+    virtual void process_message(LoggedInData* aMessage)
+        {
+            if (!is_undefined(aMessage->get_E()) || aMessage->get_R() != "session"_S) {
+                window.alert("Login failed: "_S->concat(aMessage->get_E()));
+            }
+            else {
+                session->set_id(aMessage->get_S());
+                session->set_user(aMessage->get_user());
+                session->set_display_name(aMessage->get_display_name());
+            }
+            send("{\"C\":\"echo\"}");
+            transfer<EchoResponder>();
+        }
+};
+
+class Login : public OnMessage<HelloFromServer>
 {
  public:
     using OnMessage::OnMessage;
@@ -157,7 +205,7 @@ class WaitingForHello : public OnMessage<HelloFromServer>
         {
             auto server_version = aMessage->get_hello();
             if ("acmacs-api-server-v1"_S == server_version) {
-                transfer_send<EchoResponder>(new LoginData{ARGV->session()});
+                login();
                   // transfer_send<EchoResponder>(new UsersData{});
             }
             else {
@@ -165,12 +213,18 @@ class WaitingForHello : public OnMessage<HelloFromServer>
             }
         }
 
+    void login()
+        {
+            auto* login_data = new LoginData{ARGV->session()};
+            transfer_send<LoggedIn>(login_data);
+        }
+
     // virtual void process_message(HelloFromServer* aMessage)
     //     {
     //         auto server_version = aMessage->get_hello();
     //         if ("acmacs-api-server-v1"_S == server_version) {
     //             transfer<EchoResponder>();
-    //               // send(R"({"C": "echo", "V": "WaitingForHello"})");
+    //               // send(R"({"C": "echo", "V": "Login"})");
     //             send(R"({"C": "users"})");
     //         }
     //         else {
@@ -189,6 +243,7 @@ void webMain()
       // https://stackoverflow.com/questions/4059147/check-if-a-variable-is-a-string
     __asm__("window.is_string = function(obj) { return Object.prototype.toString.call(obj) === '[object String]'; }");
     __asm__("window.make_undefined = function() { return undefined; }");
+    __asm__("window.is_undefined = function(obj) { return obj === undefined; }");
 }
 
 // ----------------------------------------------------------------------
@@ -207,11 +262,12 @@ void on_load()
       // var ws = new WebSocket("wss://" + host_port + "/myws", "protocolOne");
     auto* ws = new WebSocket("wss://localhost:1169/api");
     // ws->set_onmessage(cheerp::Callback(on_message));
-    ws->set_onmessage(cheerp::Callback(WaitingForHello(ws)));
+    ws->set_onmessage(cheerp::Callback(Login(ws)));
     console.log("ARGV", JSON.stringify(ARGV));
       //console.log("ARGV", JSON.stringify(ARGV), static_cast<String*>((*ARGV[String{"S"}])[0]));
     console.log("ARGV[S]", JSON.stringify(ARGV->get_S()));
 
+    static_cast<EventTarget&>(window).set_("session", new Session{});
 }
 
 // void on_message(MessageEvent* aEvent)

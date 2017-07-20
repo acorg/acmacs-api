@@ -28,6 +28,7 @@ ACMACS_API_SERVER_LIBS = $(MONGO_LDLIBS) -lacmacswebserver
 
 CHEERP = /opt/cheerp/bin/clang++ -target cheerp  -Wno-unknown-pragmas
 CHEERP_FLAGS = -std=c++1z -I. -Iinclude -g $(OPTIMIZATION) $(WEVERYTHING)
+# --cheerp-preexecute
 
 # ----------------------------------------------------------------------
 
@@ -98,7 +99,8 @@ $(ACMACS_API_SERVER): $(patsubst %.cc,$(BUILD)/%.o,$(ACMACS_API_SERVER_SOURCES))
 	@g++ $(LDFLAGS) -o $@ $^ $(ACMACS_API_SERVER_LIBS) $(LDLIBS)
 
 $(ACMACS_API_CLIENT): $(patsubst %,client/%,$(ACMACS_API_CLIENT_SOURCES)) | $(DIST)
-	$(CHEERP) $(CHEERP_FLAGS) -cheerp-sourcemap=$@.map -o - $^ | gzip -9 >$@
+	$(CHEERP) $(CHEERP_FLAGS) -cheerp-sourcemap=$(basename $@).map -o $(basename $@) $^
+	gzip -9fv $(basename $@) $(basename $@).map
 
 # ----------------------------------------------------------------------
 

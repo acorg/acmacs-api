@@ -14,6 +14,36 @@
 
 // ----------------------------------------------------------------------
 
+class JOKV : public std::pair<std::string, std::string>                     // json object key value
+{
+ public:
+    inline JOKV(std::string key, std::string value) : std::pair<std::string, std::string>(key, value) {}
+};
+
+class JOS : public std::string  // json object string
+{
+ public:
+    inline JOS() : std::string{"{}"} {}
+    inline JOS& operator << (JOKV&& key_value)
+        {
+            size_t pos = size() - 1;
+            if (size() > 2) {
+                insert(pos, ",");
+                ++pos;
+            }
+            insert(pos, "\"" + key_value.first + "\":\"" + key_value.second + "\"");
+            return *this;
+        }
+};
+
+class JOE : public std::string  // json object error
+{
+ public:
+    inline JOE(std::string aMessage) : std::string{"{\"E\":\"" + aMessage + "\"}"} {}
+};
+
+// ----------------------------------------------------------------------
+
 class RootPage : public WsppHttpLocationHandler
 {
  public:
@@ -239,6 +269,7 @@ Session& Command::session()
 
 void Command::send(std::string aMessage, websocketpp::frame::opcode::value op_code)
 {
+    std::cerr << "Command::send: " << aMessage << std::endl;
     mServer.send(aMessage, op_code);
 
 } // Command::send
@@ -262,10 +293,10 @@ void Command_users::run()
                        // << bsoncxx::builder::concatenate(aSession.read_permissions().view())
                      << DocumentFindResults::bson_finalize),
                     MongodbAccess::exclude{"_id", "_t", "_m", "password", "nonce"}};
-        send("{\"R\": " + results.json() + "}");
+        send(JOS{} << JOKV{"R", results.json()});
     }
     catch (DocumentFindResults::Error& err) {
-        send(std::string{"{\"E\": \""} + err.what() + "\"}");
+        send(JOE(err.what())); // std::string{"{\"E\": \""} + err.what() + "\"}");
     }
 
 } // Command_users::run
@@ -292,10 +323,11 @@ void Command_login::run()
         //     // // aSession.login(user, password);
         //     // // std::cout << "--session " << aSession.id() << std::endl;
         // }
-        send(std::string{"{\"R\":\"session\",\"S\":\"" + session().id() + "\"}"});
+          //  send(std::string{"{\"R\":\"session\",\"S\":\"" + session().id() + "\"}"});
+        send(JOS{} << JOKV{"R", "session"} << JOKV{"S", session().id()} << JOKV{"user", session().user()} << JOKV{"display_name", session().display_name()});
     }
     catch (std::exception& err) {
-        send(std::string{"{\"E\": \""} + err.what() + "\"}");
+        send(JOE(err.what())); // send(std::string{"{\"E\": \""} + err.what() + "\"}");
     }
 
 } // Command_login::run
