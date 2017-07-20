@@ -4,20 +4,14 @@
 #include <map>
 #include <vector>
 
-// ----------------------------------------------------------------------
-
-inline client::String* operator ""_S(const char* src, size_t) { return new client::String{src}; }
+#include "string.hh"
+#include "asm.hh"
 
 // ----------------------------------------------------------------------
 
 namespace client
 {
       // see __asm__ below
-    bool is_string(Object*);
-    Object* make_undefined(); // don't know how to make undefined in cheerp 1.3 otherwise
-    bool is_undefined(Object*);
-    bool is_undefined(Object&);
-    String* make_cnonce();
 
       // ----------------------------------------------------------------------
 
@@ -137,13 +131,6 @@ static void on_load();
 
 // ----------------------------------------------------------------------
 
-//inline String operator "" _s(const char* src, size_t) { return {src}; }
-// inline String* operator + (String&& s1, String* s2) { return s1.concat(s2); }
-// inline String* operator + (String& s1, String* s2) { return s1.concat(s2); }
-// inline String* operator + (const char* s1, String& s2) { return String{s1}.concat(s2); }
-// inline bool operator == (String&& s1, String* s2) { return &s1 == s2; }
-// inline bool operator == (String* s1, String&& s2) { return s1 == &s2; }
-
 // ----------------------------------------------------------------------
 
 template <typename MessageType> class OnMessage
@@ -166,8 +153,8 @@ template <typename MessageType> class OnMessage
     inline void send(Object* aData)
         {
             if (!is_string(aData))
-                aData = JSON.stringify(aData, cheerp::Callback(&OnMessage::stringify_replacer));
-            console.log("Send: "_S->concat(static_cast<String*>(aData)));
+                aData = JSON.stringify(aData, cheerp::Callback(&stringify_replacer));
+            console_log("Send: ", aData);
             mWS->send(aData);
         }
 
@@ -190,12 +177,6 @@ template <typename MessageType> class OnMessage
  private:
     WebSocket* mWS;
 
-    static inline Object* stringify_replacer(String* key, Object* value)
-        {
-            if (key == "i0"_S)
-                value = make_undefined();
-            return value;
-        }
 };
 
 class EchoResponder : public OnMessage<EchoMessage>
@@ -206,7 +187,7 @@ class EchoResponder : public OnMessage<EchoMessage>
  protected:
     virtual void process_message(EchoMessage* aMessage)
         {
-            console.log("EchoResponder: "_S->concat(JSON.stringify(aMessage)));
+            console_log("EchoResponder: ", aMessage);
         }
 };
 
@@ -219,13 +200,13 @@ class LoggedIn : public OnMessage<LoggedInData>
     virtual void process_message(LoggedInData* aMessage)
         {
             if (!is_undefined(aMessage->get_E()) || aMessage->get_R() != "session"_S) {
-                window.alert("Login failed: "_S->concat(aMessage->get_E()));
+                window.alert(concat("Login failed: ", aMessage->get_E()));
             }
             else {
                 session->set_id(aMessage->get_S());
                 session->set_user(aMessage->get_user());
                 session->set_display_name(aMessage->get_display_name());
-                console.log("Logged in: "_S->concat(session->get_user())->concat(" ")->concat(session->get_display_name()));
+                console_log("Logged in: ", session->get_user(), session->get_display_name());
             }
             send("{\"C\":\"echo\"}");
             transfer<EchoResponder>();
@@ -243,12 +224,12 @@ class LoginNonce : public OnMessage<LoginNonceData>
             if (is_undefined(aMessage->get_E())) {
                 auto* snonce = aMessage->get_login_nonce();
                 auto* cnonce = make_cnonce();
-                auto* digest_password = md5(ARGV->user()->concat(";acmacs-web;")->concat(ARGV->password()));
-                auto* digest = md5(snonce->concat(";")->concat(cnonce)->concat(";")->concat(digest_password));
+                auto* digest_password = md5(concat(ARGV->user(), ";acmacs-web;", ARGV->password()));
+                auto* digest = md5(concat(snonce, ";", cnonce, ";", digest_password));
                 transfer_send<LoggedIn>(new LoginPasswordCommandData{cnonce, digest});
             }
             else {
-                window.alert("Login failed: "_S->concat(aMessage->get_E()));
+                window.alert(concat("Login failed: ", aMessage->get_E()));
             }
         }
 };
@@ -267,7 +248,7 @@ class Login : public OnMessage<HelloFromServer>
                   // transfer_send<EchoResponder>(new UsersData{});
             }
             else {
-                window.alert("Unsupported server version: "_S->concat(server_version));
+                window.alert(concat("Unsupported server version: ", server_version));
             }
         }
 
@@ -293,7 +274,7 @@ class Login : public OnMessage<HelloFromServer>
     //             send(R"({"C": "users"})");
     //         }
     //         else {
-    //             window.alert("Unsupported server version: "_S->concat(server_version));
+    //             window.alert(concat("Unsupported server version: ", server_version));
     //         }
     //     }
 };
@@ -303,14 +284,7 @@ class Login : public OnMessage<HelloFromServer>
 void webMain()
 {
     window.set_onload(cheerp::Callback(on_load));
-
-    __asm__("window.object_keys = Object.keys;");
-      // https://stackoverflow.com/questions/4059147/check-if-a-variable-is-a-string
-    __asm__("window.is_string = function(obj) { return Object.prototype.toString.call(obj) === '[object String]'; }");
-    __asm__("window.make_undefined = function() { return undefined; }");
-    __asm__("window.is_undefined = function(obj) { return obj === undefined; }");
-    __asm__("window.make_cnonce = function() { return Math.floor(Math.random() * 0xFFFFFFFF).toString(16); }");
-
+    make_asm_definitions();
 }
 
 // ----------------------------------------------------------------------
