@@ -19,9 +19,9 @@ class Session : public StoredInMongodb
           mGroups{aSrc.mGroups}, mCommands{aSrc.mCommands}, mExpirationInSeconds{aSrc.mExpirationInSeconds} {}
 
     void use_session(std::string aSessionId); // throws Error
+    std::string login_nonce(std::string aUser);
+
     void login(std::string aUser, std::string aPassword);
-    void find_user(std::string aUser, bool aGetPassword);
-    std::string get_nonce();
     void login_with_password_digest(std::string aCNonce, std::string aPasswordDigest);
 
     inline std::string id() const { return mId; }
@@ -57,6 +57,8 @@ class Session : public StoredInMongodb
     void find_groups_of_user();
     void reset();
     std::string hashed_password(std::string aCNonce);
+    void find_user(std::string aUser, bool aGetPassword);
+    std::string get_nonce();
 
 }; // class Session
 

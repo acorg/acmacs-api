@@ -48,6 +48,15 @@ void Session::use_session(std::string aSessionId)
 
 // ----------------------------------------------------------------------
 
+std::string Session::login_nonce(std::string aUser)
+{
+    find_user(aUser, true);
+    return get_nonce();
+
+} // Session::login_nonce
+
+// ----------------------------------------------------------------------
+
 void Session::find_user(std::string aUser, bool aGetPassword)
 {
     auto found = find_one("users_groups", bson_doc{} << "name" << aUser << "_t" << "acmacs.mongodb_collections.users_groups.User" << bson_finalize, exclude{"_id", "_t", "recent_logins", "created", "p", "_m"});

@@ -111,7 +111,22 @@ class Command_users : public Command
 
 // ----------------------------------------------------------------------
 
-class Command_login : public Command
+// class Command_login : public Command
+// {
+//  public:
+//     using Command::Command;
+
+//     virtual void run();
+
+//     inline std::string session_id() const { return get_string("S"); }
+//     inline std::string user() const { return get_string("U"); }
+//     inline std::string password() const { return get_string("P"); }
+
+// }; // class Command_users
+
+// ----------------------------------------------------------------------
+
+class Command_login_session : public Command
 {
  public:
     using Command::Command;
@@ -119,8 +134,19 @@ class Command_login : public Command
     virtual void run();
 
     inline std::string session_id() const { return get_string("S"); }
-    inline std::string user() const { return get_string("U"); }
-    inline std::string password() const { return get_string("P"); }
+
+}; // class Command_users
+
+// ----------------------------------------------------------------------
+
+class Command_login_nonce : public Command
+{
+ public:
+    using Command::Command;
+
+    virtual void run();
+
+    inline std::string user() const { return get_string("user"); }
 
 }; // class Command_users
 
@@ -159,7 +185,8 @@ class CommandFactory
 CommandFactory::CommandFactory()
     : mFactory{
     {"users", &CommandFactory::make<Command_users>},
-    {"login", &CommandFactory::make<Command_login>},
+    {"login_session", &CommandFactory::make<Command_login_session>},
+    {"login_nonce", &CommandFactory::make<Command_login_nonce>},
 }
 {
 }
@@ -303,34 +330,62 @@ void Command_users::run()
 
 // ----------------------------------------------------------------------
 
-void Command_login::run()
+// void Command_login::run()
+// {
+//     try {
+//         const auto session_id_ = session_id();
+//         const auto username = user();
+//         if (!session_id_.empty()) {
+//             try {
+//                 session().use_session(session_id_);
+//             }
+//             catch (std::exception& err) {
+//                 if (username.empty())
+//                     throw std::runtime_error{std::string{"invalid session-id: "} + err.what()};
+//                 else
+//                     std::cerr << "Invalid session: " << err.what() << std::endl;
+//             }
+//         }
+//         // if (aSession.id().empty() && !username.empty()) {
+//         //     // // aSession.login(user, password);
+//         //     // // std::cout << "--session " << aSession.id() << std::endl;
+//         // }
+//           //  send(std::string{"{\"R\":\"session\",\"S\":\"" + session().id() + "\"}"});
+//         send(JOS{} << JOKV{"R", "session"} << JOKV{"S", session().id()} << JOKV{"user", session().user()} << JOKV{"display_name", session().display_name()});
+//     }
+//     catch (std::exception& err) {
+//         send(JOE(err.what())); // send(std::string{"{\"E\": \""} + err.what() + "\"}");
+//     }
+
+// } // Command_login::run
+
+// ----------------------------------------------------------------------
+
+void Command_login_session::run()
 {
     try {
-        const auto session_id_ = session_id();
-        const auto username = user();
-        if (!session_id_.empty()) {
-            try {
-                session().use_session(session_id_);
-            }
-            catch (std::exception& err) {
-                if (username.empty())
-                    throw std::runtime_error{std::string{"invalid session-id: "} + err.what()};
-                else
-                    std::cerr << "Invalid session: " << err.what() << std::endl;
-            }
-        }
-        // if (aSession.id().empty() && !username.empty()) {
-        //     // // aSession.login(user, password);
-        //     // // std::cout << "--session " << aSession.id() << std::endl;
-        // }
-          //  send(std::string{"{\"R\":\"session\",\"S\":\"" + session().id() + "\"}"});
+        session().use_session(session_id());
         send(JOS{} << JOKV{"R", "session"} << JOKV{"S", session().id()} << JOKV{"user", session().user()} << JOKV{"display_name", session().display_name()});
     }
     catch (std::exception& err) {
-        send(JOE(err.what())); // send(std::string{"{\"E\": \""} + err.what() + "\"}");
+        send(JOE(err.what()));
     }
 
-} // Command_login::run
+} // Command_login_session::run
+
+// ----------------------------------------------------------------------
+
+void Command_login_nonce::run()
+{
+    try {
+        const auto nonce = session().login_nonce(user());
+        send(JOS{} << JOKV{"R", "login_nonce"} << JOKV{"login_nonce", nonce});
+    }
+    catch (std::exception& err) {
+        send(JOE(err.what()));
+    }
+
+} // Command_login_nonce::run
 
 // ----------------------------------------------------------------------
 

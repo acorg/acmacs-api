@@ -12,14 +12,32 @@ inline client::String* operator ""_S(const char* src, size_t) { return new clien
 
 namespace client
 {
+      // see __asm__ below
+    bool is_string(Object*);
+    Object* make_undefined(); // don't know how to make undefined in cheerp 1.3 otherwise
+    bool is_undefined(Object*);
+    bool is_undefined(Object&);
+
+      // ----------------------------------------------------------------------
+
     struct Argv : public Object
     {
         Array* get_S();
         Array* get_U();        // user
         Array* get_P();        // password
 
-        inline String* session() { return static_cast<String*>((*get_S())[0]); }
+        inline String* to_string(Array& value)
+            {
+                if (is_undefined(value) || value.get_length() == 0)
+                    return static_cast<String*>(make_undefined());
+                return static_cast<String*>(value[0]);
+            }
+
+        inline String* session() { return to_string(*get_S()); }
+        inline String* user() { return to_string(*get_U()); }
+        inline String* password() { return to_string(*get_P()); }
     };
+
     extern Argv* ARGV;
     Array* object_keys(Object*);
     Array* object_keys(Object&);
@@ -27,13 +45,6 @@ namespace client
       // ----------------------------------------------------------------------
 
     String* md5(String*);
-
-      // ----------------------------------------------------------------------
-
-      // see __asm__ below
-    bool is_string(Object*);
-    Object* make_undefined(); // don't know how to make undefined in cheerp 1.3 otherwise
-    bool is_undefined(Object*);
 
       // ----------------------------------------------------------------------
 
@@ -69,18 +80,35 @@ namespace client
         inline UsersData() : CommandData{"users"_S} {}
     };
 
-    struct LoginData : public CommandData
+    // struct LoginData : public CommandData
+    // {
+    //     inline LoginData(String* aS) : CommandData{"login"_S} { set_S(aS); }
+    //     void set_S(String*);
+    //     void set_U(String*);
+    //     void set_P(String*);
+    // };
+
+    struct LoginSessionData : public CommandData
     {
-        inline LoginData(String* aS) : CommandData{"login"_S} { set_S(aS); }
+        inline LoginSessionData(String* aS) : CommandData{"login_session"_S} { set_S(aS); }
         void set_S(String*);
-        void set_U(String*);
-        void set_P(String*);
     };
 
     struct ResponseData : public Object
     {
         String* get_R();
         String* get_E();
+    };
+
+    struct GetNonceCommandData : public CommandData
+    {
+        inline GetNonceCommandData(String* aUser) : CommandData{"login_nonce"_S} { set_user(aUser); }
+        void set_user(String*);
+    };
+
+    struct LoginNonceData : public ResponseData
+    {
+        String* get_login_nonce();
     };
 
     struct LoggedInData : public ResponseData
@@ -189,9 +217,27 @@ class LoggedIn : public OnMessage<LoggedInData>
                 session->set_id(aMessage->get_S());
                 session->set_user(aMessage->get_user());
                 session->set_display_name(aMessage->get_display_name());
+                console.log("Logged in: "_S->concat(session->get_user())->concat(" ")->concat(session->get_display_name()));
             }
             send("{\"C\":\"echo\"}");
             transfer<EchoResponder>();
+        }
+};
+
+class LoginNonce : public OnMessage<LoginNonceData>
+{
+ public:
+    using OnMessage::OnMessage;
+
+ protected:
+    virtual void process_message(LoginNonceData* aMessage)
+        {
+            if (!is_undefined(aMessage->get_E())) {
+                window.alert("Login failed: "_S->concat(aMessage->get_E()));
+            }
+            else {
+                console.log("LoginNonce: "_S->concat(aMessage->get_login_nonce()));
+            }
         }
 };
 
@@ -215,8 +261,15 @@ class Login : public OnMessage<HelloFromServer>
 
     void login()
         {
-            auto* login_data = new LoginData{ARGV->session()};
-            transfer_send<LoggedIn>(login_data);
+            if (!is_undefined(ARGV->session())) {
+                transfer_send<LoggedIn>(new LoginSessionData{ARGV->session()});
+            }
+            else if (!is_undefined(ARGV->user())) {
+                transfer_send<LoginNonce>(new GetNonceCommandData{ARGV->user()});
+            }
+            else {
+                window.alert("Cannot login: no cridentials");
+            }
         }
 
     // virtual void process_message(HelloFromServer* aMessage)
