@@ -15,7 +15,13 @@ namespace client
 
     template <typename ... Args> void console_log(Args ...);
     template <typename ... Args> inline void console_log(const char* first, Args ... rest) { console_log(new client::String{first}, rest ...); }
-}
+
+    Array* object_keys(Object*);
+    Array* object_keys(Object&);
+
+} // namespace client
+
+// ----------------------------------------------------------------------
 
 void make_asm_definitions();
 

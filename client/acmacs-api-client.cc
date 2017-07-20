@@ -5,39 +5,12 @@
 #include <vector>
 
 #include "string.hh"
-#include "asm.hh"
+#include "argv.hh"
 
 // ----------------------------------------------------------------------
 
 namespace client
 {
-      // see __asm__ below
-
-      // ----------------------------------------------------------------------
-
-    struct Argv : public Object
-    {
-        Array* get_S();
-        Array* get_U();        // user
-        Array* get_P();        // password
-
-        inline String* to_string(Array& value, String* defaul)
-            {
-                if (is_undefined(value) || value.get_length() == 0)
-                    return defaul; // static_cast<String*>(make_undefined());
-                return static_cast<String*>(value[0]);
-            }
-
-        inline String* session() { return to_string(*get_S(), static_cast<String*>(make_undefined())); }
-        inline String* user() { return to_string(*get_U(), ""_S); }
-        inline String* password() { return to_string(*get_P(), ""_S); }
-    };
-
-    extern Argv* ARGV;
-    Array* object_keys(Object*);
-    Array* object_keys(Object&);
-
-      // ----------------------------------------------------------------------
 
     String* md5(String*);
 
