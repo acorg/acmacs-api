@@ -2,6 +2,7 @@
 
 #include <string>
 #include <thread>
+#include <mutex>
 
 #include "mongo-access.hh"
 
