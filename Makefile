@@ -124,7 +124,7 @@ ifndef ACMACSD_ROOT
 endif
 
 kill-server:
-	if [ "`uname`" == "Darwin" ]; then killall acmacs-api-server 2>/dev/null || true; fi
+	if [ "`uname`" = "Darwin" ]; then killall acmacs-api-server 2>/dev/null || true; fi
 
 $(DIST):
 	mkdir -p $(DIST)
