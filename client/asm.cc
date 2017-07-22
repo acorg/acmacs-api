@@ -12,8 +12,29 @@ void make_asm_definitions()
     __asm__("window.is_undefined_or_null = function(obj) { return obj === undefined || obj === null; };");
     __asm__("window.is_not_null = function(obj) { return obj !== undefined && obj !== null; };");
     __asm__("window.make_cnonce = function() { return Math.floor(Math.random() * 0xFFFFFFFF).toString(16); };");
+    __asm__("window.make_number = function(num) { return new Number(num); };");
     __asm__("window.console_log = console.log;");
     __asm__("window.console_error = console.error;");
+
+      // https://stackoverflow.com/questions/4810841/how-can-i-pretty-print-json-using-javascript
+    __asm__(R"(window.json_syntax_highlight = function(data) {
+    data = data.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return data.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+        var cls = 'json-highlight-number';
+        if (/^"/.test(match)) {
+            if (/:$/.test(match)) {
+                cls = 'json-highlight-key';
+            } else {
+                cls = 'json-highlight-string';
+            }
+        } else if (/true|false/.test(match)) {
+            cls = 'json-highlight-boolean';
+        } else if (/null/.test(match)) {
+            cls = 'json-highlight-null';
+        }
+        return '<span class="' + cls + '">' + match + '</span>';
+    });
+};)");
 
 } // make_asm_definitions
 

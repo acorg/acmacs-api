@@ -15,7 +15,14 @@ namespace client
     bool is_undefined_or_null(client::Object&);
     bool is_not_null(client::Object*); // and not undefined
     bool is_not_null(client::Object&); // and not undefined
+
+    client::Object* make_number(int);
+    client::Object* make_number(unsigned);
+    client::Object* make_number(long);
+    client::Object* make_number(unsigned long);
+
     client::String* make_cnonce();
+    client::String* json_syntax_highlight(client::String*);
 
     template <typename ... Args> void console_log(Args ...);
     template <typename ... Args> inline void console_log(const char* first, Args ... rest) { console_log(new client::String{first}, rest ...); }

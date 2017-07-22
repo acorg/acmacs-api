@@ -18,9 +18,9 @@ inline client::Object* stringify_replacer(client::String* key, client::Object* v
     return value;
 }
 
-inline client::String* stringify(client::Object* value)
+inline client::String* stringify(client::Object* value, size_t indent = 0)
 {
-    return client::JSON.stringify(value, cheerp::Callback(&stringify_replacer));
+    return client::JSON.stringify(value, cheerp::Callback(&stringify_replacer), client::make_number(indent));
 }
 
 // ----------------------------------------------------------------------

@@ -68,9 +68,8 @@ class JsonPrinter : public OnMessage<ResponseData>
  protected:
     virtual void process_message(ResponseData* aMessage)
         {
-            console_log("WHOA");
             auto* pre = document.createElement("pre");
-            pre->set_textContent(aMessage->get_R());
+            pre->set_innerHTML(json_syntax_highlight(stringify(aMessage->get_R(), 2)));
             document.get_body()->appendChild(pre);
         }
 };
