@@ -26,8 +26,8 @@ ACMACS_API_SERVER_LIBS = $(MONGO_LDLIBS) -lacmacswebserver
 
 # ----------------------------------------------------------------------
 
-CHEERP = /opt/cheerp/bin/clang++ -target cheerp  -Wno-unknown-pragmas
-CHEERP_FLAGS = -std=c++1z -I. -Iinclude -g $(OPTIMIZATION) $(WEVERYTHING)
+CHEERP = /opt/cheerp/bin/clang++ -target cheerp
+CHEERP_FLAGS = -std=c++1z -I. -Iinclude -g $(OPTIMIZATION) $(WEVERYTHING) -Wno-unknown-pragmas
 # --cheerp-preexecute
 
 # ----------------------------------------------------------------------
@@ -58,7 +58,11 @@ PKG_INCLUDES += -I/usr/local/opt/openssl/include
 # $$(pkg-config --cflags libuv)
 endif
 
-PROGS = $(MONGO_DIRECT) $(ACMACS_API_SERVER) $(ACMACS_API_CLIENT)
+PROGS = $(MONGO_DIRECT) $(ACMACS_API_SERVER)
+ifeq ($(shell uname -s),Darwin)
+# client cannot be compiled on ubuntu 14.04
+PROGS += $(ACMACS_API_CLIENT)
+endif
 # $(MONGO_TEST) $(MONGO_FIND) $(MONGO_RAW)
 
 # ----------------------------------------------------------------------
