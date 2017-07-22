@@ -127,11 +127,11 @@ class MongodbAccess
 class DocumentFindResults : public MongodbAccess
 {
  private:
-    template <typename Writer> inline std::string json_w() const
+    template <typename Writer> inline std::string json_w(std::string key) const
         {
             Writer writer{"DocumentFindResults"};
             writer << json_writer::start_object
-                    << json_writer::key("results") << mRecords
+                    << json_writer::key(key) << mRecords
                     << json_writer::end_object;
             return writer << json_writer::finalize;
         }
@@ -166,9 +166,9 @@ class DocumentFindResults : public MongodbAccess
             }
         }
 
-    inline std::string json(bool pretty = true) const
+    inline std::string json(bool pretty = true, std::string key = "results") const
         {
-            return pretty ? json_w<json_writer::pretty>() : json_w<json_writer::compact>();
+            return pretty ? json_w<json_writer::pretty>(key) : json_w<json_writer::compact>(key);
         }
 
  private:

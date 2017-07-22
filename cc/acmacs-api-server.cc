@@ -335,7 +335,8 @@ void Command_users::run()
                        // << bsoncxx::builder::concatenate(aSession.read_permissions().view())
                      << DocumentFindResults::bson_finalize),
                     MongodbAccess::exclude{"_id", "_t", "_m", "password", "nonce"}};
-        send(JOS{} << JOKV{"R", results.json()});
+          // send(JOS{} << JOKV{"E", "who cares?"});
+        send(results.json(false, "R"));
     }
     catch (DocumentFindResults::Error& err) {
         send(JOE(err.what())); // std::string{"{\"E\": \""} + err.what() + "\"}");

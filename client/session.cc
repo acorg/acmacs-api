@@ -6,6 +6,22 @@
 namespace client
 {
     String* md5(String*);
+
+      // --------------------------------------------------
+
+    struct GetNonceCommandData : public CommandData
+    {
+        inline GetNonceCommandData(String* aUser) : CommandData{"login_nonce"_S} { set_user(aUser); }
+        void set_user(String*);
+    };
+
+    struct LoginPasswordCommandData : public CommandData
+    {
+        inline LoginPasswordCommandData(String* cnonce, String* digest) : CommandData{"login_digest"_S} { set_cnonce(cnonce); set_digest(digest); }
+        void set_cnonce(String*);
+        void set_digest(String*);
+    };
+
 }
 
 using namespace client;

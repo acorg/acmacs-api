@@ -108,6 +108,11 @@ template <typename ... Args> inline client::Object* make_object(Args ... args)
     return result;
 }
 
+inline client::String* make_json(client::Object* src)
+{
+    return stringify(src);
+}
+
 template <typename ... Args> inline client::String* make_json(Args ... args)
 {
     return stringify(make_object(args ...));

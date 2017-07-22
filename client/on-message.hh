@@ -38,6 +38,11 @@ class OnMessageBase
  protected:
     virtual void process_raw_message(client::Object* aMessage) = 0;
 
+    // template <typename ... Args> inline void send(Args ... args)
+    //     {
+    //         send(make_json(args...));
+    //     }
+
     inline void send(client::String* aData)
         {
             console_log("Send: ", aData);
@@ -49,14 +54,9 @@ class OnMessageBase
             send(to_string(aData));
         }
 
-    template <typename ... Args> inline void send(Args ... args)
-        {
-            send(make_json(args...));
-        }
-
     inline void send(const char* aData)
         {
-            mWS->send(new client::String{aData});
+            send(to_string(aData));
         }
 
     template <typename NewHandler> inline void transfer(NewHandler&& aHandler)
@@ -86,7 +86,7 @@ class OnMessageBase
  private:
     client::WebSocket* mWS;
 
-};
+}; // class OnMessageBase
 
 // ----------------------------------------------------------------------
 
@@ -97,19 +97,23 @@ template <typename MessageType> class OnMessage : public OnMessageBase
 
     using OnMessageBase::OnMessageBase;
 
-
-    inline void operator()(client::MessageEvent* aEvent)
+ protected:
+    inline bool no_error(MessageType* aMessage)
         {
-            auto data = static_cast<client::String*>(aEvent->get_data());
-              //console.log("WaitingForHello::on_message", data);
-            process_message(static_cast<MessageType*>(client::JSON.parse(data)));
+            auto* err = aMessage->get_E();
+            if (is_not_null(err)) {
+                console_error("ERROR:", err);
+                return false;
+            }
+            return true;
         }
 
- protected:
     virtual inline void process_raw_message(client::Object* aMessage)
         {
-              //!! handle aMessage["E"]
-            process_message(static_cast<MessageType*>(aMessage));
+            auto msg = static_cast<MessageType*>(aMessage);
+            if (no_error(msg)) {
+                process_message(msg);
+            }
         }
 
     virtual void process_message(MessageType* aMessage) = 0;

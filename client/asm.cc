@@ -9,8 +9,11 @@ void make_asm_definitions()
     __asm__("window.is_string = function(obj) { return Object.prototype.toString.call(obj) === '[object String]'; };");
     __asm__("window.make_undefined = function() { return undefined; };");
     __asm__("window.is_undefined = function(obj) { return obj === undefined; };");
+    __asm__("window.is_undefined_or_null = function(obj) { return obj === undefined || obj === null; };");
+    __asm__("window.is_not_null = function(obj) { return obj !== undefined && obj !== null; };");
     __asm__("window.make_cnonce = function() { return Math.floor(Math.random() * 0xFFFFFFFF).toString(16); };");
     __asm__("window.console_log = console.log;");
+    __asm__("window.console_error = console.error;");
 
 } // make_asm_definitions
 

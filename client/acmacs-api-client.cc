@@ -15,11 +15,14 @@ namespace client
 
     struct EchoMessage : public Object {};
 
-    struct UsersData : public CommandData
+    struct CommandUsers : public CommandData
     {
-        inline UsersData() : CommandData{"users"_S} {}
+        inline CommandUsers() : CommandData{"users"_S} {}
     };
 
+    // struct ResultUsers : public ResponseData
+    // {
+    // };
 }
 
 // ----------------------------------------------------------------------
@@ -38,14 +41,37 @@ class EchoResponder : public OnMessage<EchoMessage>
 
     virtual void upon_transfer()
         {
-            this->send("C", "echo");
-            this->send("C", "echo", "handler", "EchoResponder");
+            // this->send("C", "echo");
+            // this->send("C", "echo", "handler", "EchoResponder");
+            this->send(make_json("C", "users"));
         }
 
  protected:
     virtual void process_message(EchoMessage* aMessage)
         {
             console_log("EchoResponder: ", aMessage);
+        }
+};
+
+// ----------------------------------------------------------------------
+
+class JsonPrinter : public OnMessage<ResponseData>
+{
+ public:
+    using OnMessage::OnMessage;
+
+    virtual void upon_transfer()
+        {
+            this->send(new CommandUsers{}); // "C", "users");
+        }
+
+ protected:
+    virtual void process_message(ResponseData* aMessage)
+        {
+            console_log("WHOA");
+            auto* pre = document.createElement("pre");
+            pre->set_textContent(aMessage->get_R());
+            document.get_body()->appendChild(pre);
         }
 };
 
@@ -72,8 +98,7 @@ void on_load()
       // var host_port = window.location.href.match(/https?:\/\/([^\/]+)/i)[1];
       // var ws = new WebSocket("wss://" + host_port + "/myws", "protocolOne");
     auto* ws = new WebSocket("wss://localhost:1169/api");
-    login(ws, [](client::WebSocket* aWS) { return new EchoResponder{aWS}; });
-    // ws->set_onmessage(cheerp::Callback(on_message));
+    login(ws, [](client::WebSocket* aWS) { return new JsonPrinter{aWS}; });
 
     static_cast<EventTarget&>(window).set_("session", new Session{});
 }

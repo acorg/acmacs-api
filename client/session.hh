@@ -23,7 +23,7 @@ namespace client
 
       // --------------------------------------------------
 
-    struct HelloFromServer : public Object
+    struct HelloFromServer : public ResponseData
     {
         String* get_hello();
     };
@@ -32,19 +32,6 @@ namespace client
     {
         inline LoginSessionData(String* aS) : CommandData{"login_session"_S} { set_S(aS); }
         void set_S(String*);
-    };
-
-    struct GetNonceCommandData : public CommandData
-    {
-        inline GetNonceCommandData(String* aUser) : CommandData{"login_nonce"_S} { set_user(aUser); }
-        void set_user(String*);
-    };
-
-    struct LoginPasswordCommandData : public CommandData
-    {
-        inline LoginPasswordCommandData(String* cnonce, String* digest) : CommandData{"login_digest"_S} { set_cnonce(cnonce); set_digest(digest); }
-        void set_cnonce(String*);
-        void set_digest(String*);
     };
 
     struct LoginNonceData : public ResponseData
