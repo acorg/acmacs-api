@@ -1,6 +1,8 @@
 #include <iostream>
 #include <memory>
 #include <getopt.h>
+#include <atomic>
+#include <csignal>
 
 #include "acmacs-base/stream.hh"
 #include "acmacs-base/rapidjson.hh"
@@ -434,6 +436,17 @@ class AcmacsAPISettings : public ServerSettings
 
 // ----------------------------------------------------------------------
 
+static std::atomic<Wspp*> sWspp;
+
+[[noreturn]] inline static void signal_handler(int signal)
+{
+    std::cerr << "Interrupted with signal " << signal << std::endl;
+    sWspp.load()->stop_listening();
+    std::exit(-signal);
+}
+
+// ----------------------------------------------------------------------
+
 int main(int argc, char* const argv[])
 {
     if (argc != 2 || std::string{"-h"} == argv[1] || std::string{"--help"} == argv[1]) {
@@ -447,6 +460,11 @@ int main(int argc, char* const argv[])
         AcmacsAPISettings settings;
         settings.read(argv[1]);
         Wspp wspp{settings};
+        sWspp = &wspp;
+
+        std::signal(SIGINT, signal_handler);
+        std::signal(SIGTERM, signal_handler);
+        std::signal(SIGQUIT, signal_handler);
 
         mongocxx::instance inst{};
         std::cerr << "mongodb_uri: [" << settings.mongodb_uri() << "]" << std::endl;
