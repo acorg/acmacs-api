@@ -11,9 +11,9 @@
     "locations": [
         {"location": "/js/acmacs-api-client.js", "files": ["dist/acmacs-api-client.js.gz"]},
         {"location": "/js/acmacs-api-client.js.map", "files": ["dist/acmacs-api-client.js.map.gz"]},
-        {"location": "/js/md5.js", "files": ["js/md5.js.gz"]},
         {"location": "/favicon.ico", "files": ["/Users/eu/AD/sources/acmacs-webserver/favicon.ico"]},
 
+        {"_": "3rd party js libs", "location": "/js/lib/", "dirs": ["js/"]},
         {"_": "for source maps", "location": "/js/client/", "dirs": ["client/"]}
         ]
 }
