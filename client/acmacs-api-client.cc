@@ -36,6 +36,12 @@ class EchoResponder : public OnMessage<EchoMessage>
  public:
     using OnMessage::OnMessage;
 
+    virtual void upon_transfer()
+        {
+            this->send("C", "echo");
+            this->send("C", "echo", "handler", "EchoResponder");
+        }
+
  protected:
     virtual void process_message(EchoMessage* aMessage)
         {

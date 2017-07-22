@@ -440,60 +440,65 @@ int main(int argc, char* const argv[])
         return 1;
     }
 
-    CommandFactory command_factory;
+    try {
+        CommandFactory command_factory;
 
-    AcmacsAPISettings settings;
-    settings.read(argv[1]);
-    Wspp wspp{settings};
+        AcmacsAPISettings settings;
+        settings.read(argv[1]);
+        Wspp wspp{settings};
 
-    mongocxx::instance inst{};
-    std::cerr << "mongodb_uri: [" << settings.mongodb_uri() << "]" << std::endl;
-    mongocxx::pool pool{mongocxx::uri{settings.mongodb_uri()}};
+        mongocxx::instance inst{};
+        std::cerr << "mongodb_uri: [" << settings.mongodb_uri() << "]" << std::endl;
+        mongocxx::pool pool{mongocxx::uri{settings.mongodb_uri()}};
 
-    wspp.add_location_handler(std::make_shared<RootPage>());
-    wspp.add_location_handler(std::make_shared<AcmacsAPIServer>(pool, command_factory));
+        wspp.add_location_handler(std::make_shared<RootPage>());
+        wspp.add_location_handler(std::make_shared<AcmacsAPIServer>(pool, command_factory));
 
-    wspp.run();
+        wspp.run();
+        return 0;
+    }
+    catch (std::exception& err) {
+        std::cerr << "ERROR: " << err.what() << std::endl;
+        return 1;
+    }
 
-    return 0;
+      // std::string hostname{"localhost"}, port{"1169"};
+      // const char* const short_opts = "x:p:h";
+      // const option long_opts[] = {
+      //     {"host", required_argument, nullptr, 'x'},
+      //     {"port", required_argument, nullptr, 'p'},
+      //     {"help", no_argument, nullptr, 'h'},
+      //     {nullptr, no_argument, nullptr, 0}
+      // };
+      // int opt;
+      // while ((opt = getopt_long(argc, argv, short_opts, long_opts, nullptr)) != -1) {
+      //     switch (opt) {
+      //       case 'x':
+      //           hostname = optarg;
+      //           break;
+      //       case 'p':
+      //           port = optarg;
+      //           break;
+      //       case 'h':
+      //           std::cerr << "Usage: " << argv[0] << " [--host|-x <hostname>] [--port|-p <port>]" << std::endl;
+      //           return 0;
+      //       default:
+      //           break;
+      //     }
+      // }
+      // argc -= optind;
+      // argv += optind;
 
-    // std::string hostname{"localhost"}, port{"1169"};
-    // const char* const short_opts = "x:p:h";
-    // const option long_opts[] = {
-    //     {"host", required_argument, nullptr, 'x'},
-    //     {"port", required_argument, nullptr, 'p'},
-    //     {"help", no_argument, nullptr, 'h'},
-    //     {nullptr, no_argument, nullptr, 0}
-    // };
-    // int opt;
-    // while ((opt = getopt_long(argc, argv, short_opts, long_opts, nullptr)) != -1) {
-    //     switch (opt) {
-    //       case 'x':
-    //           hostname = optarg;
-    //           break;
-    //       case 'p':
-    //           port = optarg;
-    //           break;
-    //       case 'h':
-    //           std::cerr << "Usage: " << argv[0] << " [--host|-x <hostname>] [--port|-p <port>]" << std::endl;
-    //           return 0;
-    //       default:
-    //           break;
-    //     }
-    // }
-    // argc -= optind;
-    // argv += optind;
+      // Wspp wspp{hostname, port, 3 /* std::thread::hardware_concurrency() */, "/Users/eu/AD/sources/acmacs-webserver/ssl/self-signed.crt", "/Users/eu/AD/sources/acmacs-webserver/ssl/self-signed.key", "/Users/eu/AD/sources/acmacs-webserver/ssl/dh.pem"};
+      // wspp.setup_logging("/tmp/acmacs-api-server.access.log", "/tmp/acmacs-api-server.error.log");
+      // wspp.add_location_handler(std::make_shared<RootPage>());
+      // wspp.add_location_handler(std::make_shared<WsppHttpLocationHandlerFile>("/js/acmacs-api-client.js", std::vector<std::string>{"dist/acmacs-api-client.js.gz"}));
+      // wspp.add_location_handler(std::make_shared<WsppHttpLocationHandlerFile>("/js/acmacs-api-client.js.gz.map", std::vector<std::string>{"dist/acmacs-api-client.js.gz.map"}));
+      // wspp.add_location_handler(std::make_shared<WsppHttpLocationHandlerFile>("/favicon.ico", std::vector<std::string>{"/Users/eu/AD/sources/acmacs-webserver/favicon.ico"}));
+      // wspp.add_location_handler(std::make_shared<AcmacsAPIServer>());
 
-    // Wspp wspp{hostname, port, 3 /* std::thread::hardware_concurrency() */, "/Users/eu/AD/sources/acmacs-webserver/ssl/self-signed.crt", "/Users/eu/AD/sources/acmacs-webserver/ssl/self-signed.key", "/Users/eu/AD/sources/acmacs-webserver/ssl/dh.pem"};
-    // wspp.setup_logging("/tmp/acmacs-api-server.access.log", "/tmp/acmacs-api-server.error.log");
-    // wspp.add_location_handler(std::make_shared<RootPage>());
-    // wspp.add_location_handler(std::make_shared<WsppHttpLocationHandlerFile>("/js/acmacs-api-client.js", std::vector<std::string>{"dist/acmacs-api-client.js.gz"}));
-    // wspp.add_location_handler(std::make_shared<WsppHttpLocationHandlerFile>("/js/acmacs-api-client.js.gz.map", std::vector<std::string>{"dist/acmacs-api-client.js.gz.map"}));
-    // wspp.add_location_handler(std::make_shared<WsppHttpLocationHandlerFile>("/favicon.ico", std::vector<std::string>{"/Users/eu/AD/sources/acmacs-webserver/favicon.ico"}));
-    // wspp.add_location_handler(std::make_shared<AcmacsAPIServer>());
-
-    // wspp.run();
-    // return 0;
+      // wspp.run();
+      // return 0;
 }
 
 // ----------------------------------------------------------------------

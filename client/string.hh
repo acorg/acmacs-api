@@ -23,9 +23,21 @@ inline client::String* stringify(client::Object* value)
     return client::JSON.stringify(value, cheerp::Callback(&stringify_replacer));
 }
 
+// ----------------------------------------------------------------------
+
 inline client::String* to_string(client::Object* value)
 {
     return is_string(value) ? static_cast<client::String*>(value) : stringify(value);
+}
+
+inline client::String* to_string(client::String* value)
+{
+    return value;
+}
+
+inline client::String* to_string(const char* value)
+{
+    return new client::String{value};
 }
 
 // ----------------------------------------------------------------------
@@ -69,6 +81,37 @@ template <typename First, typename Second, typename ... Args> inline client::Str
 // inline client::String* operator + (const char* s1, client::String& s2) { return client::String{s1}.concat(s2); }
 // inline bool operator == (client::String&& s1, client::String* s2) { return &s1 == s2; }
 // inline bool operator == (client::String* s1, client::String&& s2) { return s1 == &s2; }
+
+// ----------------------------------------------------------------------
+
+namespace string_internal
+{
+    inline client::Object* to_object(client::Object* src) { return src; }
+    inline client::Object* to_object(const char* src) { return to_string(src); }
+
+    template <typename Key, typename Value> inline void add_to_object(client::Object* target, Key key, Value value)
+    {
+        target->set_(*to_string(key), to_object(value));
+    }
+
+    template <typename Key, typename Value, typename ... Args> inline void add_to_object(client::Object* target, Key key, Value value, Args ... args)
+    {
+        add_to_object(target, key, value);
+        add_to_object(target, args ...);
+    }
+}
+
+template <typename ... Args> inline client::Object* make_object(Args ... args)
+{
+    auto* result = new client::Object{};
+    string_internal::add_to_object(result, args...);
+    return result;
+}
+
+template <typename ... Args> inline client::String* make_json(Args ... args)
+{
+    return stringify(make_object(args ...));
+}
 
 // ----------------------------------------------------------------------
 /// Local Variables:

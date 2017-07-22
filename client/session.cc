@@ -12,38 +12,11 @@ using namespace client;
 
 // ----------------------------------------------------------------------
 
-void LoggedIn::process_message(Message* aMessage)
+void login(client::WebSocket* aWS, OnMessageBase::TransferTo aTransferTo)
 {
-    if (!is_undefined(aMessage->get_E()) || aMessage->get_R() != "session"_S) {
-        window.alert(concat("Login failed: ", aMessage->get_E()));
-    }
-    else {
-        session->set_id(aMessage->get_S());
-        session->set_user(aMessage->get_user());
-        session->set_display_name(aMessage->get_display_name());
-        console_log("Logged in: ", session->get_user(), session->get_display_name());
-    }
-    this->send("{\"C\":\"echo\"}");
-    transfer_to();
+    aWS->set_onmessage(cheerp::Callback(Login(aWS, aTransferTo)));
 
-} // LoggedIn::process_message
-
-// ----------------------------------------------------------------------
-
-void LoginNonce::process_message(Message* aMessage)
-{
-    if (is_undefined(aMessage->get_E())) {
-        auto* snonce = aMessage->get_login_nonce();
-        auto* cnonce = make_cnonce();
-        auto* digest_password = md5(concat(ARGV->user(), ";acmacs-web;", ARGV->password()));
-        auto* digest = md5(concat(snonce, ";", cnonce, ";", digest_password));
-        this->template transfer_send<LoggedIn>(new LoginPasswordCommandData{cnonce, digest}, this->pass_transfer_to());
-    }
-    else {
-        window.alert(concat("Login failed: ", aMessage->get_E()));
-    }
-
-} // LoginNonce::process_message
+} // login
 
 // ----------------------------------------------------------------------
 
@@ -69,11 +42,37 @@ void Login::process_message(Message* aMessage)
 
 // ----------------------------------------------------------------------
 
-void login(client::WebSocket* aWS, OnMessageBase::TransferTo aTransferTo)
+void LoginNonce::process_message(Message* aMessage)
 {
-    aWS->set_onmessage(cheerp::Callback(Login(aWS, aTransferTo)));
+    if (is_undefined(aMessage->get_E())) {
+        auto* snonce = aMessage->get_login_nonce();
+        auto* cnonce = make_cnonce();
+        auto* digest_password = md5(concat(ARGV->user(), ";acmacs-web;", ARGV->password()));
+        auto* digest = md5(concat(snonce, ";", cnonce, ";", digest_password));
+        this->template transfer_send<LoggedIn>(new LoginPasswordCommandData{cnonce, digest}, this->pass_transfer_to());
+    }
+    else {
+        window.alert(concat("Login failed: ", aMessage->get_E()));
+    }
 
-} // login
+} // LoginNonce::process_message
+
+// ----------------------------------------------------------------------
+
+void LoggedIn::process_message(Message* aMessage)
+{
+    if (!is_undefined(aMessage->get_E()) || aMessage->get_R() != "session"_S) {
+        window.alert(concat("Login failed: ", aMessage->get_E()));
+    }
+    else {
+        session->set_id(aMessage->get_S());
+        session->set_user(aMessage->get_user());
+        session->set_display_name(aMessage->get_display_name());
+        console_log("Logged in: ", session->get_user(), session->get_display_name());
+    }
+    transfer_to();
+
+} // LoggedIn::process_message
 
 // ----------------------------------------------------------------------
 

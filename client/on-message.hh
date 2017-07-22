@@ -22,6 +22,12 @@ class OnMessageBase
     OnMessageBase(const OnMessageBase&) = default;
     inline virtual ~OnMessageBase() {}
 
+      // called upon transferring to this handler.
+      // Could be used to send message.
+    virtual void upon_transfer()
+        {
+        }
+
     inline void operator()(client::MessageEvent* aEvent)
         {
             auto data = static_cast<client::String*>(aEvent->get_data());
@@ -32,11 +38,20 @@ class OnMessageBase
  protected:
     virtual void process_raw_message(client::Object* aMessage) = 0;
 
+    inline void send(client::String* aData)
+        {
+            console_log("Send: ", aData);
+            mWS->send(aData);
+        }
+
     inline void send(client::Object* aData)
         {
-            auto* str = to_string(aData);
-            console_log("Send: ", str);
-            mWS->send(str);
+            send(to_string(aData));
+        }
+
+    template <typename ... Args> inline void send(Args ... args)
+        {
+            send(make_json(args...));
         }
 
     inline void send(const char* aData)
@@ -44,9 +59,15 @@ class OnMessageBase
             mWS->send(new client::String{aData});
         }
 
+    template <typename NewHandler> inline void transfer(NewHandler&& aHandler)
+        {
+            mWS->set_onmessage(cheerp::Callback(aHandler));
+            aHandler.upon_transfer();
+        }
+
     template <typename NewHandler, typename ... Args> inline void transfer(Args ... args)
         {
-            mWS->set_onmessage(cheerp::Callback(NewHandler{mWS, args ...}));
+            transfer(NewHandler{mWS, args ...});
         }
 
     template <typename NewHandler, typename ... Args> inline void transfer_send(client::Object* aMessage, Args ... args)
@@ -57,8 +78,9 @@ class OnMessageBase
 
     inline void transfer_to(TransferTo aHandlerMaker)
         {
-            auto* handler = aHandlerMaker(mWS);
-            mWS->set_onmessage(cheerp::Callback([&handler](client::MessageEvent* aEvent) { (*handler)(aEvent); }));
+            OnMessageBase& handler = *aHandlerMaker(mWS);
+            mWS->set_onmessage(cheerp::Callback([&handler](client::MessageEvent* aEvent) { handler(aEvent); }));
+            handler.upon_transfer();
         }
 
  private:
