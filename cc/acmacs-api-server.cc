@@ -3,6 +3,7 @@
 #include <getopt.h>
 #include <atomic>
 #include <csignal>
+#include <chrono>
 
 #include "acmacs-base/stream.hh"
 #include "acmacs-base/rapidjson.hh"
@@ -71,7 +72,7 @@ class Command_unknown : public Command
 
     virtual inline void run()
         {
-            send(R"({"E": "unrecognized message"})");
+            send(json_object("E", "unrecognized message"));
         }
 
 }; // class Command_users
@@ -308,13 +309,15 @@ mongocxx::database Command::db()
 void Command_users::run()
 {
     try {
+        auto time_start = std::chrono::high_resolution_clock::now();
         auto acmacs_web_db = db();
         DocumentFindResults results{acmacs_web_db, "users_groups",
                     (DocumentFindResults::bson_doc{} << "_t" << "acmacs.mongodb_collections.users_groups.User"
                        // << bsoncxx::builder::concatenate(aSession.read_permissions().view())
                      << DocumentFindResults::bson_finalize),
                     MongodbAccess::exclude{"_id", "_t", "_m", "password", "nonce"}};
-        send(json_object("C", "users", "CN", command_number(), "users", json_raw{results.json(false)}));
+        send(json_object("C", "users", "CN", command_number(), "CT", std::chrono::duration<double>(std::chrono::high_resolution_clock::now() - time_start).count(),
+                         "users", json_raw{results.json(false)}));
     }
     catch (DocumentFindResults::Error& err) {
         send(json_object("E", err.what()));
