@@ -3,17 +3,31 @@
 #include <getopt.h>
 #include <atomic>
 #include <csignal>
-#include <chrono>
 
-#include "acmacs-base/stream.hh"
-#include "acmacs-base/rapidjson.hh"
-
-#include "acmacs-webserver/server.hh"
 #include "acmacs-webserver/server-settings.hh"
 
-#include "md5.hh"
-#include "mongo-access.hh"
-#include "session.hh"
+#include "acmacs-api-server.hh"
+#include "command.hh"
+#include "command-factory.hh"
+
+// ----------------------------------------------------------------------
+
+static std::atomic<Wspp*> sWspp;
+[[noreturn]] static void signal_handler(int signal);
+
+// ----------------------------------------------------------------------
+
+class AcmacsAPISettings : public ServerSettings
+{
+ public:
+    inline auto mongodb_uri() const
+        {
+            auto uri = json_importer::get(mDoc, "mongodb_uri", std::string{});
+            if (uri.empty())
+                uri = "mongodb://localhost:27017/";
+            return uri;
+        }
+};
 
 // ----------------------------------------------------------------------
 
@@ -36,397 +50,6 @@ class RootPage : public WsppHttpLocationHandler
         }
 
 }; // class RootPage
-
-// ----------------------------------------------------------------------
-
-class AcmacsAPIServer;
-
-class Command : public json_importer::Object
-{
- public:
-    using time_point = decltype(std::chrono::high_resolution_clock::now());
-
-    inline Command(json_importer::Object&& aSrc, AcmacsAPIServer& aServer, size_t aCommandNumber)
-        : json_importer::Object{std::move(aSrc)}, mServer{aServer}, mCommandNumber{aCommandNumber}, mCommandStart{now()} {}
-
-    inline std::string command_name() const { return get_string("C"); }
-    inline size_t command_number() const { return mCommandNumber; }
-
-    virtual void run() = 0;
-
- protected:
-    void send(std::string aMessage, websocketpp::frame::opcode::value op_code = websocketpp::frame::opcode::text);
-    void send_error(std::string aMessage);
-    mongocxx::database db();
-    Session& session();
-
-    inline time_point now() const { return std::chrono::high_resolution_clock::now(); }
-    inline void set_command_start() { mCommandStart = now(); }
-    inline auto command_start() const { return mCommandStart; }
-    inline double command_duration() const { return std::chrono::duration<double>{now() - command_start()}.count(); }
-
- private:
-    AcmacsAPIServer& mServer;
-    const size_t mCommandNumber;
-    time_point mCommandStart;
-
-}; // class Command
-
-// ----------------------------------------------------------------------
-
-class Command_unknown : public Command
-{
- public:
-    using Command::Command;
-
-    virtual inline void run()
-        {
-            send_error("unrecognized message");
-        }
-
-}; // class Command_users
-
-// ----------------------------------------------------------------------
-
-class Command_users : public Command
-{
- public:
-    using Command::Command;
-
-    virtual void run();
-
-}; // class Command_users
-
-// ----------------------------------------------------------------------
-
-// class Command_login : public Command
-// {
-//  public:
-//     using Command::Command;
-
-//     virtual void run();
-
-//     inline std::string session_id() const { return get_string("S"); }
-//     inline std::string user() const { return get_string("U"); }
-//     inline std::string password() const { return get_string("P"); }
-
-// }; // class Command_users
-
-// ----------------------------------------------------------------------
-
-class Command_login_session : public Command
-{
- public:
-    using Command::Command;
-
-    virtual void run();
-
-    inline std::string session_id() const { return get_string("S"); }
-
-}; // class Command_users
-
-// ----------------------------------------------------------------------
-
-class Command_login_nonce : public Command
-{
- public:
-    using Command::Command;
-
-    virtual void run();
-
-    inline std::string user() const { return get_string("user"); }
-
-}; // class Command_users
-
-// ----------------------------------------------------------------------
-
-class Command_login_digest : public Command
-{
- public:
-    using Command::Command;
-
-    virtual void run();
-
-    inline std::string cnonce() const { return get_string("cnonce"); }
-    inline std::string digest() const { return get_string("digest"); }
-
-}; // class Command_users
-
-// ----------------------------------------------------------------------
-
-class CommandFactory
-{
- public:
-    CommandFactory();
-
-    inline std::shared_ptr<Command> find(std::string aMessage, AcmacsAPIServer& aServer, size_t aCommandNumber) const
-        {
-            json_importer::Object msg{aMessage};
-            std::shared_ptr<Command> result;
-            const auto found = mFactory.find(msg.get_string("C"));
-            if (found != mFactory.end())
-                result = (this->*found->second)(std::move(msg), aServer, aCommandNumber);
-            else
-                result = make<Command_unknown>(std::move(msg), aServer, aCommandNumber);
-            return result;
-        }
-
- private:
-    using FactoryFunc = std::shared_ptr<Command> (CommandFactory::*)(json_importer::Object&&, AcmacsAPIServer&, size_t aCommandNumber) const;
-
-    template <typename Cmd> inline std::shared_ptr<Command> make(json_importer::Object&& aSrc, AcmacsAPIServer& aServer, size_t aCommandNumber) const
-        {
-            return std::make_shared<Cmd>(std::move(aSrc), aServer, aCommandNumber);
-        }
-
-      // std::map<std::string, std::function<std::shared_ptr<Command> (std::string)>> mFactory;
-    std::map<std::string, FactoryFunc> mFactory;
-
-}; // class CommandFactory
-
-CommandFactory::CommandFactory()
-    : mFactory{
-    {"users", &CommandFactory::make<Command_users>},
-    {"login_session", &CommandFactory::make<Command_login_session>},
-    {"login_nonce", &CommandFactory::make<Command_login_nonce>},
-    {"login_digest", &CommandFactory::make<Command_login_digest>},
-}
-{
-}
-
-// ----------------------------------------------------------------------
-
-class AcmacsAPIServer : public WsppWebsocketLocationHandler
-{
- public:
-    inline AcmacsAPIServer(mongocxx::pool& aPool, CommandFactory& aCommandFactory)
-        : WsppWebsocketLocationHandler{}, mPool{aPool}, mCommandFactory{aCommandFactory}, mSession{db()}, mCommandNumber{0} {}
-    inline AcmacsAPIServer(const AcmacsAPIServer& aSrc)
-        : WsppWebsocketLocationHandler{aSrc}, mPool{aSrc.mPool}, mCommandFactory{aSrc.mCommandFactory}, mSession{aSrc.mSession}, mCommandNumber{0} {}
-
- protected:
-    inline auto connection()
-        {
-            if (!mConnection)
-                mConnection = mPool.acquire();
-            return mConnection;
-        }
-
-    inline mongocxx::database db(const char* aName)
-        {
-            return (*connection())[aName];
-        }
-
-    inline mongocxx::database& db()
-        {
-            if (!mAcmacsWebDb)
-                mAcmacsWebDb = db("acmacs_web");
-            return mAcmacsWebDb;
-        }
-
-    virtual std::shared_ptr<WsppWebsocketLocationHandler> clone() const
-        {
-            return std::make_shared<AcmacsAPIServer>(*this);
-        }
-
-    virtual inline bool use(std::string aLocation) const
-        {
-            return aLocation == "/api";
-        }
-
-    virtual inline void opening(std::string)
-        {
-            send(json_object("hello", "acmacs-api-server-v1"));
-        }
-
-    virtual inline void message(std::string aMessage)
-        {
-            std::cerr << std::this_thread::get_id() << " MSG: " << aMessage.substr(0, 80) << std::endl;
-            auto command = mCommandFactory.find(aMessage, *this, ++mCommandNumber);
-            try {
-                command->run();
-            }
-            catch (std::exception& err) {
-                send(json_object("C", command->command_name(), "CN", command->command_number(), "E", err.what()));
-            }
-
-            // json_importer::Object msg{aMessage};
-            // auto command = msg.get_string("C");
-
-            // if (command == "echo") {
-            //     send(aMessage);
-            // }
-            // else if (command == "users") {
-            //     try {
-            //         auto acmacs_web_db = db();
-            //         DocumentFindResults results{acmacs_web_db, "users_groups",
-            //                     (DocumentFindResults::bson_doc{} << "_t" << "acmacs.mongodb_collections.users_groups.User"
-            //                        // << bsoncxx::builder::concatenate(aSession.read_permissions().view())
-            //                      << DocumentFindResults::bson_finalize),
-            //                     MongodbAccess::exclude{"_id", "_t", "_m", "password", "nonce"}};
-            //         send("{\"R\": " + results.json() + "}");
-            //     }
-            //     catch (DocumentFindResults::Error& err) {
-            //         send(std::string{"{\"E\": \""} + err.what() + "\"}");
-            //     }
-            // }
-            // else {
-            //     send(R"({"E": "unrecognized message"})", websocketpp::frame::opcode::text);
-            // }
-        }
-
-    virtual void after_close(std::string)
-        {
-              //std::cout << std::this_thread::get_id() << " MyWS after_close" << std::endl;
-        }
-
- private:
-    mongocxx::pool& mPool;
-    mongocxx::database mAcmacsWebDb;
-    CommandFactory& mCommandFactory;
-    std::shared_ptr<mongocxx::client> mConnection;
-    Session mSession;
-    std::atomic<size_t> mCommandNumber;
-
-    inline Session& session() { return mSession; }
-
-    friend class Command;
-
-}; // class AcmacsAPIServer
-
-// ----------------------------------------------------------------------
-
-Session& Command::session()
-{
-    return mServer.session();
-}
-
-// ----------------------------------------------------------------------
-
-void Command::send(std::string aMessage, websocketpp::frame::opcode::value op_code)
-{
-    std::cerr << "Command::send: " << aMessage << std::endl;
-    mServer.send(json_object_prepend(aMessage, "C", command_name(), "CN", command_number(), "CT", command_duration()), op_code);
-
-} // Command::send
-
-// ----------------------------------------------------------------------
-
-void Command::send_error(std::string aMessage)
-{
-    mServer.send(json_object("C", command_name(), "CN", command_number(), "E", aMessage));
-
-} // Command::send_error
-
-// ----------------------------------------------------------------------
-
-mongocxx::database Command::db()
-{
-    return mServer.db();
-
-} // Command::db
-
-// ----------------------------------------------------------------------
-
-void Command_users::run()
-{
-    // try {
-        auto acmacs_web_db = db();
-        DocumentFindResults results{acmacs_web_db, "users_groups",
-                    (DocumentFindResults::bson_doc{} << "_t" << "acmacs.mongodb_collections.users_groups.User"
-                       // << bsoncxx::builder::concatenate(aSession.read_permissions().view())
-                     << DocumentFindResults::bson_finalize),
-                    MongodbAccess::exclude{"_id", "_t", "_m", "password", "nonce"}};
-        send(json_object("users", json_raw{results.json(false)}));
-    // }
-    // catch (DocumentFindResults::Error& err) {
-    //     send_error(err.what());
-    // }
-
-} // Command_users::run
-
-// ----------------------------------------------------------------------
-
-// void Command_login::run()
-// {
-//     try {
-//         const auto session_id_ = session_id();
-//         const auto username = user();
-//         if (!session_id_.empty()) {
-//             try {
-//                 session().use_session(session_id_);
-//             }
-//             catch (std::exception& err) {
-//                 if (username.empty())
-//                     throw std::runtime_error{std::string{"invalid session-id: "} + err.what()};
-//                 else
-//                     std::cerr << "Invalid session: " << err.what() << std::endl;
-//             }
-//         }
-//         // if (aSession.id().empty() && !username.empty()) {
-//         //     // // aSession.login(user, password);
-//         //     // // std::cout << "--session " << aSession.id() << std::endl;
-//         // }
-//           //  send(std::string{"{\"R\":\"session\",\"S\":\"" + session().id() + "\"}"});
-//         send(json_object("R", "session", "S", session().id(), "user", session().user(), "display_name", session().display_name()));
-//     }
-//     catch (std::exception& err) {
-//         send_error(err.what());
-//     }
-
-// } // Command_login::run
-
-// ----------------------------------------------------------------------
-
-void Command_login_session::run()
-{
-    session().use_session(session_id());
-    send(json_object("S", session().id(), "user", session().user(), "display_name", session().display_name()));
-
-} // Command_login_session::run
-
-// ----------------------------------------------------------------------
-
-void Command_login_nonce::run()
-{
-    const auto nonce = session().login_nonce(user());
-    send(json_object("login_nonce", nonce));
-
-} // Command_login_nonce::run
-
-// ----------------------------------------------------------------------
-
-void Command_login_digest::run()
-{
-    session().login_with_password_digest(cnonce(), digest());
-    send(json_object("S", session().id(), "user", session().user(), "display_name", session().display_name()));
-
-} // Command_login_digest::run
-
-// ----------------------------------------------------------------------
-
-class AcmacsAPISettings : public ServerSettings
-{
- public:
-    inline auto mongodb_uri() const
-        {
-            auto uri = json_importer::get(mDoc, "mongodb_uri", std::string{});
-            if (uri.empty())
-                uri = "mongodb://localhost:27017/";
-            return uri;
-        }
-};
-
-// ----------------------------------------------------------------------
-
-static std::atomic<Wspp*> sWspp;
-
-[[noreturn]] inline static void signal_handler(int signal)
-{
-    std::cerr << "Interrupted with signal " << signal << std::endl;
-    sWspp.load()->stop_listening();
-    std::exit(-signal);
-}
 
 // ----------------------------------------------------------------------
 
@@ -502,6 +125,54 @@ int main(int argc, char* const argv[])
       // wspp.run();
       // return 0;
 }
+
+// ----------------------------------------------------------------------
+
+[[noreturn]] static void signal_handler(int signal)
+{
+    std::cerr << "Interrupted with signal " << signal << std::endl;
+    sWspp.load()->stop_listening();
+    std::exit(-signal);
+}
+
+// ----------------------------------------------------------------------
+
+void AcmacsAPIServer::message(std::string aMessage)
+{
+    std::cerr << std::this_thread::get_id() << " MSG: " << aMessage.substr(0, 80) << std::endl;
+    auto command = mCommandFactory.find(aMessage, *this, ++mCommandNumber);
+    try {
+        command->run();
+    }
+    catch (std::exception& err) {
+        send(json_object("C", command->command_name(), "CN", command->command_number(), "E", err.what()));
+    }
+
+      // json_importer::Object msg{aMessage};
+      // auto command = msg.get_string("C");
+
+      // if (command == "echo") {
+      //     send(aMessage);
+      // }
+      // else if (command == "users") {
+      //     try {
+      //         auto acmacs_web_db = db();
+      //         DocumentFindResults results{acmacs_web_db, "users_groups",
+      //                     (DocumentFindResults::bson_doc{} << "_t" << "acmacs.mongodb_collections.users_groups.User"
+      //                        // << bsoncxx::builder::concatenate(aSession.read_permissions().view())
+      //                      << DocumentFindResults::bson_finalize),
+      //                     MongodbAccess::exclude{"_id", "_t", "_m", "password", "nonce"}};
+      //         send("{\"R\": " + results.json() + "}");
+      //     }
+      //     catch (DocumentFindResults::Error& err) {
+      //         send(std::string{"{\"E\": \""} + err.what() + "\"}");
+      //     }
+      // }
+      // else {
+      //     send(R"({"E": "unrecognized message"})", websocketpp::frame::opcode::text);
+      // }
+
+} // AcmacsAPIServer::message
 
 // ----------------------------------------------------------------------
 /// Local Variables:
