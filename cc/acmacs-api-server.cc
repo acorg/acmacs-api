@@ -53,10 +53,12 @@ class Command : public json_importer::Object
     virtual void run() = 0;
 
  protected:
-    void send(std::string aMessage, double aCommandTime = 0.0, websocketpp::frame::opcode::value op_code = websocketpp::frame::opcode::text);
+    void send(std::string aMessage, std::chrono::duration<double> aCommandTime = std::chrono::duration<double>{}, websocketpp::frame::opcode::value op_code = websocketpp::frame::opcode::text);
     void send_error(std::string aMessage);
     mongocxx::database db();
     Session& session();
+
+    inline auto now() const { return std::chrono::high_resolution_clock::now(); }
 
  private:
     AcmacsAPIServer& mServer;
@@ -228,7 +230,7 @@ class AcmacsAPIServer : public WsppWebsocketLocationHandler
 
     virtual inline void opening(std::string)
         {
-            send(R"({"hello": "acmacs-api-server-v1"})");
+            send(json_object("hello", "acmacs-api-server-v1"));
         }
 
     virtual inline void message(std::string aMessage)
@@ -240,7 +242,6 @@ class AcmacsAPIServer : public WsppWebsocketLocationHandler
             }
             catch (std::exception& err) {
                 send(json_object("C", command->command_name(), "CN", command->command_number(), "E", err.what()));
-                  // send_error(err.what());
             }
 
             // json_importer::Object msg{aMessage};
@@ -296,10 +297,10 @@ Session& Command::session()
 
 // ----------------------------------------------------------------------
 
-void Command::send(std::string aMessage, double aCommandTime, websocketpp::frame::opcode::value op_code)
+void Command::send(std::string aMessage, std::chrono::duration<double> aCommandTime, websocketpp::frame::opcode::value op_code)
 {
     std::cerr << "Command::send: " << aMessage << std::endl;
-    mServer.send(json_object_prepend(aMessage, "C", command_name(), "CN", command_number(), "CT", aCommandTime), op_code);
+    mServer.send(json_object_prepend(aMessage, "C", command_name(), "CN", command_number(), "CT", aCommandTime.count()), op_code);
 
 } // Command::send
 
@@ -324,15 +325,14 @@ mongocxx::database Command::db()
 void Command_users::run()
 {
     // try {
-        auto time_start = std::chrono::high_resolution_clock::now();
+        const auto time_start = now();
         auto acmacs_web_db = db();
         DocumentFindResults results{acmacs_web_db, "users_groups",
                     (DocumentFindResults::bson_doc{} << "_t" << "acmacs.mongodb_collections.users_groups.User"
                        // << bsoncxx::builder::concatenate(aSession.read_permissions().view())
                      << DocumentFindResults::bson_finalize),
                     MongodbAccess::exclude{"_id", "_t", "_m", "password", "nonce"}};
-        send(json_object(//"CT", std::chrono::duration<double>(std::chrono::high_resolution_clock::now() - time_start).count(),
-                         "users", json_raw{results.json(false)}), std::chrono::duration<double>(std::chrono::high_resolution_clock::now() - time_start).count());
+        send(json_object("users", json_raw{results.json(false)}), now() - time_start);
     // }
     // catch (DocumentFindResults::Error& err) {
     //     send_error(err.what());
@@ -375,8 +375,9 @@ void Command_users::run()
 
 void Command_login_session::run()
 {
+    const auto time_start = now();
     session().use_session(session_id());
-    send(json_object("S", session().id(), "user", session().user(), "display_name", session().display_name()));
+    send(json_object("S", session().id(), "user", session().user(), "display_name", session().display_name()), now() - time_start);
 
 } // Command_login_session::run
 
@@ -384,8 +385,9 @@ void Command_login_session::run()
 
 void Command_login_nonce::run()
 {
+    const auto time_start = now();
     const auto nonce = session().login_nonce(user());
-    send(json_object("login_nonce", nonce));
+    send(json_object("login_nonce", nonce), now() - time_start);
 
 } // Command_login_nonce::run
 
@@ -393,8 +395,9 @@ void Command_login_nonce::run()
 
 void Command_login_digest::run()
 {
+    const auto time_start = now();
     session().login_with_password_digest(cnonce(), digest());
-    send(json_object("S", session().id(), "user", session().user(), "display_name", session().display_name()));
+    send(json_object("S", session().id(), "user", session().user(), "display_name", session().display_name()), now() - time_start);
 
 } // Command_login_digest::run
 
