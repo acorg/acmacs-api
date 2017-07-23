@@ -54,7 +54,7 @@ class RootPage : public WsppHttpLocationHandler
             bool handled = false;
             if (aResource.location() == "/") {
                 aResponse.body = R"(<html><head>
-                                    <link rel="stylesheet" type="text/css" href="css/main.css">
+                                    <link rel="stylesheet" type="text/css" href="css/acmacs-api-client.css">
                                     <script src="/js/acmacs-api-client.js"></script>
                                     <script src="/js/lib/md5.js"></script>)";
                 aResponse.body += "<script>ARGV = " + json_writer::compact_json(aResource.argv(), "argv") + "</script>";

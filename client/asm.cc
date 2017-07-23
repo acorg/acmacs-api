@@ -20,17 +20,17 @@ void make_asm_definitions()
     __asm__(R"(window.json_syntax_highlight = function(data) {
     data = data.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     return data.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
-        var cls = 'json-highlight-number';
+        var cls = 'number';
         if (/^"/.test(match)) {
             if (/:$/.test(match)) {
-                cls = 'json-highlight-key';
+                cls = 'key';
             } else {
-                cls = 'json-highlight-string';
+                cls = 'string';
             }
         } else if (/true|false/.test(match)) {
-            cls = 'json-highlight-boolean';
+            cls = 'boolean';
         } else if (/null/.test(match)) {
-            cls = 'json-highlight-null';
+            cls = 'null';
         }
         return '<span class="' + cls + '">' + match + '</span>';
     });
