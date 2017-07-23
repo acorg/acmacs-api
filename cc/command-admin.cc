@@ -1,8 +1,20 @@
 #include "command-admin.hh"
+#include "session.hh"
 
 // ----------------------------------------------------------------------
 
-void Command_users::run()
+void CommandAdmin::run()
+{
+    if (!session().is_admin())
+        send_error("permission denied");
+    else
+        run_admin();
+
+} // CommandAdmin::run
+
+// ----------------------------------------------------------------------
+
+void Command_users::run_admin()
 {
     // try {
         auto acmacs_web_db = db();
@@ -17,7 +29,7 @@ void Command_users::run()
     //     send_error(err.what());
     // }
 
-} // Command_users::run
+} // Command_users::run_admin
 
 // ----------------------------------------------------------------------
 /// Local Variables:
