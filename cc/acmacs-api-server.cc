@@ -48,14 +48,15 @@ class Command : public json_importer::Object
         : json_importer::Object{std::move(aSrc)}, mServer{aServer}, mCommandNumber{aCommandNumber} {}
 
     inline std::string command_name() const { return get_string("C"); }
+    inline size_t command_number() const { return mCommandNumber; }
 
     virtual void run() = 0;
 
  protected:
-    void send(std::string aMessage, websocketpp::frame::opcode::value op_code = websocketpp::frame::opcode::text);
+    void send(std::string aMessage, double aCommandTime = 0.0, websocketpp::frame::opcode::value op_code = websocketpp::frame::opcode::text);
+    void send_error(std::string aMessage);
     mongocxx::database db();
     Session& session();
-    size_t command_number() const { return mCommandNumber; }
 
  private:
     AcmacsAPIServer& mServer;
@@ -234,7 +235,13 @@ class AcmacsAPIServer : public WsppWebsocketLocationHandler
         {
             std::cerr << std::this_thread::get_id() << " MSG: " << aMessage.substr(0, 80) << std::endl;
             auto command = mCommandFactory.find(aMessage, *this, ++mCommandNumber);
-            command->run();
+            try {
+                command->run();
+            }
+            catch (std::exception& err) {
+                send(json_object("C", command->command_name(), "CN", command->command_number(), "E", err.what()));
+                  // send_error(err.what());
+            }
 
             // json_importer::Object msg{aMessage};
             // auto command = msg.get_string("C");
@@ -289,12 +296,20 @@ Session& Command::session()
 
 // ----------------------------------------------------------------------
 
-void Command::send(std::string aMessage, websocketpp::frame::opcode::value op_code)
+void Command::send(std::string aMessage, double aCommandTime, websocketpp::frame::opcode::value op_code)
 {
     std::cerr << "Command::send: " << aMessage << std::endl;
-    mServer.send(aMessage, op_code);
+    mServer.send(json_object_prepend(aMessage, "C", command_name(), "CN", command_number(), "CT", aCommandTime), op_code);
 
 } // Command::send
+
+// ----------------------------------------------------------------------
+
+void Command::send_error(std::string aMessage)
+{
+    mServer.send(json_object("C", command_name(), "CN", command_number(), "E", aMessage));
+
+} // Command::send_error
 
 // ----------------------------------------------------------------------
 
@@ -308,7 +323,7 @@ mongocxx::database Command::db()
 
 void Command_users::run()
 {
-    try {
+    // try {
         auto time_start = std::chrono::high_resolution_clock::now();
         auto acmacs_web_db = db();
         DocumentFindResults results{acmacs_web_db, "users_groups",
@@ -316,12 +331,12 @@ void Command_users::run()
                        // << bsoncxx::builder::concatenate(aSession.read_permissions().view())
                      << DocumentFindResults::bson_finalize),
                     MongodbAccess::exclude{"_id", "_t", "_m", "password", "nonce"}};
-        send(json_object("C", "users", "CN", command_number(), "CT", std::chrono::duration<double>(std::chrono::high_resolution_clock::now() - time_start).count(),
-                         "users", json_raw{results.json(false)}));
-    }
-    catch (DocumentFindResults::Error& err) {
-        send(json_object("E", err.what()));
-    }
+        send(json_object(//"CT", std::chrono::duration<double>(std::chrono::high_resolution_clock::now() - time_start).count(),
+                         "users", json_raw{results.json(false)}), std::chrono::duration<double>(std::chrono::high_resolution_clock::now() - time_start).count());
+    // }
+    // catch (DocumentFindResults::Error& err) {
+    //     send_error(err.what());
+    // }
 
 } // Command_users::run
 
@@ -351,7 +366,7 @@ void Command_users::run()
 //         send(json_object("R", "session", "S", session().id(), "user", session().user(), "display_name", session().display_name()));
 //     }
 //     catch (std::exception& err) {
-//         send(json_object("E", err.what()));
+//         send_error(err.what());
 //     }
 
 // } // Command_login::run
@@ -360,13 +375,8 @@ void Command_users::run()
 
 void Command_login_session::run()
 {
-    try {
-        session().use_session(session_id());
-        send(json_object("C", "login_session", "CN", command_number(), "S", session().id(), "user", session().user(), "display_name", session().display_name()));
-    }
-    catch (std::exception& err) {
-        send(json_object("E", err.what()));
-    }
+    session().use_session(session_id());
+    send(json_object("S", session().id(), "user", session().user(), "display_name", session().display_name()));
 
 } // Command_login_session::run
 
@@ -374,13 +384,8 @@ void Command_login_session::run()
 
 void Command_login_nonce::run()
 {
-    try {
-        const auto nonce = session().login_nonce(user());
-        send(json_object("C", "login_nonce", "CN", command_number(), "login_nonce", nonce));
-    }
-    catch (std::exception& err) {
-        send(json_object("E", err.what()));
-    }
+    const auto nonce = session().login_nonce(user());
+    send(json_object("login_nonce", nonce));
 
 } // Command_login_nonce::run
 
@@ -388,13 +393,8 @@ void Command_login_nonce::run()
 
 void Command_login_digest::run()
 {
-    try {
-        session().login_with_password_digest(cnonce(), digest());
-        send(json_object("C", "login_digest", "CN", command_number(), "S", session().id(), "user", session().user(), "display_name", session().display_name()));
-    }
-    catch (std::exception& err) {
-        send(json_object("E", err.what()));
-    }
+    session().login_with_password_digest(cnonce(), digest());
+    send(json_object("S", session().id(), "user", session().user(), "display_name", session().display_name()));
 
 } // Command_login_digest::run
 
