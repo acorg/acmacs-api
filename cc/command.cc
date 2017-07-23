@@ -13,8 +13,8 @@ Session& Command::session()
 
 void Command::send(std::string aMessage, websocketpp::frame::opcode::value op_code)
 {
-    std::cerr << "Command::send: " << aMessage << std::endl;
     mServer.send(json_object_prepend(aMessage, "C", command_name(), "CN", command_number(), "CT", command_duration()), op_code);
+    std::cerr << "Command::send: " << aMessage.substr(0, 100) << std::endl;
 
 } // Command::send
 

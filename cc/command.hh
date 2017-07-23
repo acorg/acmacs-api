@@ -36,7 +36,7 @@ class Command : public json_importer::Object
     Session& session();
 
     inline time_point now() const { return std::chrono::high_resolution_clock::now(); }
-    inline void set_command_start() { std::cerr << "set_command_start" << std::endl; mCommandStart = now(); }
+    inline void set_command_start() { mCommandStart = now(); }
     inline auto command_start() const { return mCommandStart; }
     inline double command_duration() const { return std::chrono::duration<double>{now() - command_start()}.count(); }
 

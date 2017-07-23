@@ -115,6 +115,18 @@ class MongodbAccess
 
       // ----------------------------------------------------------------------
 
+    static inline bson_doc field_null_or_absent(std::string aField)
+        {
+            auto doc = bson_doc{};
+            doc << "$or" << bson_open_array
+                << bson_open_document << aField << bson_open_document << "$exists" << false << bson_close_document << bson_close_document
+                << bson_open_document << aField << bson_open_document << "$eq" << bson_null << bson_close_document << bson_close_document
+                << bson_close_array;
+            return doc;
+        }
+
+      // ----------------------------------------------------------------------
+
     inline mongocxx::database& db() { return mDb; }
 
  private:
@@ -178,6 +190,8 @@ class DocumentFindResults : public MongodbAccess
         {
             return pretty ? json_w<json_writer::pretty>(key) : json_w<json_writer::compact>(key);
         }
+
+    inline size_t count() const { return mRecords.size(); }
 
  private:
     std::vector<doc_view> mRecords;

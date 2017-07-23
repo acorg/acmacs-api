@@ -19,7 +19,7 @@ MONGO_TEST_SOURCES = mongo-test.cc
 MONGO_FIND_SOURCES = mongo-find.cc
 MONGO_RAW_SOURCES = mongo-raw.cc session.cc
 MONGO_DIRECT_SOURCES = mongo-direct.cc session.cc
-ACMACS_API_SERVER_SOURCES = acmacs-api-server.cc session.cc command.cc command-factory.cc command-session.cc command-admin.cc
+ACMACS_API_SERVER_SOURCES = acmacs-api-server.cc session.cc command.cc command-factory.cc command-session.cc command-admin.cc command-chart.cc
 ACMACS_API_CLIENT_SOURCES = acmacs-api-client.cc asm.cc session.cc
 
 MONGO_LDLIBS = -L$(LIB_DIR) -lmongocxx -lbsoncxx -L/usr/local/opt/openssl/lib $$(pkg-config --libs libssl)

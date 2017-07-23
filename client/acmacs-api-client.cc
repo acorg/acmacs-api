@@ -20,6 +20,11 @@ namespace client
         inline CommandUsers() : CommandData{"users"_S} {}
     };
 
+    struct CommandRootCharts : public CommandData
+    {
+        inline CommandRootCharts() : CommandData{"root_charts"_S} {}
+    };
+
     // struct ResultUsers : public ResponseData
     // {
     // };
@@ -62,7 +67,7 @@ class JsonPrinter : public OnMessage<ResponseData>
 
     virtual void upon_transfer()
         {
-            this->send(new CommandUsers{}); // "C", "users");
+            this->send(new CommandRootCharts{});
         }
 
  protected:

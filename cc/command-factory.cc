@@ -5,12 +5,14 @@
 
 #include "command-session.hh"
 #include "command-admin.hh"
+#include "command-chart.hh"
 
 // ----------------------------------------------------------------------
 
 CommandFactory::CommandFactory()
     : mFactory{
     {"users", &CommandFactory::make<Command_users>},
+    {"root_charts", &CommandFactory::make<Command_root_charts>},
     {"login_session", &CommandFactory::make<Command_login_session>},
     {"login_nonce", &CommandFactory::make<Command_login_nonce>},
     {"login_digest", &CommandFactory::make<Command_login_digest>},
