@@ -84,7 +84,8 @@ void LoggedIn::process_message(Message* aMessage)
         session->set_id(aMessage->get_S());
         session->set_user(aMessage->get_user());
         session->set_display_name(aMessage->get_display_name());
-        console_log("Logged in: ", session->get_user(), session->get_display_name());
+        console_log("Logged in: ", aMessage);
+          // console_log("Logged in: ", session->get_user(), session->get_display_name());
     }
     transfer_to();
 

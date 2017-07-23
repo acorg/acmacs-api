@@ -16,36 +16,6 @@
 
 // ----------------------------------------------------------------------
 
-class JOKV : public std::pair<std::string, std::string>                     // json object key value
-{
- public:
-    inline JOKV(std::string key, std::string value) : std::pair<std::string, std::string>(key, value) {}
-};
-
-class JOS : public std::string  // json object string
-{
- public:
-    inline JOS() : std::string{"{}"} {}
-    inline JOS& operator << (JOKV&& key_value)
-        {
-            size_t pos = size() - 1;
-            if (size() > 2) {
-                insert(pos, ",");
-                ++pos;
-            }
-            insert(pos, "\"" + key_value.first + "\":\"" + key_value.second + "\"");
-            return *this;
-        }
-};
-
-class JOE : public std::string  // json object error
-{
- public:
-    inline JOE(std::string aMessage) : std::string{"{\"E\":\"" + aMessage + "\"}"} {}
-};
-
-// ----------------------------------------------------------------------
-
 class RootPage : public WsppHttpLocationHandler
 {
  public:
@@ -344,7 +314,7 @@ void Command_users::run()
         send(results.json(false, "R"));
     }
     catch (DocumentFindResults::Error& err) {
-        send(JOE(err.what())); // std::string{"{\"E\": \""} + err.what() + "\"}");
+        send(json_object("E", err.what()));
     }
 
 } // Command_users::run
@@ -372,10 +342,10 @@ void Command_users::run()
 //         //     // // std::cout << "--session " << aSession.id() << std::endl;
 //         // }
 //           //  send(std::string{"{\"R\":\"session\",\"S\":\"" + session().id() + "\"}"});
-//         send(JOS{} << JOKV{"R", "session"} << JOKV{"S", session().id()} << JOKV{"user", session().user()} << JOKV{"display_name", session().display_name()});
+//         send(json_object("R", "session", "S", session().id(), "user", session().user(), "display_name", session().display_name()));
 //     }
 //     catch (std::exception& err) {
-//         send(JOE(err.what())); // send(std::string{"{\"E\": \""} + err.what() + "\"}");
+//         send(json_object("E", err.what()));
 //     }
 
 // } // Command_login::run
@@ -386,10 +356,10 @@ void Command_login_session::run()
 {
     try {
         session().use_session(session_id());
-        send(JOS{} << JOKV{"R", "session"} << JOKV{"S", session().id()} << JOKV{"user", session().user()} << JOKV{"display_name", session().display_name()});
+        send(json_object("R", "session", "S", session().id(), "user", session().user(), "display_name", session().display_name()));
     }
     catch (std::exception& err) {
-        send(JOE(err.what()));
+        send(json_object("E", err.what()));
     }
 
 } // Command_login_session::run
@@ -400,10 +370,10 @@ void Command_login_nonce::run()
 {
     try {
         const auto nonce = session().login_nonce(user());
-        send(JOS{} << JOKV{"R", "login_nonce"} << JOKV{"login_nonce", nonce});
+        send(json_object("R", "login_nonce", "login_nonce", nonce));
     }
     catch (std::exception& err) {
-        send(JOE(err.what()));
+        send(json_object("E", err.what()));
     }
 
 } // Command_login_nonce::run
@@ -414,10 +384,10 @@ void Command_login_digest::run()
 {
     try {
         session().login_with_password_digest(cnonce(), digest());
-        send(JOS{} << JOKV{"R", "session"} << JOKV{"S", session().id()} << JOKV{"user", session().user()} << JOKV{"display_name", session().display_name()});
+        send(json_object("R", "session", "S", session().id(), "user", session().user(), "display_name", session().display_name()));
     }
     catch (std::exception& err) {
-        send(JOE(err.what()));
+        send(json_object("E", err.what()));
     }
 
 } // Command_login_digest::run
