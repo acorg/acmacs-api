@@ -43,7 +43,8 @@ class AcmacsAPIServer;
 class Command : public json_importer::Object
 {
  public:
-    inline Command(json_importer::Object&& aSrc, AcmacsAPIServer& aServer) : json_importer::Object{std::move(aSrc)}, mServer{aServer} {}
+    inline Command(json_importer::Object&& aSrc, AcmacsAPIServer& aServer, size_t aCommandNumber)
+        : json_importer::Object{std::move(aSrc)}, mServer{aServer}, mCommandNumber{aCommandNumber} {}
 
     inline std::string command_name() const { return get_string("C"); }
 
@@ -53,9 +54,11 @@ class Command : public json_importer::Object
     void send(std::string aMessage, websocketpp::frame::opcode::value op_code = websocketpp::frame::opcode::text);
     mongocxx::database db();
     Session& session();
+    size_t command_number() const { return mCommandNumber; }
 
  private:
     AcmacsAPIServer& mServer;
+    const size_t mCommandNumber;
 
 }; // class Command
 
@@ -146,24 +149,24 @@ class CommandFactory
  public:
     CommandFactory();
 
-    inline std::shared_ptr<Command> find(std::string aMessage, AcmacsAPIServer& aServer) const
+    inline std::shared_ptr<Command> find(std::string aMessage, AcmacsAPIServer& aServer, size_t aCommandNumber) const
         {
             json_importer::Object msg{aMessage};
             std::shared_ptr<Command> result;
             const auto found = mFactory.find(msg.get_string("C"));
             if (found != mFactory.end())
-                result = (this->*found->second)(std::move(msg), aServer);
+                result = (this->*found->second)(std::move(msg), aServer, aCommandNumber);
             else
-                result = make<Command_unknown>(std::move(msg), aServer);
+                result = make<Command_unknown>(std::move(msg), aServer, aCommandNumber);
             return result;
         }
 
  private:
-    using FactoryFunc = std::shared_ptr<Command> (CommandFactory::*)(json_importer::Object&&, AcmacsAPIServer&) const;
+    using FactoryFunc = std::shared_ptr<Command> (CommandFactory::*)(json_importer::Object&&, AcmacsAPIServer&, size_t aCommandNumber) const;
 
-    template <typename Cmd> inline std::shared_ptr<Command> make(json_importer::Object&& aSrc, AcmacsAPIServer& aServer) const
+    template <typename Cmd> inline std::shared_ptr<Command> make(json_importer::Object&& aSrc, AcmacsAPIServer& aServer, size_t aCommandNumber) const
         {
-            return std::make_shared<Cmd>(std::move(aSrc), aServer);
+            return std::make_shared<Cmd>(std::move(aSrc), aServer, aCommandNumber);
         }
 
       // std::map<std::string, std::function<std::shared_ptr<Command> (std::string)>> mFactory;
@@ -187,9 +190,9 @@ class AcmacsAPIServer : public WsppWebsocketLocationHandler
 {
  public:
     inline AcmacsAPIServer(mongocxx::pool& aPool, CommandFactory& aCommandFactory)
-        : WsppWebsocketLocationHandler{}, mPool{aPool}, mCommandFactory{aCommandFactory}, mSession{db()} {}
+        : WsppWebsocketLocationHandler{}, mPool{aPool}, mCommandFactory{aCommandFactory}, mSession{db()}, mCommandNumber{0} {}
     inline AcmacsAPIServer(const AcmacsAPIServer& aSrc)
-        : WsppWebsocketLocationHandler{aSrc}, mPool{aSrc.mPool}, mCommandFactory{aSrc.mCommandFactory}, mSession{aSrc.mSession} {}
+        : WsppWebsocketLocationHandler{aSrc}, mPool{aSrc.mPool}, mCommandFactory{aSrc.mCommandFactory}, mSession{aSrc.mSession}, mCommandNumber{0} {}
 
  protected:
     inline auto connection()
@@ -229,7 +232,7 @@ class AcmacsAPIServer : public WsppWebsocketLocationHandler
     virtual inline void message(std::string aMessage)
         {
             std::cerr << std::this_thread::get_id() << " MSG: " << aMessage.substr(0, 80) << std::endl;
-            auto command = mCommandFactory.find(aMessage, *this);
+            auto command = mCommandFactory.find(aMessage, *this, ++mCommandNumber);
             command->run();
 
             // json_importer::Object msg{aMessage};
@@ -268,6 +271,7 @@ class AcmacsAPIServer : public WsppWebsocketLocationHandler
     CommandFactory& mCommandFactory;
     std::shared_ptr<mongocxx::client> mConnection;
     Session mSession;
+    std::atomic<size_t> mCommandNumber;
 
     inline Session& session() { return mSession; }
 
@@ -310,8 +314,7 @@ void Command_users::run()
                        // << bsoncxx::builder::concatenate(aSession.read_permissions().view())
                      << DocumentFindResults::bson_finalize),
                     MongodbAccess::exclude{"_id", "_t", "_m", "password", "nonce"}};
-          // send(JOS{} << JOKV{"E", "who cares?"});
-        send(results.json(false, "R"));
+        send(json_object("C", "users", "CN", command_number(), "users", json_raw{results.json(false)}));
     }
     catch (DocumentFindResults::Error& err) {
         send(json_object("E", err.what()));
@@ -356,7 +359,7 @@ void Command_login_session::run()
 {
     try {
         session().use_session(session_id());
-        send(json_object("R", "session", "S", session().id(), "user", session().user(), "display_name", session().display_name()));
+        send(json_object("C", "login_session", "CN", command_number(), "S", session().id(), "user", session().user(), "display_name", session().display_name()));
     }
     catch (std::exception& err) {
         send(json_object("E", err.what()));
@@ -370,7 +373,7 @@ void Command_login_nonce::run()
 {
     try {
         const auto nonce = session().login_nonce(user());
-        send(json_object("R", "login_nonce", "login_nonce", nonce));
+        send(json_object("C", "login_nonce", "CN", command_number(), "login_nonce", nonce));
     }
     catch (std::exception& err) {
         send(json_object("E", err.what()));
@@ -384,7 +387,7 @@ void Command_login_digest::run()
 {
     try {
         session().login_with_password_digest(cnonce(), digest());
-        send(json_object("R", "session", "S", session().id(), "user", session().user(), "display_name", session().display_name()));
+        send(json_object("C", "login_digest", "CN", command_number(), "S", session().id(), "user", session().user(), "display_name", session().display_name()));
     }
     catch (std::exception& err) {
         send(json_object("E", err.what()));
@@ -399,7 +402,6 @@ class AcmacsAPISettings : public ServerSettings
  public:
     inline auto mongodb_uri() const
         {
-
             auto uri = json_importer::get(mDoc, "mongodb_uri", std::string{});
             if (uri.empty())
                 uri = "mongodb://localhost:27017/";

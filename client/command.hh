@@ -16,7 +16,10 @@ namespace client
 
     struct ResponseData : public Object
     {
-        String* get_R();
+        String* get_C();        // response for command
+        String* get_CN();       // number of commands processed
+        String* get_CT();       // time of the command processing
+        String* get_CI();       // index of the command part (if there are multiple responses for the command)
         String* get_E();
     };
 

@@ -110,7 +110,7 @@ template <typename MessageType> class OnMessage : public OnMessageBase
 
     virtual inline void process_raw_message(client::Object* aMessage)
         {
-              // console_log("raw-message", aMessage);
+            console_log("raw-message", aMessage);
             auto msg = static_cast<MessageType*>(aMessage);
             if (no_error(msg)) {
                 process_message(msg);

@@ -70,7 +70,7 @@ class JsonPrinter : public OnMessage<ResponseData>
         {
             auto* pre = document.createElement("pre");
             pre->set_className("json-highlight");
-            pre->set_innerHTML(json_syntax_highlight(stringify(aMessage->get_R(), 2)));
+            pre->set_innerHTML(json_syntax_highlight(stringify(aMessage, 2)));
             document.get_body()->appendChild(pre);
         }
 };

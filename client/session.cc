@@ -77,7 +77,7 @@ void LoginNonce::process_message(Message* aMessage)
 
 void LoggedIn::process_message(Message* aMessage)
 {
-    if (!is_undefined(aMessage->get_E()) || aMessage->get_R() != "session"_S) {
+    if (!is_undefined(aMessage->get_E()) || (aMessage->get_C() != "login_digest"_S && aMessage->get_C() != "login_session"_S)) {
         window.alert(concat("Login failed: ", aMessage->get_E()));
     }
     else {

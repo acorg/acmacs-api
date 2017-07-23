@@ -130,9 +130,17 @@ class DocumentFindResults : public MongodbAccess
     template <typename Writer> inline std::string json_w(std::string key) const
         {
             Writer writer{"DocumentFindResults"};
-            writer << json_writer::start_object
-                    << json_writer::key(key) << mRecords
-                    << json_writer::end_object;
+            if (!key.empty()) {
+                writer << json_writer::start_object
+                       << json_writer::key(key) << mRecords
+                       << json_writer::end_object;
+            }
+            else {
+                writer << json_writer::start_array;
+                for (const auto& record: mRecords)
+                    writer << record;
+                writer << json_writer::end_array;
+            }
             return writer << json_writer::finalize;
         }
 
@@ -166,7 +174,7 @@ class DocumentFindResults : public MongodbAccess
             }
         }
 
-    inline std::string json(bool pretty = true, std::string key = "results") const
+    inline std::string json(bool pretty = true, std::string key = std::string{}) const
         {
             return pretty ? json_w<json_writer::pretty>(key) : json_w<json_writer::compact>(key);
         }
