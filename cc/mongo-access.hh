@@ -190,24 +190,6 @@ inline auto operator <= (MongodbAccess::key_context&& left, decltype(MongodbAcce
 
 class DocumentFindResults : public MongodbAccess
 {
- private:
-    template <typename Writer> inline std::string json_w(std::string key) const
-        {
-            Writer writer{"DocumentFindResults"};
-            if (!key.empty()) {
-                writer << json_writer::start_object
-                       << json_writer::key(key) << mRecords
-                       << json_writer::end_object;
-            }
-            else {
-                writer << json_writer::start_array;
-                for (const auto& record: mRecords)
-                    writer << record;
-                writer << json_writer::end_array;
-            }
-            return writer << json_writer::finalize;
-        }
-
  public:
     class Error : public std::runtime_error { public: using std::runtime_error::runtime_error; };
 
@@ -216,46 +198,16 @@ class DocumentFindResults : public MongodbAccess
     inline DocumentFindResults(mongocxx::database& aDb, const char* aCollection, doc_value&& aFilter, const mongo_find& aOptions = mongo_find{})
         : MongodbAccess{aDb} { build(aCollection, std::move(aFilter), aOptions); }
 
-    inline void build(const char* aCollection, doc_value&& aFilter, const mongo_find& aOptions = mongo_find{})
-        {
-            try {
-                auto found = find(aCollection, std::move(aFilter), aOptions);
-                std::copy(std::begin(found), std::end(found), std::back_inserter(mRecords));
-            }
-            catch (mongocxx::query_exception& err) {
-                throw_error(err);
-            }
-        }
-
-    inline void build(const char* aCollection)
-        {
-            try {
-                auto found = find(aCollection);
-                std::copy(std::begin(found), std::end(found), std::back_inserter(mRecords));
-            }
-            catch (mongocxx::query_exception& err) {
-                throw_error(err);
-            }
-        }
-
-    inline std::string json(bool pretty = true, std::string key = std::string{}) const
-        {
-            return pretty ? json_w<json_writer::pretty>(key) : json_w<json_writer::compact>(key);
-        }
+    std::string json(bool pretty = true, std::string key = std::string{}) const;
 
     inline size_t count() const { return mRecords.size(); }
+    inline const auto& records() const { return mRecords; }
 
  private:
     std::vector<doc_view> mRecords;
 
-    [[noreturn]] inline void throw_error(mongocxx::query_exception& err)
-        {
-            const std::string what = err.what();
-            if (what.substr(0, 26) == "No suitable servers found:")
-                throw Error{"Acmacs mongodb server is down"};
-            else
-                throw Error{what};
-        }
+    void build(const char* aCollection, doc_value&& aFilter, const mongo_find& aOptions = mongo_find{});
+    void build(const char* aCollection);
 
 }; // class DocumentFindResults
 
