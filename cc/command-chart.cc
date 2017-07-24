@@ -13,7 +13,8 @@ void Command_root_charts::run()
                  <= MongodbAccess::bson_finalize),
                   //MongodbAccess::exclude("_id", "_t", "table", "search", "conformance").sort("_m", -1)};
                 MongodbAccess::include("name", "parent", "_m").sort("_m", -1)};
-    send(json_object("charts_count", results.count(), "charts", json_raw{results.json(false)}));
+    const auto results_json = results.json(false); // results.count() is available only after calling results.json()
+    send(json_object("charts_count", results.count(), "charts", json_raw{results_json}));
 
       // sort by _m
       // chunks

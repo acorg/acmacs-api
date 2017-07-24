@@ -2,20 +2,19 @@
 
 // ----------------------------------------------------------------------
 
-template <typename Writer> static std::string json_w(const DocumentFindResults& aResults, std::string key)
+template <typename Writer> static std::string json_w(DocumentFindResults& aResults, std::string key)
 {
     Writer writer{"DocumentFindResults"};
-    if (!key.empty()) {
-        writer << json_writer::start_object
-               << json_writer::key(key) << aResults.records()
-               << json_writer::end_object;
+    if (!key.empty())
+        writer << json_writer::start_object << json_writer::key(key);
+    writer << json_writer::start_array;
+    for (auto& record: aResults.cursor()) {
+        writer << record;
+        aResults.increment_count();
     }
-    else {
-        writer << json_writer::start_array;
-        for (const auto& record: aResults.records())
-            writer << record;
-        writer << json_writer::end_array;
-    }
+    writer << json_writer::end_array;
+    if (!key.empty())
+        writer << json_writer::end_object;
     return writer << json_writer::finalize;
 }
 
@@ -35,8 +34,7 @@ template <typename Writer> static std::string json_w(const DocumentFindResults& 
 void DocumentFindResults::build(const char* aCollection, doc_value&& aFilter, const mongo_find& aOptions)
 {
     try {
-        auto found = find(aCollection, std::move(aFilter), aOptions);
-        std::copy(std::begin(found), std::end(found), std::back_inserter(mRecords));
+        mCursor = std::make_unique<mongocxx::cursor>(find(aCollection, std::move(aFilter), aOptions));
     }
     catch (mongocxx::query_exception& err) {
         throw_error(err);
@@ -49,8 +47,7 @@ void DocumentFindResults::build(const char* aCollection, doc_value&& aFilter, co
 void DocumentFindResults::build(const char* aCollection)
 {
     try {
-        auto found = find(aCollection);
-        std::copy(std::begin(found), std::end(found), std::back_inserter(mRecords));
+        mCursor = std::make_unique<mongocxx::cursor>(find(aCollection));
     }
     catch (mongocxx::query_exception& err) {
         throw_error(err);
@@ -60,14 +57,11 @@ void DocumentFindResults::build(const char* aCollection)
 
 // ----------------------------------------------------------------------
 
-std::string DocumentFindResults::json(bool pretty, std::string key) const
+std::string DocumentFindResults::json(bool pretty, std::string key)
 {
     return pretty ? json_w<json_writer::pretty>(*this, key) : json_w<json_writer::compact>(*this, key);
 
 } // DocumentFindResults::json
-
-// ----------------------------------------------------------------------
-
 
 // ----------------------------------------------------------------------
 /// Local Variables:

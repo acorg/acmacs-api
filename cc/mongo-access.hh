@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #pragma GCC diagnostic push
 #include "mongo-diagnostics.hh"
 #include <mongocxx/client.hpp>
@@ -193,18 +195,20 @@ class DocumentFindResults : public MongodbAccess
  public:
     class Error : public std::runtime_error { public: using std::runtime_error::runtime_error; };
 
-    inline DocumentFindResults(mongocxx::database& aDb) : MongodbAccess{aDb} {}
-    inline DocumentFindResults(mongocxx::database& aDb, const char* aCollection) : MongodbAccess{aDb} { build(aCollection); }
+    inline DocumentFindResults(mongocxx::database& aDb) : MongodbAccess{aDb}, mCount{0} {}
+    inline DocumentFindResults(mongocxx::database& aDb, const char* aCollection) : MongodbAccess{aDb}, mCount{0} { build(aCollection); }
     inline DocumentFindResults(mongocxx::database& aDb, const char* aCollection, doc_value&& aFilter, const mongo_find& aOptions = mongo_find{})
-        : MongodbAccess{aDb} { build(aCollection, std::move(aFilter), aOptions); }
+        : MongodbAccess{aDb}, mCount{0} { build(aCollection, std::move(aFilter), aOptions); }
 
-    std::string json(bool pretty = true, std::string key = std::string{}) const;
+    std::string json(bool pretty = true, std::string key = std::string{});
 
-    inline size_t count() const { return mRecords.size(); }
-    inline const auto& records() const { return mRecords; }
+    inline size_t count() const { return mCount; }
+    inline void increment_count() { ++mCount; }
+    inline auto& cursor() { return *mCursor.get(); }
 
  private:
-    std::vector<doc_view> mRecords;
+    std::unique_ptr<mongocxx::cursor> mCursor;
+    size_t mCount;
 
     void build(const char* aCollection, doc_value&& aFilter, const mongo_find& aOptions = mongo_find{});
     void build(const char* aCollection);
