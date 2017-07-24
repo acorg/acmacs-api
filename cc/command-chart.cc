@@ -12,7 +12,8 @@ void Command_root_charts::run()
                  <= session().read_permissions()
                  <= MongodbAccess::bson_finalize),
                   //MongodbAccess::exclude("_id", "_t", "table", "search", "conformance").sort("_m", -1)};
-                MongodbAccess::include("name", "parent", "_m").sort("_m", -1)};
+                MongodbAccess::include("name", "parent", "_m", "keywords").sort("_m", -1) //.skip(500).limit(100)
+                };
     const auto results_json = results.json(false); // results.count() is available only after calling results.json()
     send(json_object("charts_count", results.count(), "charts", json_raw{results_json}));
 

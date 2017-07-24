@@ -75,6 +75,9 @@ class MongodbAccess
                 return sort(args ...);
             }
 
+        inline find_options& skip(std::int32_t skip) { mOptions.skip(skip); return *this; }
+        inline find_options& limit(std::int32_t limit) { mOptions.limit(limit); return *this; }
+
         inline operator mongo_find& ()
             {
                 const auto projection = mProjection.view();
@@ -109,6 +112,12 @@ class MongodbAccess
     {
      public:
         template <typename ... Args> inline sort(Args ... args) { find_options::sort(args ...); }
+    };
+
+    class skip_limit : public find_options
+    {
+     public:
+        inline skip_limit(std::int32_t skip, std::int32_t limit) { find_options::skip(skip); find_options::limit(limit); }
     };
 
       // ----------------------------------------------------------------------
