@@ -22,7 +22,10 @@ namespace client
 
     struct Command_root_charts : public CommandData
     {
-        inline Command_root_charts() : CommandData{"root_charts"_S} {}
+        inline Command_root_charts(int skip = 0, int limit = 0) : CommandData{"root_charts"_S} { set_skip(skip); set_limit(limit); }
+
+        void set_skip(int);
+        void set_limit(int);
     };
 
     struct Command_list_commands : public CommandData
@@ -73,7 +76,7 @@ class JsonPrinter : public OnMessage<ResponseData>
     virtual void upon_transfer()
         {
             this->send(new Command_list_commands{});
-            this->send(new Command_root_charts{});
+            this->send(new Command_root_charts{0, 15});
         }
 
  protected:
