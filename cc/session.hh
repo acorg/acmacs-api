@@ -32,7 +32,8 @@ class Session : public StoredInMongodb
 
     inline void increment_commands() { ++mCommands; }
 
-    bson_doc read_permissions() const;
+    bson_value read_permissions() const;
+    stream_doc read_permissions2() const; //$
 
     inline bool is_admin() const
         {
@@ -40,8 +41,8 @@ class Session : public StoredInMongodb
         }
 
  protected:
-    virtual void add_fields_for_creation(bson_doc& aDoc);
-    virtual void add_fields_for_updating(bson_doc& aDoc);
+    virtual void add_fields_for_creation(stream_doc& aDoc);
+    virtual void add_fields_for_updating(stream_doc& aDoc);
 
  private:
     mutable std::mutex mAccess;

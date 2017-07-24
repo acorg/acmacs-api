@@ -22,7 +22,7 @@ void Session::use_session(std::string aSessionId)
 {
     reset();
 
-    auto found = find_one((bson_doc{} << "_id" << bsoncxx::oid{aSessionId} << "expires" << bson_open_document << "$gte" << time_now() << bson_close_document << bson_finalize),
+    auto found = find_one((stream_doc{} << "_id" << bsoncxx::oid{aSessionId} << "expires" << bld_open_document << "$gte" << time_now() << bld_close_document << bld_finalize),
                           exclude("_t", "_m", "I", "expires", "expiration_in_seconds"));
     if (!found)
         throw Error{"invalid session"};
@@ -59,7 +59,8 @@ std::string Session::login_nonce(std::string aUser)
 
 void Session::find_user(std::string aUser, bool aGetPassword)
 {
-    auto found = find_one("users_groups", bson_doc{} << "name" << aUser << "_t" << "acmacs.mongodb_collections.users_groups.User" << bson_finalize, exclude("_id", "_t", "recent_logins", "created", "p", "_m"));
+//$    auto found = find_one("users_groups", stream_doc{} << "name" << aUser << "_t" << "acmacs.mongodb_collections.users_groups.User" << bld_finalize, exclude("_id", "_t", "recent_logins", "created", "p", "_m"));
+    auto found = find_one("users_groups", bson_make_value("name", aUser, "_t", "acmacs.mongodb_collections.users_groups.User"), exclude("_id", "_t", "recent_logins", "created", "p", "_m"));
     if (!found)
         throw Error{"invalid user or password"};
       // std::cerr << json_writer::json(*found, "user", 1) << std::endl;
@@ -139,17 +140,17 @@ void Session::create_session()
 
 // ----------------------------------------------------------------------
 
-void Session::add_fields_for_creation(bson_doc& aDoc)
+void Session::add_fields_for_creation(stream_doc& aDoc)
 {
     StoredInMongodb::add_fields_for_creation(aDoc);
 
     aDoc << "_t" << "acmacs.mongodb_collections.permissions.Session"
          << "user" << mUser;
           // aDoc << "I" << "127.0.0.1";
-    auto groups = aDoc << "user_and_groups" << bson_open_array;
+    auto groups = aDoc << "user_and_groups" << bld_open_array;
     for (const auto& group: mGroups)
         groups << group;
-    groups << bson_close_array;
+    groups << bld_close_array;
     aDoc << "expiration_in_seconds" << mExpirationInSeconds
          << "expires" << time_in_seconds(mExpirationInSeconds)
          << "commands" << mCommands;
@@ -158,7 +159,7 @@ void Session::add_fields_for_creation(bson_doc& aDoc)
 
 // ----------------------------------------------------------------------
 
-void Session::add_fields_for_updating(bson_doc& aDoc)
+void Session::add_fields_for_updating(stream_doc& aDoc)
 {
     StoredInMongodb::add_fields_for_updating(aDoc);
     aDoc << "expires" << time_in_seconds(mExpirationInSeconds)
@@ -170,7 +171,8 @@ void Session::add_fields_for_updating(bson_doc& aDoc)
 
 void Session::find_groups_of_user()
 {
-    auto found = find("users_groups", bson_doc{} << "members" << mUser << bson_finalize, include("name").exclude("_id"));
+//$    auto found = find("users_groups", stream_doc{} << "members" << mUser << bld_finalize, include("name").exclude("_id"));
+    auto found = find("users_groups", bson_make_value("members", mUser), include("name").exclude("_id"));
     std::unique_lock<decltype(mAccess)> lock{mAccess};
     mGroups.clear();
     mGroups.push_back(mUser);
@@ -180,17 +182,27 @@ void Session::find_groups_of_user()
 
 // ----------------------------------------------------------------------
 
-Session::bson_doc Session::read_permissions() const
+Session::bson_value Session::read_permissions() const
 {
-    auto doc = bson_doc{};
-    auto groups = doc << "p.r" << bson_open_document << "$in" << bson_open_array;
+    std::unique_lock<decltype(mAccess)> lock{mAccess};
+    return bson_make_value("p.r", bson_make_value("$in", bson_make_array(std::begin(mGroups), std::end(mGroups))));
+
+} // Session::read_permissions
+
+// ----------------------------------------------------------------------
+
+//$
+Session::stream_doc Session::read_permissions2() const
+{
+    auto doc = stream_doc{};
+    auto groups = doc << "p.r" << bld_open_document << "$in" << bld_open_array;
     std::unique_lock<decltype(mAccess)> lock{mAccess};
     for (const auto& group: mGroups)
         groups << group;
-    groups << bson_close_array << bson_close_document;
+    groups << bld_close_array << bld_close_document;
     return doc;
 
-} // Session::read_permissions
+} // Session::read_permissions2
 
 // ----------------------------------------------------------------------
 /// Local Variables:

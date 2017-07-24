@@ -4,6 +4,7 @@
 
 #pragma GCC diagnostic push
 #include "mongo-diagnostics.hh"
+#include <bsoncxx/json.hpp>
 #include <mongocxx/client.hpp>
 #include <mongocxx/instance.hpp>
 #include <mongocxx/pool.hpp>
@@ -17,6 +18,57 @@
 
 // ----------------------------------------------------------------------
 
+namespace mongo_bson_internal
+{
+    inline void bson_append_key_value(bsoncxx::builder::basic::document&) {}
+
+    template <typename ... Args> inline void bson_append_key_value(bsoncxx::builder::basic::document& target, const bsoncxx::document::value& to_merge, Args ... args)
+    {
+        target.append(bsoncxx::builder::concatenate(to_merge.view()));
+        bson_append_key_value(target, args ...);
+    }
+
+    template <typename Value, typename ... Args> inline void bson_append_key_value(bsoncxx::builder::basic::document& target, std::string key, Value value, Args ... args)
+    {
+        target.append(bsoncxx::builder::basic::kvp(key, value));
+        bson_append_key_value(target, args ...);
+    }
+
+    inline void bson_append_to_array(bsoncxx::builder::basic::array&) {}
+
+    template <typename ... Args> inline void bson_append_to_array(bsoncxx::builder::basic::array& target, const bsoncxx::document::value& to_append, Args ... args)
+    {
+        target.append(bsoncxx::builder::concatenate(to_append.view()));
+        bson_append_to_array(target, args ...);
+    }
+
+} // namespace mongo_bson_internal
+
+// iterator SFINAE: https://stackoverflow.com/questions/12161109/stdenable-if-or-sfinae-for-iterator-or-pointer
+template <typename Iterator, typename = decltype(*std::declval<Iterator&>(), void(), ++std::declval<Iterator&>(), void())> inline bsoncxx::array::value bson_make_array(Iterator first, Iterator last)
+{
+    bsoncxx::builder::basic::array array;
+    for (; first != last; ++first)
+        array.append(*first);
+    return array.extract();
+}
+
+template <typename ... Args> inline bsoncxx::array::value bson_make_array(Args ... args)
+{
+    bsoncxx::builder::basic::array array;
+    mongo_bson_internal::bson_append_to_array(array, args ...);
+    return array.extract();
+}
+
+template <typename ... Args> inline bsoncxx::document::value bson_make_value(Args ... args)
+{
+    bsoncxx::builder::basic::document doc;
+    mongo_bson_internal::bson_append_key_value(doc, args ...);
+    return doc.extract();
+}
+
+// ----------------------------------------------------------------------
+
 class MongodbAccess
 {
  public:
@@ -24,16 +76,21 @@ class MongodbAccess
     inline MongodbAccess(const MongodbAccess& aSrc) : mDb(aSrc.mDb) {}
     virtual inline ~MongodbAccess() {}
 
-    using bson_doc = bsoncxx::builder::stream::document;
-    static constexpr const auto bson_finalize = bsoncxx::builder::stream::finalize;
-    static constexpr const auto bson_open_document = bsoncxx::builder::stream::open_document;
-    static constexpr const auto bson_close_document = bsoncxx::builder::stream::close_document;
-    static constexpr const auto bson_open_array = bsoncxx::builder::stream::open_array;
-    static constexpr const auto bson_close_array = bsoncxx::builder::stream::close_array;
+    using stream_doc = bsoncxx::builder::stream::document;
+    static constexpr const auto bld_finalize = bsoncxx::builder::stream::finalize;
+    static constexpr const auto bld_open_document = bsoncxx::builder::stream::open_document;
+    static constexpr const auto bld_close_document = bsoncxx::builder::stream::close_document;
+    static constexpr const auto bld_open_array = bsoncxx::builder::stream::open_array;
+    static constexpr const auto bld_close_array = bsoncxx::builder::stream::close_array;
+
+    using bld_doc = bsoncxx::builder::basic::document;
+    using bld_array = bsoncxx::builder::basic::array;
+
+    using bson_value = bsoncxx::document::value;
+    using bson_view = bsoncxx::document::view;
+    using bson_array = bsoncxx::array::value;
     static constexpr const auto bson_null = bsoncxx::types::b_null{};
 
-    using doc_value = bsoncxx::document::value;
-    using doc_view = bsoncxx::document::view;
     using cursor = mongocxx::cursor;
     using mongo_find = mongocxx::options::find;
 
@@ -49,7 +106,7 @@ class MongodbAccess
 
         inline find_options& exclude(std::initializer_list<std::string>&& fields)
             {
-                std::for_each(std::begin(fields), std::end(fields), [this](const auto& field) { mProjection << field << false; });
+                std::for_each(std::begin(fields), std::end(fields), [this](const auto& field) { mProjection.append(bsoncxx::builder::basic::kvp(field, false)); });
                 return *this;
             }
 
@@ -57,7 +114,7 @@ class MongodbAccess
 
         inline find_options& include(std::initializer_list<std::string>&& fields)
             {
-                std::for_each(std::begin(fields), std::end(fields), [this](const auto& field) { mProjection << field << true; });
+                std::for_each(std::begin(fields), std::end(fields), [this](const auto& field) { mProjection.append(bsoncxx::builder::basic::kvp(field, true)); });
                 return *this;
             }
 
@@ -65,7 +122,7 @@ class MongodbAccess
 
         inline find_options& sort(std::string field, int order = 1)
             {
-                mSort << field << order;
+                mSort.append(bsoncxx::builder::basic::kvp(field, order));
                 return *this;
             }
 
@@ -91,8 +148,8 @@ class MongodbAccess
 
      private:
         mongo_find mOptions;
-        bson_doc mProjection;
-        bson_doc mSort;
+        bld_doc mProjection;
+        bld_doc mSort;
 
     }; // class find_options
 
@@ -122,12 +179,7 @@ class MongodbAccess
 
       // ----------------------------------------------------------------------
 
-    inline auto find(const char* aCollection, doc_value&& aFilter, const mongo_find& aOptions = mongo_find{})
-        {
-            return mDb[aCollection].find(std::move(aFilter), aOptions);
-        }
-
-    inline auto find(const char* aCollection, const doc_view& aFilter, const mongo_find& aOptions = mongo_find{})
+    inline auto find(const char* aCollection, bson_view aFilter, const mongo_find& aOptions = mongo_find{})
         {
             return mDb[aCollection].find(aFilter, aOptions);
         }
@@ -137,19 +189,19 @@ class MongodbAccess
             return mDb[aCollection].find({});
         }
 
-    inline auto find_one(const char* aCollection, doc_value&& aFilter, const mongo_find& aOptions = mongo_find{})
+    inline auto find_one(const char* aCollection, bson_view aFilter, const mongo_find& aOptions = mongo_find{})
         {
-            return mDb[aCollection].find_one(std::move(aFilter), aOptions);
+            return mDb[aCollection].find_one(aFilter, aOptions);
         }
 
-    inline auto insert_one(const char* aCollection, doc_value&& aDoc)
+    inline auto insert_one(const char* aCollection, bson_view aDoc)
         {
-            return mDb[aCollection].insert_one(std::move(aDoc));
+            return mDb[aCollection].insert_one(aDoc);
         }
 
-    inline auto update_one(const char* aCollection, doc_value&& aFilter, doc_value&& aDoc)
+    inline auto update_one(const char* aCollection, bson_view aFilter, bson_view aDoc)
         {
-            return mDb[aCollection].update_one(std::move(aFilter), std::move(aDoc));
+            return mDb[aCollection].update_one(aFilter, aDoc);
         }
 
       // ----------------------------------------------------------------------
@@ -166,14 +218,12 @@ class MongodbAccess
 
       // ----------------------------------------------------------------------
 
-    static inline bson_doc field_null_or_absent(std::string aField)
+    static inline bson_value field_null_or_absent(std::string aField)
         {
-            auto doc = bson_doc{};
-            doc << "$or" << bson_open_array
-                << bson_open_document << aField << bson_open_document << "$exists" << false << bson_close_document << bson_close_document
-                << bson_open_document << aField << bson_open_document << "$eq" << bson_null << bson_close_document << bson_close_document
-                << bson_close_array;
-            return doc;
+            return bson_make_value("$or", bson_make_array(
+                                       bson_make_value(aField, bson_make_value("$exists", false)),
+                                       bson_make_value(aField, bson_make_value("$eq", bson_null))
+                                                          ));
         }
 
       // ----------------------------------------------------------------------
@@ -187,23 +237,6 @@ class MongodbAccess
 
 // ----------------------------------------------------------------------
 
-inline auto operator <= (MongodbAccess::bson_doc&& left, MongodbAccess::bson_doc&& right)
-{
-    return left << bsoncxx::builder::concatenate(right.view());
-}
-
-inline auto operator <= (MongodbAccess::key_context&& left, MongodbAccess::bson_doc&& right)
-{
-    return left << bsoncxx::builder::concatenate(right.view());
-}
-
-inline auto operator <= (MongodbAccess::key_context&& left, decltype(MongodbAccess::bson_finalize))
-{
-    return left << MongodbAccess::bson_finalize;
-}
-
-// ----------------------------------------------------------------------
-
 class DocumentFindResults : public MongodbAccess
 {
  public:
@@ -211,9 +244,7 @@ class DocumentFindResults : public MongodbAccess
 
     inline DocumentFindResults(mongocxx::database& aDb) : MongodbAccess{aDb}, mCount{0} {}
     inline DocumentFindResults(mongocxx::database& aDb, const char* aCollection) : MongodbAccess{aDb}, mCount{0} { build(aCollection); }
-    inline DocumentFindResults(mongocxx::database& aDb, const char* aCollection, doc_value&& aFilter, const mongo_find& aOptions = mongo_find{})
-        : MongodbAccess{aDb}, mCount{0} { build(aCollection, aFilter.view(), aOptions); }
-    inline DocumentFindResults(mongocxx::database& aDb, const char* aCollection, const doc_view& aFilter, const mongo_find& aOptions = mongo_find{})
+    inline DocumentFindResults(mongocxx::database& aDb, const char* aCollection, bson_view aFilter, const mongo_find& aOptions = mongo_find{})
         : MongodbAccess{aDb}, mCount{0} { build(aCollection, aFilter, aOptions); }
 
     std::string json(bool pretty = true, std::string key = std::string{});
@@ -226,7 +257,7 @@ class DocumentFindResults : public MongodbAccess
     std::unique_ptr<mongocxx::cursor> mCursor;
     size_t mCount;
 
-    void build(const char* aCollection, const doc_view& aFilter, const mongo_find& aOptions = mongo_find{});
+    void build(const char* aCollection, bson_view aFilter, const mongo_find& aOptions = mongo_find{});
     void build(const char* aCollection);
 
 }; // class DocumentFindResults
@@ -239,15 +270,15 @@ class StoredInMongodb : public MongodbAccess
     inline StoredInMongodb(mongocxx::database& aDb, const char* aCollection) : MongodbAccess{aDb}, mCollection{aCollection} {}
 
  protected:
-    using bson_key_context = bsoncxx::builder::stream::key_context<bsoncxx::builder::stream::key_context<bsoncxx::builder::stream::closed_context>>;
+    using bld_key_context = bsoncxx::builder::stream::key_context<bsoncxx::builder::stream::key_context<bsoncxx::builder::stream::closed_context>>;
 
     using MongodbAccess::find;
-    inline auto find(doc_value&& aFilter, const mongo_find& aOptions = mongo_find{}) { return find(mCollection, std::move(aFilter), aOptions); }
+    inline auto find(bson_view aFilter, const mongo_find& aOptions = mongo_find{}) { return find(mCollection, aFilter, aOptions); }
     inline auto find() { return find(mCollection); }
     using MongodbAccess::find_one;
-    inline auto find_one(doc_value&& aFilter, const mongo_find& aOptions = mongo_find{}) { return find_one(mCollection, std::move(aFilter), aOptions); }
-    inline auto insert_one(doc_value&& aDoc) { return MongodbAccess::insert_one(mCollection, std::move(aDoc)); }
-    inline auto update_one(doc_value&& aFilter, doc_value&& aDoc) { return MongodbAccess::update_one(mCollection, std::move(aFilter), std::move(aDoc)); }
+    inline auto find_one(bson_view aFilter, const mongo_find& aOptions = mongo_find{}) { return find_one(mCollection, aFilter, aOptions); }
+    inline auto insert_one(bson_view aDoc) { return MongodbAccess::insert_one(mCollection, aDoc); }
+    inline auto update_one(bson_view aFilter, bson_view aDoc) { return MongodbAccess::update_one(mCollection, aFilter, aDoc); }
 
     class Error : public std::runtime_error { public: using std::runtime_error::runtime_error; };
 
@@ -255,10 +286,10 @@ class StoredInMongodb : public MongodbAccess
       // throws Error
     inline std::string create()
         {
-            auto doc = bson_doc{};
+            auto doc = stream_doc{};
             add_fields_for_creation(doc);
             try {
-                auto result = insert_one(doc << bson_finalize);
+                auto result = insert_one(doc << bld_finalize);
                 if (!result)
                     throw Error{"unacknowledged write during doc insertion"};
                 if (result->inserted_id().type() != bsoncxx::type::k_oid)
@@ -273,20 +304,20 @@ class StoredInMongodb : public MongodbAccess
       // throws Error
     inline void update(std::string aId)
         {
-            auto doc_set = bson_doc{};
+            auto doc_set = stream_doc{};
             add_fields_for_updating(doc_set);
-            auto result = update_one(bson_doc{} << "_id" << bsoncxx::oid{aId} << bson_finalize,
-                                     bson_doc{} << "$set" << bson_open_document << bsoncxx::builder::concatenate(doc_set.view()) << bson_close_document << bson_finalize);
+            auto result = update_one(stream_doc{} << "_id" << bsoncxx::oid{aId} << bld_finalize,
+                                     stream_doc{} << "$set" << bld_open_document << bsoncxx::builder::concatenate(doc_set.view()) << bld_close_document << bld_finalize);
             if (!result)
                 throw Error{"unacknowledged write during doc updating"};
         }
 
-    virtual inline void add_fields_for_creation(bson_doc& aDoc)
+    virtual inline void add_fields_for_creation(stream_doc& aDoc)
         {
             aDoc << "_m" << time_now();
         }
 
-    virtual inline void add_fields_for_updating(bson_doc& aDoc)
+    virtual inline void add_fields_for_updating(stream_doc& aDoc)
         {
             aDoc << "_m" << time_now();
         }

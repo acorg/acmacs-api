@@ -31,7 +31,7 @@ template <typename Writer> static std::string json_w(DocumentFindResults& aResul
 
 // ----------------------------------------------------------------------
 
-void DocumentFindResults::build(const char* aCollection, const doc_view& aFilter, const mongo_find& aOptions)
+void DocumentFindResults::build(const char* aCollection, bson_view aFilter, const mongo_find& aOptions)
 {
     try {
         mCursor = std::make_unique<mongocxx::cursor>(find(aCollection, aFilter, aOptions));

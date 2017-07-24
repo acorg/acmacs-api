@@ -25,8 +25,8 @@ class CommandBase
     virtual void args(int /*argc*/, char* const /*argv*/[]) {}
 
  protected:
-    using bson_doc = bsoncxx::builder::stream::document;
-    static constexpr auto bson_finalize = bsoncxx::builder::stream::finalize;
+    using stream_doc = bsoncxx::builder::stream::document;
+    static constexpr auto bld_finalize = bsoncxx::builder::stream::finalize;
 
 }; // class CommandBase
 
@@ -131,7 +131,7 @@ class CommandUsers : public CommandBase
     virtual std::string process(mongocxx::database& aDb)
         {
             DocumentFindResults results{aDb, "users_groups",
-                        (DocumentFindResults::bson_doc{} << "_t" << "acmacs.mongodb_collections.users_groups.User" << DocumentFindResults::bson_finalize),
+                        (DocumentFindResults::stream_doc{} << "_t" << "acmacs.mongodb_collections.users_groups.User" << DocumentFindResults::bld_finalize),
                         DocumentFindResults::exclude{"_id", "_t", "password", "nonce"}};
             return results.json();
         }
@@ -146,7 +146,7 @@ class CommandGroups : public CommandBase
     virtual std::string process(mongocxx::database& aDb)
         {
             DocumentFindResults results{aDb, "users_groups",
-                        (DocumentFindResults::bson_doc{} << "_t" << "acmacs.mongodb_collections.users_groups.Group" << DocumentFindResults::bson_finalize),
+                        (DocumentFindResults::stream_doc{} << "_t" << "acmacs.mongodb_collections.users_groups.Group" << DocumentFindResults::bld_finalize),
                         DocumentFindResults::exclude{"_id", "_t"}};
             return results.json();
         }

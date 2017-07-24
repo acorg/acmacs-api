@@ -3,6 +3,7 @@
 #pragma GCC diagnostic push
 #include "mongo-diagnostics.hh"
 #include <bsoncxx/builder/stream/document.hpp>
+#include <bsoncxx/builder/basic/document.hpp>
 // #include <bsoncxx/json.hpp>
 #pragma GCC diagnostic pop
 

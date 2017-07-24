@@ -18,12 +18,12 @@ static std::map<std::string, std::unique_ptr<CommandBase>> make_commands();
 class CommandBase
 {
  public:
-    using bson_doc = bsoncxx::builder::stream::document;
-    static constexpr const auto bson_finalize = bsoncxx::builder::stream::finalize;
-    static constexpr const auto bson_open_document = bsoncxx::builder::stream::open_document;
-    static constexpr const auto bson_close_document = bsoncxx::builder::stream::close_document;
-    static constexpr const auto bson_open_array = bsoncxx::builder::stream::open_array;
-    static constexpr const auto bson_close_array = bsoncxx::builder::stream::close_array;
+    using stream_doc = bsoncxx::builder::stream::document;
+    static constexpr const auto bld_finalize = bsoncxx::builder::stream::finalize;
+    static constexpr const auto bld_open_document = bsoncxx::builder::stream::open_document;
+    static constexpr const auto bld_close_document = bsoncxx::builder::stream::close_document;
+    static constexpr const auto bld_open_array = bsoncxx::builder::stream::open_array;
+    static constexpr const auto bld_close_array = bsoncxx::builder::stream::close_array;
     static constexpr const auto bson_null = bsoncxx::types::b_null{};
 
     class Error : public std::runtime_error { public: using std::runtime_error::runtime_error; };
@@ -180,8 +180,8 @@ class CommandUsers : public PrivilegedCommand
     virtual std::string process(Session& aSession)
         {
             DocumentFindResults results{aSession.db(), "users_groups",
-                        (bson_doc{} << "_t" << "acmacs.mongodb_collections.users_groups.User"
-                         << bsoncxx::builder::concatenate(aSession.read_permissions().view()) << bson_finalize),
+                        (stream_doc{} << "_t" << "acmacs.mongodb_collections.users_groups.User"
+                         << bsoncxx::builder::concatenate(aSession.read_permissions2().view()) << bld_finalize),
                         MongodbAccess::exclude("_id", "_t", "_m", "password", "nonce")};
             return results.json();
         }
@@ -196,8 +196,8 @@ class CommandGroups : public PrivilegedCommand
     virtual std::string process(Session& aSession)
         {
             DocumentFindResults results{aSession.db(), "users_groups",
-                        (bson_doc{} << "_t" << "acmacs.mongodb_collections.users_groups.Group"
-                         << bsoncxx::builder::concatenate(aSession.read_permissions().view()) << bson_finalize),
+                        (stream_doc{} << "_t" << "acmacs.mongodb_collections.users_groups.Group"
+                         << bsoncxx::builder::concatenate(aSession.read_permissions2().view()) << bld_finalize),
                         MongodbAccess::exclude("_id", "_t", "_m")};
             return results.json();
         }
@@ -212,12 +212,12 @@ class CommandCharts : public CommandBase
     virtual std::string process(Session& aSession)
         {
             DocumentFindResults results{aSession.db(), "charts",
-                        (bson_doc{} <<
-                         "$or" << bson_open_array
-                         << bson_open_document << "parent" << bson_open_document << "$exists" << false << bson_close_document << bson_close_document
-                         << bson_open_document << "parent" << bson_open_document << "$eq" << bsoncxx::types::b_null{} << bson_close_document << bson_close_document
-                         << bson_close_array
-                         << bsoncxx::builder::concatenate(aSession.read_permissions().view()) << bson_finalize),
+                        (stream_doc{} <<
+                         "$or" << bld_open_array
+                         << bld_open_document << "parent" << bld_open_document << "$exists" << false << bld_close_document << bld_close_document
+                         << bld_open_document << "parent" << bld_open_document << "$eq" << bson_null << bld_close_document << bld_close_document
+                         << bld_close_array
+                         << bsoncxx::builder::concatenate(aSession.read_permissions2().view()) << bld_finalize),
                         MongodbAccess::exclude("_id", "_t", "table", "conformance", "search")};
             return results.json();
         }

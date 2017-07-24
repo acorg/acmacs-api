@@ -158,9 +158,9 @@ void AcmacsAPIServer::message(std::string aMessage)
       //     try {
       //         auto acmacs_web_db = db();
       //         DocumentFindResults results{acmacs_web_db, "users_groups",
-      //                     (DocumentFindResults::bson_doc{} << "_t" << "acmacs.mongodb_collections.users_groups.User"
-      //                        // << bsoncxx::builder::concatenate(aSession.read_permissions().view())
-      //                      << DocumentFindResults::bson_finalize),
+      //                     (DocumentFindResults::stream_doc{} << "_t" << "acmacs.mongodb_collections.users_groups.User"
+      //                        // << bsoncxx::builder::concatenate(aSession.read_permissions2().view())
+      //                      << DocumentFindResults::bld_finalize),
       //                     MongodbAccess::exclude{"_id", "_t", "_m", "password", "nonce"}};
       //         send("{\"R\": " + results.json() + "}");
       //     }
