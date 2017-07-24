@@ -127,6 +127,11 @@ class MongodbAccess
             return mDb[aCollection].find(std::move(aFilter), aOptions);
         }
 
+    inline auto find(const char* aCollection, const doc_view& aFilter, const mongo_find& aOptions = mongo_find{})
+        {
+            return mDb[aCollection].find(aFilter, aOptions);
+        }
+
     inline auto find(const char* aCollection)
         {
             return mDb[aCollection].find({});
@@ -207,7 +212,9 @@ class DocumentFindResults : public MongodbAccess
     inline DocumentFindResults(mongocxx::database& aDb) : MongodbAccess{aDb}, mCount{0} {}
     inline DocumentFindResults(mongocxx::database& aDb, const char* aCollection) : MongodbAccess{aDb}, mCount{0} { build(aCollection); }
     inline DocumentFindResults(mongocxx::database& aDb, const char* aCollection, doc_value&& aFilter, const mongo_find& aOptions = mongo_find{})
-        : MongodbAccess{aDb}, mCount{0} { build(aCollection, std::move(aFilter), aOptions); }
+        : MongodbAccess{aDb}, mCount{0} { build(aCollection, aFilter.view(), aOptions); }
+    inline DocumentFindResults(mongocxx::database& aDb, const char* aCollection, const doc_view& aFilter, const mongo_find& aOptions = mongo_find{})
+        : MongodbAccess{aDb}, mCount{0} { build(aCollection, aFilter, aOptions); }
 
     std::string json(bool pretty = true, std::string key = std::string{});
 
@@ -219,7 +226,7 @@ class DocumentFindResults : public MongodbAccess
     std::unique_ptr<mongocxx::cursor> mCursor;
     size_t mCount;
 
-    void build(const char* aCollection, doc_value&& aFilter, const mongo_find& aOptions = mongo_find{});
+    void build(const char* aCollection, const doc_view& aFilter, const mongo_find& aOptions = mongo_find{});
     void build(const char* aCollection);
 
 }; // class DocumentFindResults

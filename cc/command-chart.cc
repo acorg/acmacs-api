@@ -10,7 +10,10 @@ void Command_root_charts::run()
     int skip = get_skip();
     const int limit = get_limit() + skip;
     for (; limit == 0 || skip < limit; skip += chunk_size) {
+        // auto criterium_builder = MongodbAccess::field_null_or_absent("parent") <= MongodbAccess::field_null_or_absent("backup_of") <= session().read_permissions();
+        // auto criteria = criterium_builder << MongodbAccess::bson_finalize;
         DocumentFindResults results{acmacs_web_db, "charts",
+                    // criteria.view(),
                     (MongodbAccess::field_null_or_absent("parent")
                      <= MongodbAccess::field_null_or_absent("backup_of")
                      <= session().read_permissions()

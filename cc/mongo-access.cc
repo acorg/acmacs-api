@@ -31,10 +31,10 @@ template <typename Writer> static std::string json_w(DocumentFindResults& aResul
 
 // ----------------------------------------------------------------------
 
-void DocumentFindResults::build(const char* aCollection, doc_value&& aFilter, const mongo_find& aOptions)
+void DocumentFindResults::build(const char* aCollection, const doc_view& aFilter, const mongo_find& aOptions)
 {
     try {
-        mCursor = std::make_unique<mongocxx::cursor>(find(aCollection, std::move(aFilter), aOptions));
+        mCursor = std::make_unique<mongocxx::cursor>(find(aCollection, aFilter, aOptions));
     }
     catch (mongocxx::query_exception& err) {
         throw_error(err);
