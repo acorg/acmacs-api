@@ -74,7 +74,7 @@ class JsonPrinter : public OnMessage<ResponseData>
     virtual void process_message(ResponseData* aMessage)
         {
             auto* pre = document.createElement("pre");
-            pre->set_className("json-highlight");
+            pre->set_className("json-highlight material-design-box-shadow");
             pre->set_innerHTML(json_syntax_highlight(stringify(aMessage, 2)));
             document.get_body()->appendChild(pre);
         }

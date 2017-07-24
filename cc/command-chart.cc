@@ -6,19 +6,21 @@
 void Command_root_charts::run()
 {
     auto acmacs_web_db = db();
-    DocumentFindResults results{acmacs_web_db, "charts",
-                (MongodbAccess::field_null_or_absent("parent")
-                 <= MongodbAccess::field_null_or_absent("backup_of")
-                 <= session().read_permissions()
-                 <= MongodbAccess::bson_finalize),
-                  //MongodbAccess::exclude("_id", "_t", "table", "search", "conformance").sort("_m", -1)};
-                MongodbAccess::include("name", "parent", "_m", "keywords").sort("_m", -1) //.skip(500).limit(100)
-                };
-    const auto results_json = results.json(false); // results.count() is available only after calling results.json()
-    send(json_object("charts_count", results.count(), "charts", json_raw{results_json}));
-
-      // sort by _m
-      // chunks
+    const int chunk_size = 10;
+    for (int skip = 0; ; skip += chunk_size) {
+        DocumentFindResults results{acmacs_web_db, "charts",
+                    (MongodbAccess::field_null_or_absent("parent")
+                     <= MongodbAccess::field_null_or_absent("backup_of")
+                     <= session().read_permissions()
+                     <= MongodbAccess::bson_finalize),
+                      //MongodbAccess::exclude("_id", "_t", "table", "search", "conformance").sort("_m", -1)};
+                    MongodbAccess::include("name", "parent", "_m", "keywords").sort("_m", -1).skip(skip).limit(chunk_size)
+                    };
+        const auto results_json = results.json(false); // results.count() is available only after calling results.json()
+        if (results.count() == 0)
+            break;
+        send(json_object("charts_count", results.count(), "charts", json_raw{results_json}));
+    }
 
 } // Command_root_charts::run
 
