@@ -24,10 +24,6 @@ class CommandBase
     virtual std::string process(mongocxx::database& aDb) = 0;
     virtual void args(int /*argc*/, char* const /*argv*/[]) {}
 
- protected:
-    using stream_doc = bsoncxx::builder::stream::document;
-    static constexpr auto bld_finalize = bsoncxx::builder::stream::finalize;
-
 }; // class CommandBase
 
 // ----------------------------------------------------------------------
@@ -131,7 +127,7 @@ class CommandUsers : public CommandBase
     virtual std::string process(mongocxx::database& aDb)
         {
             DocumentFindResults results{aDb, "users_groups",
-                        (DocumentFindResults::stream_doc{} << "_t" << "acmacs.mongodb_collections.users_groups.User" << DocumentFindResults::bld_finalize),
+                        bson_make_value("_t", "acmacs.mongodb_collections.users_groups.User"),
                         DocumentFindResults::exclude{"_id", "_t", "password", "nonce"}};
             return results.json();
         }
@@ -146,7 +142,7 @@ class CommandGroups : public CommandBase
     virtual std::string process(mongocxx::database& aDb)
         {
             DocumentFindResults results{aDb, "users_groups",
-                        (DocumentFindResults::stream_doc{} << "_t" << "acmacs.mongodb_collections.users_groups.Group" << DocumentFindResults::bld_finalize),
+                        bson_make_value("_t", "acmacs.mongodb_collections.users_groups.Group"),
                         DocumentFindResults::exclude{"_id", "_t"}};
             return results.json();
         }

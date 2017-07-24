@@ -33,7 +33,6 @@ class Session : public StoredInMongodb
     inline void increment_commands() { ++mCommands; }
 
     bson_value read_permissions() const;
-    stream_doc read_permissions2() const; //$
 
     inline bool is_admin() const
         {

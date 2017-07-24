@@ -148,30 +148,6 @@ void AcmacsAPIServer::message(std::string aMessage)
         send(json_object("C", command->command_name(), "CN", command->command_number(), "E", err.what()));
     }
 
-      // json_importer::Object msg{aMessage};
-      // auto command = msg.get_string("C");
-
-      // if (command == "echo") {
-      //     send(aMessage);
-      // }
-      // else if (command == "users") {
-      //     try {
-      //         auto acmacs_web_db = db();
-      //         DocumentFindResults results{acmacs_web_db, "users_groups",
-      //                     (DocumentFindResults::stream_doc{} << "_t" << "acmacs.mongodb_collections.users_groups.User"
-      //                        // << bsoncxx::builder::concatenate(aSession.read_permissions2().view())
-      //                      << DocumentFindResults::bld_finalize),
-      //                     MongodbAccess::exclude{"_id", "_t", "_m", "password", "nonce"}};
-      //         send("{\"R\": " + results.json() + "}");
-      //     }
-      //     catch (DocumentFindResults::Error& err) {
-      //         send(std::string{"{\"E\": \""} + err.what() + "\"}");
-      //     }
-      // }
-      // else {
-      //     send(R"({"E": "unrecognized message"})", websocketpp::frame::opcode::text);
-      // }
-
 } // AcmacsAPIServer::message
 
 // ----------------------------------------------------------------------

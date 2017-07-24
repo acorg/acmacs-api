@@ -76,6 +76,7 @@ class MongodbAccess
     inline MongodbAccess(const MongodbAccess& aSrc) : mDb(aSrc.mDb) {}
     virtual inline ~MongodbAccess() {}
 
+      //$
     using stream_doc = bsoncxx::builder::stream::document;
     static constexpr const auto bld_finalize = bsoncxx::builder::stream::finalize;
     static constexpr const auto bld_open_document = bsoncxx::builder::stream::open_document;
@@ -286,7 +287,7 @@ class StoredInMongodb : public MongodbAccess
       // throws Error
     inline std::string create()
         {
-            auto doc = stream_doc{};
+            auto doc = stream_doc{}; //$
             add_fields_for_creation(doc);
             try {
                 auto result = insert_one(doc << bld_finalize);
@@ -304,7 +305,7 @@ class StoredInMongodb : public MongodbAccess
       // throws Error
     inline void update(std::string aId)
         {
-            auto doc_set = stream_doc{};
+            auto doc_set = stream_doc{}; //$
             add_fields_for_updating(doc_set);
             auto result = update_one(stream_doc{} << "_id" << bsoncxx::oid{aId} << bld_finalize,
                                      stream_doc{} << "$set" << bld_open_document << bsoncxx::builder::concatenate(doc_set.view()) << bld_close_document << bld_finalize);

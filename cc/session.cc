@@ -59,7 +59,6 @@ std::string Session::login_nonce(std::string aUser)
 
 void Session::find_user(std::string aUser, bool aGetPassword)
 {
-//$    auto found = find_one("users_groups", stream_doc{} << "name" << aUser << "_t" << "acmacs.mongodb_collections.users_groups.User" << bld_finalize, exclude("_id", "_t", "recent_logins", "created", "p", "_m"));
     auto found = find_one("users_groups", bson_make_value("name", aUser, "_t", "acmacs.mongodb_collections.users_groups.User"), exclude("_id", "_t", "recent_logins", "created", "p", "_m"));
     if (!found)
         throw Error{"invalid user or password"};
@@ -171,7 +170,6 @@ void Session::add_fields_for_updating(stream_doc& aDoc)
 
 void Session::find_groups_of_user()
 {
-//$    auto found = find("users_groups", stream_doc{} << "members" << mUser << bld_finalize, include("name").exclude("_id"));
     auto found = find("users_groups", bson_make_value("members", mUser), include("name").exclude("_id"));
     std::unique_lock<decltype(mAccess)> lock{mAccess};
     mGroups.clear();
@@ -188,21 +186,6 @@ Session::bson_value Session::read_permissions() const
     return bson_make_value("p.r", bson_make_value("$in", bson_make_array(std::begin(mGroups), std::end(mGroups))));
 
 } // Session::read_permissions
-
-// ----------------------------------------------------------------------
-
-//$
-Session::stream_doc Session::read_permissions2() const
-{
-    auto doc = stream_doc{};
-    auto groups = doc << "p.r" << bld_open_document << "$in" << bld_open_array;
-    std::unique_lock<decltype(mAccess)> lock{mAccess};
-    for (const auto& group: mGroups)
-        groups << group;
-    groups << bld_close_array << bld_close_document;
-    return doc;
-
-} // Session::read_permissions2
 
 // ----------------------------------------------------------------------
 /// Local Variables:
