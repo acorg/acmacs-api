@@ -33,50 +33,85 @@ class MongodbAccess
     using doc_value = bsoncxx::document::value;
     using doc_view = bsoncxx::document::view;
     using cursor = mongocxx::cursor;
-    using find_options = mongocxx::options::find;
+    using mongo_find = mongocxx::options::find;
+
+    using key_context = bsoncxx::builder::stream::key_context<bsoncxx::builder::stream::closed_context>;
 
       // ----------------------------------------------------------------------
 
-    class exclude
+    class find_options
     {
      public:
-        inline exclude(std::initializer_list<std::string>&& fields)
+        inline find_options() = default;
+        inline find_options(find_options&&) = default;
+
+        inline find_options& exclude(std::initializer_list<std::string>&& fields)
             {
-                auto proj_doc = bson_doc{};
-                std::for_each(std::begin(fields), std::end(fields), [&proj_doc](const auto& field) { proj_doc << field << false; });
-                mOptions.projection(proj_doc << bson_finalize);
+                std::for_each(std::begin(fields), std::end(fields), [this](const auto& field) { mProjection << field << false; });
+                return *this;
             }
 
-        template <typename ... Args> inline exclude(Args&& ...) : exclude({Args::value...}) {}
+        template <typename ... Args> inline find_options& exclude(Args ... args) { return exclude({args ...}); }
 
-        inline operator const find_options& () const { return mOptions; }
+        inline find_options& include(std::initializer_list<std::string>&& fields)
+            {
+                std::for_each(std::begin(fields), std::end(fields), [this](const auto& field) { mProjection << field << true; });
+                return *this;
+            }
+
+        template <typename ... Args> inline find_options& include(Args ... args) { return include({args ...}); }
+
+        inline find_options& sort(std::string field, int order = 1)
+            {
+                mSort << field << order;
+                return *this;
+            }
+
+        template <typename ... Args> inline find_options& sort(std::string field, int order, Args ... args)
+            {
+                sort(field, order);
+                return sort(args ...);
+            }
+
+        inline operator mongo_find& ()
+            {
+                const auto projection = mProjection.view();
+                if (!projection.empty())
+                    mOptions.projection(projection);
+                const auto sort = mSort.view();
+                if (!sort.empty())
+                    mOptions.sort(sort);
+                return mOptions;
+            }
 
      private:
-        find_options mOptions;
+        mongo_find mOptions;
+        bson_doc mProjection;
+        bson_doc mSort;
 
-    }; // class exclude
+    }; // class find_options
 
-    class include_exclude
+    class exclude : public find_options
     {
      public:
-        inline include_exclude(std::initializer_list<std::string>&& include, std::initializer_list<std::string>&& exclude)
-            {
-                auto proj_doc = bson_doc{};
-                std::for_each(std::begin(include), std::end(include), [&proj_doc](const auto& field) { proj_doc << field << true; });
-                std::for_each(std::begin(exclude), std::end(exclude), [&proj_doc](const auto& field) { proj_doc << field << false; });
-                mOptions.projection(proj_doc << bson_finalize);
-            }
+        template <typename ... Args> inline exclude(Args ... args) { find_options::exclude(args ...); }
+    };
 
-        inline operator const find_options& () const { return mOptions; }
+    class include : public find_options
+    {
+     public:
+        template <typename ... Args> inline include(Args ... args) { find_options::include(args ...); }
+    };
 
-     private:
-        find_options mOptions;
-
-    }; // class include_exclude
+    class sort : public find_options
+    {
+     public:
+        template <typename ... Args> inline sort(Args ... args) { find_options::sort(args ...); }
+    };
 
       // ----------------------------------------------------------------------
 
-    inline auto find(const char* aCollection, doc_value&& aFilter, const find_options& aOptions = find_options{})
+    inline auto find(const char* aCollection, doc_value&& aFilter, const mongo_find& aOptions = mongo_find{})
         {
             return mDb[aCollection].find(std::move(aFilter), aOptions);
         }
@@ -86,7 +121,7 @@ class MongodbAccess
             return mDb[aCollection].find({});
         }
 
-    inline auto find_one(const char* aCollection, doc_value&& aFilter, const find_options& aOptions = find_options{})
+    inline auto find_one(const char* aCollection, doc_value&& aFilter, const mongo_find& aOptions = mongo_find{})
         {
             return mDb[aCollection].find_one(std::move(aFilter), aOptions);
         }
@@ -136,6 +171,23 @@ class MongodbAccess
 
 // ----------------------------------------------------------------------
 
+inline auto operator <= (MongodbAccess::bson_doc&& left, MongodbAccess::bson_doc&& right)
+{
+    return left << bsoncxx::builder::concatenate(right.view());
+}
+
+inline auto operator <= (MongodbAccess::key_context&& left, MongodbAccess::bson_doc&& right)
+{
+    return left << bsoncxx::builder::concatenate(right.view());
+}
+
+inline auto operator <= (MongodbAccess::key_context&& left, decltype(MongodbAccess::bson_finalize))
+{
+    return left << MongodbAccess::bson_finalize;
+}
+
+// ----------------------------------------------------------------------
+
 class DocumentFindResults : public MongodbAccess
 {
  private:
@@ -161,10 +213,10 @@ class DocumentFindResults : public MongodbAccess
 
     inline DocumentFindResults(mongocxx::database& aDb) : MongodbAccess{aDb} {}
     inline DocumentFindResults(mongocxx::database& aDb, const char* aCollection) : MongodbAccess{aDb} { build(aCollection); }
-    inline DocumentFindResults(mongocxx::database& aDb, const char* aCollection, doc_value&& aFilter, const find_options& aOptions = find_options{})
+    inline DocumentFindResults(mongocxx::database& aDb, const char* aCollection, doc_value&& aFilter, const mongo_find& aOptions = mongo_find{})
         : MongodbAccess{aDb} { build(aCollection, std::move(aFilter), aOptions); }
 
-    inline void build(const char* aCollection, doc_value&& aFilter, const find_options& aOptions = find_options{})
+    inline void build(const char* aCollection, doc_value&& aFilter, const mongo_find& aOptions = mongo_find{})
         {
             try {
                 auto found = find(aCollection, std::move(aFilter), aOptions);
@@ -218,10 +270,10 @@ class StoredInMongodb : public MongodbAccess
     using bson_key_context = bsoncxx::builder::stream::key_context<bsoncxx::builder::stream::key_context<bsoncxx::builder::stream::closed_context>>;
 
     using MongodbAccess::find;
-    inline auto find(doc_value&& aFilter, const find_options& aOptions = find_options{}) { return find(mCollection, std::move(aFilter), aOptions); }
+    inline auto find(doc_value&& aFilter, const mongo_find& aOptions = mongo_find{}) { return find(mCollection, std::move(aFilter), aOptions); }
     inline auto find() { return find(mCollection); }
     using MongodbAccess::find_one;
-    inline auto find_one(doc_value&& aFilter, const find_options& aOptions = find_options{}) { return find_one(mCollection, std::move(aFilter), aOptions); }
+    inline auto find_one(doc_value&& aFilter, const mongo_find& aOptions = mongo_find{}) { return find_one(mCollection, std::move(aFilter), aOptions); }
     inline auto insert_one(doc_value&& aDoc) { return MongodbAccess::insert_one(mCollection, std::move(aDoc)); }
     inline auto update_one(doc_value&& aFilter, doc_value&& aDoc) { return MongodbAccess::update_one(mCollection, std::move(aFilter), std::move(aDoc)); }
 

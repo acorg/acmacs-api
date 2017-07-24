@@ -22,7 +22,7 @@ void Command_users::run_admin()
                     (DocumentFindResults::bson_doc{} << "_t" << "acmacs.mongodb_collections.users_groups.User"
                        // << bsoncxx::builder::concatenate(aSession.read_permissions().view())
                      << DocumentFindResults::bson_finalize),
-                    MongodbAccess::exclude{"_id", "_t", "_m", "password", "nonce"}};
+                    MongodbAccess::exclude("_id", "_t", "_m", "password", "nonce")};
         send(json_object("users", json_raw{results.json(false)}));
     // }
     // catch (DocumentFindResults::Error& err) {

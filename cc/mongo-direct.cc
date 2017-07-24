@@ -182,7 +182,7 @@ class CommandUsers : public PrivilegedCommand
             DocumentFindResults results{aSession.db(), "users_groups",
                         (bson_doc{} << "_t" << "acmacs.mongodb_collections.users_groups.User"
                          << bsoncxx::builder::concatenate(aSession.read_permissions().view()) << bson_finalize),
-                        MongodbAccess::exclude{"_id", "_t", "_m", "password", "nonce"}};
+                        MongodbAccess::exclude("_id", "_t", "_m", "password", "nonce")};
             return results.json();
         }
 
@@ -198,7 +198,7 @@ class CommandGroups : public PrivilegedCommand
             DocumentFindResults results{aSession.db(), "users_groups",
                         (bson_doc{} << "_t" << "acmacs.mongodb_collections.users_groups.Group"
                          << bsoncxx::builder::concatenate(aSession.read_permissions().view()) << bson_finalize),
-                        MongodbAccess::exclude{"_id", "_t", "_m"}};
+                        MongodbAccess::exclude("_id", "_t", "_m")};
             return results.json();
         }
 
@@ -218,7 +218,7 @@ class CommandCharts : public CommandBase
                          << bson_open_document << "parent" << bson_open_document << "$eq" << bsoncxx::types::b_null{} << bson_close_document << bson_close_document
                          << bson_close_array
                          << bsoncxx::builder::concatenate(aSession.read_permissions().view()) << bson_finalize),
-                        MongodbAccess::exclude{"_id", "_t", "table", "conformance", "search"}};
+                        MongodbAccess::exclude("_id", "_t", "table", "conformance", "search")};
             return results.json();
         }
 

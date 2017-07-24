@@ -23,7 +23,7 @@ void Session::use_session(std::string aSessionId)
     reset();
 
     auto found = find_one((bson_doc{} << "_id" << bsoncxx::oid{aSessionId} << "expires" << bson_open_document << "$gte" << time_now() << bson_close_document << bson_finalize),
-                          exclude{"_t", "_m", "I", "expires", "expiration_in_seconds"});
+                          exclude("_t", "_m", "I", "expires", "expiration_in_seconds"));
     if (!found)
         throw Error{"invalid session"};
     for (auto entry: found->view()) {
@@ -59,7 +59,7 @@ std::string Session::login_nonce(std::string aUser)
 
 void Session::find_user(std::string aUser, bool aGetPassword)
 {
-    auto found = find_one("users_groups", bson_doc{} << "name" << aUser << "_t" << "acmacs.mongodb_collections.users_groups.User" << bson_finalize, exclude{"_id", "_t", "recent_logins", "created", "p", "_m"});
+    auto found = find_one("users_groups", bson_doc{} << "name" << aUser << "_t" << "acmacs.mongodb_collections.users_groups.User" << bson_finalize, exclude("_id", "_t", "recent_logins", "created", "p", "_m"));
     if (!found)
         throw Error{"invalid user or password"};
       // std::cerr << json_writer::json(*found, "user", 1) << std::endl;
@@ -170,7 +170,7 @@ void Session::add_fields_for_updating(bson_doc& aDoc)
 
 void Session::find_groups_of_user()
 {
-    auto found = find("users_groups", bson_doc{} << "members" << mUser << bson_finalize, include_exclude{{"name"}, {"_id"}});
+    auto found = find("users_groups", bson_doc{} << "members" << mUser << bson_finalize, include("name").exclude("_id"));
     std::unique_lock<decltype(mAccess)> lock{mAccess};
     mGroups.clear();
     mGroups.push_back(mUser);
