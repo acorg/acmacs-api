@@ -20,9 +20,22 @@ void Command_root_charts::run()
         if (results.count() == 0)
             break;
         send(json_object("charts_count", results.count(), "charts", json_raw{results_json}));
+        if (chunk_size == 0)
+            break;
     }
 
 } // Command_root_charts::run
+
+// ----------------------------------------------------------------------
+
+const char* Command_root_charts::description()
+{
+    return "lists root charts (table charts) available to the user.\n  search :[string]\nkeywords :[string]\n  owners :[string]\nskip :number\n  limit :number";
+
+} // Command_root_charts::description
+
+// ----------------------------------------------------------------------
+
 
 // ----------------------------------------------------------------------
 /// Local Variables:

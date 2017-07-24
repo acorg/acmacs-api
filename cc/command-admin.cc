@@ -32,6 +32,17 @@ void Command_users::run_admin()
 } // Command_users::run_admin
 
 // ----------------------------------------------------------------------
+
+const char* Command_users::description()
+{
+    return "lists users registered in acmacs-web";
+
+} // Command_users::description
+
+// ----------------------------------------------------------------------
+
+
+// ----------------------------------------------------------------------
 /// Local Variables:
 /// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
 /// End:

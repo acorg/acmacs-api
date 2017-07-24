@@ -15,14 +15,19 @@ namespace client
 
     struct EchoMessage : public Object {};
 
-    struct CommandUsers : public CommandData
+    struct Command_users : public CommandData
     {
-        inline CommandUsers() : CommandData{"users"_S} {}
+        inline Command_users() : CommandData{"users"_S} {}
     };
 
-    struct CommandRootCharts : public CommandData
+    struct Command_root_charts : public CommandData
     {
-        inline CommandRootCharts() : CommandData{"root_charts"_S} {}
+        inline Command_root_charts() : CommandData{"root_charts"_S} {}
+    };
+
+    struct Command_list_commands : public CommandData
+    {
+        inline Command_list_commands() : CommandData{"list_commands"_S} {}
     };
 
     // struct ResultUsers : public ResponseData
@@ -67,7 +72,8 @@ class JsonPrinter : public OnMessage<ResponseData>
 
     virtual void upon_transfer()
         {
-            this->send(new CommandRootCharts{});
+            this->send(new Command_list_commands{});
+            this->send(new Command_root_charts{});
         }
 
  protected:

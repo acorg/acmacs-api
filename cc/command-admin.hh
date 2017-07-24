@@ -23,6 +23,8 @@ class Command_users : public CommandAdmin
  public:
     using CommandAdmin::CommandAdmin;
 
+    static const char* description();
+
  protected:
     virtual void run_admin();
 

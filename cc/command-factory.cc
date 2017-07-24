@@ -3,21 +3,29 @@
 #include "command-factory.hh"
 #include "acmacs-api-server.hh"
 
+#include "command-info.hh"
 #include "command-session.hh"
 #include "command-admin.hh"
 #include "command-chart.hh"
 
 // ----------------------------------------------------------------------
 
+const CommandFactory* CommandFactory::sFactory = nullptr;
+
 CommandFactory::CommandFactory()
     : mFactory{
-    {"users", &CommandFactory::make<Command_users>},
-    {"root_charts", &CommandFactory::make<Command_root_charts>},
-    {"login_session", &CommandFactory::make<Command_login_session>},
-    {"login_nonce", &CommandFactory::make<Command_login_nonce>},
-    {"login_digest", &CommandFactory::make<Command_login_digest>},
+    {"users", data<Command_users>()},
+    {"root_charts", data<Command_root_charts>()},
+
+    {"version", data<Command_version>()},
+    {"list_commands", data<Command_list_commands>()},
+
+    {"login_session", data<Command_login_session>()},
+    {"login_nonce", data<Command_login_nonce>()},
+    {"login_digest",data<Command_login_digest>()},
 }
 {
+    sFactory = this;
 }
 
 // ----------------------------------------------------------------------
@@ -28,7 +36,7 @@ std::shared_ptr<Command> CommandFactory::find(std::string aMessage, AcmacsAPISer
     std::shared_ptr<Command> result;
     const auto found = mFactory.find(msg.get_string("C"));
     if (found != mFactory.end())
-        result = (this->*found->second)(std::move(msg), aServer, aCommandNumber);
+        result = (this->*found->second.maker)(std::move(msg), aServer, aCommandNumber);
     else
         result = make<Command_unknown>(std::move(msg), aServer, aCommandNumber);
     return result;
