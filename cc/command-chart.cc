@@ -1,3 +1,4 @@
+#include <limits>
 #include "command-chart.hh"
 #include "session.hh"
 
@@ -6,14 +7,16 @@
 void Command_root_charts::run()
 {
     auto acmacs_web_db = db();
-    const int chunk_size = get_chunk_size();
+    int chunk_size = get_chunk_size();
+    if (chunk_size == 0)
+        chunk_size = std::numeric_limits<decltype(chunk_size)>::max();
     int skip = get_skip();
     const int limit = get_limit() + skip;
     auto criteria = bson_object(session().read_permissions(), MongodbAccess::field_null_or_absent("parent"), MongodbAccess::field_null_or_absent("backup_of"));
     std::cerr << "Command_root_charts::run " << bsoncxx::to_json(criteria) << std::endl;
     for (; limit == 0 || skip < limit; skip += chunk_size) {
         DocumentFindResults results{acmacs_web_db, "charts",
-                    criteria.view(),
+                    criteria,
 //?
                       //MongodbAccess::exclude("_id", "_t", "table", "search", "conformance").sort("_m", -1)};
                     MongodbAccess::include("name", "parent", "_m", "keywords", "p.o").sort("_m", -1).skip(skip).limit(limit == 0 ? chunk_size : std::min(chunk_size, limit - skip))

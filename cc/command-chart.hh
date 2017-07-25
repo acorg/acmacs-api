@@ -11,7 +11,7 @@ class Command_root_charts : public Command
 
     virtual void run();
 
-    inline int get_chunk_size() const { return get("chunk_size", 10); }
+    inline int get_chunk_size() const { return get("chunk_size", 0); }
     inline int get_skip() const { return get("skip", 0); }
     inline int get_limit() const { return get("limit", 0); }
 

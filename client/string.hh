@@ -42,6 +42,24 @@ inline client::String* to_string(const char* value)
 
 // ----------------------------------------------------------------------
 
+      // (... && ) - c++17
+// template <typename ... Args> inline std::enable_if_t<(... && std::is_same<Args, client::String*>::value), client::Array*> to_Array_String(Args ... args)
+// {
+//     return new client::Array(args ...);
+// }
+
+// template <typename ... Args> inline std::enable_if_t<(... && std::is_same<Args, const char*>::value), client::Array*> to_Array_String(Args ... args)
+// {
+//     return new client::Array(to_string(std::forward<Args>(args)) ...);
+// }
+
+template <typename ... Args> inline client::Array* to_Array_String(Args ... args)
+{
+    return new client::Array(to_string(std::forward<Args>(args)) ...);
+}
+
+// ----------------------------------------------------------------------
+
 inline client::String* concat(client::String* first, client::Object* second)
 {
     // if (!is_string(second))

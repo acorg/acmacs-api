@@ -13,6 +13,8 @@
 namespace client
 {
 
+    // inline String* to_String(const char* src) { return new String{src}; }
+
     struct EchoMessage : public Object {};
 
     struct Command_users : public CommandData
@@ -22,10 +24,20 @@ namespace client
 
     struct Command_root_charts : public CommandData
     {
-        inline Command_root_charts(int skip = 0, int limit = 0) : CommandData{"root_charts"_S} { set_skip(skip); set_limit(limit); }
+        inline Command_root_charts(int skip = 0, int limit = 0, int chunk_size = 0)
+            : CommandData{"root_charts"_S}
+            { set_skip(skip); set_limit(limit); set_chunk_size(chunk_size); }
 
+        template <typename ... Args> inline Command_root_charts* owners(Args ... args) { set_owners(to_Array_String(args ...)); return this; }
+        template <typename ... Args> inline Command_root_charts* keywords(Args ... args) { set_keywords(to_Array_String(args ...)); return this; }
+        template <typename ... Args> inline Command_root_charts* search(Args ... args) { set_search(to_Array_String(args ...)); return this; }
+
+        void set_chunk_size(int);
         void set_skip(int);
         void set_limit(int);
+        void set_owners(Array*);
+        void set_keywords(Array*);
+        void set_search(Array*);
     };
 
     struct Command_list_commands : public CommandData
@@ -77,7 +89,7 @@ class JsonPrinter : public OnMessage<ResponseData>
         {
             this->send(new Command_list_commands{});
               // this->send(new Command_users{});
-            this->send(new Command_root_charts{0, 15});
+            this->send((new Command_root_charts{})->owners("eu", "alpha"));
         }
 
  protected:

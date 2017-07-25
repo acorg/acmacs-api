@@ -234,6 +234,8 @@ class DocumentFindResults : public MongodbAccess
     inline DocumentFindResults(mongocxx::database& aDb, const char* aCollection) : MongodbAccess{aDb}, mCount{0} { build(aCollection); }
     inline DocumentFindResults(mongocxx::database& aDb, const char* aCollection, bson_view aFilter, const mongo_find& aOptions = mongo_find{})
         : MongodbAccess{aDb}, mCount{0} { build(aCollection, aFilter, aOptions); }
+    inline DocumentFindResults(mongocxx::database& aDb, const char* aCollection, const bson_value& aFilter, const mongo_find& aOptions = mongo_find{})
+        : DocumentFindResults(aDb, aCollection, aFilter.view(), aOptions) {}
 
     std::string json(bool pretty = true, std::string key = std::string{});
 
