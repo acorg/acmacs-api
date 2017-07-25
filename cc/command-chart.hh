@@ -36,6 +36,19 @@ class Command_chart_keywords : public Command
 }; // class Command_root_charts
 
 // ----------------------------------------------------------------------
+
+class Command_chart_owners : public Command
+{
+ public:
+    using Command::Command;
+
+    virtual void run();
+
+    static const char* description();
+
+}; // class Command_root_charts
+
+// ----------------------------------------------------------------------
 /// Local Variables:
 /// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
 /// End:

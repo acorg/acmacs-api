@@ -16,6 +16,7 @@ CommandFactory::CommandFactory()
     : mFactory{
     {"root_charts", data<Command_root_charts>()},
     {"chart_keywords", data<Command_chart_keywords>()},
+    {"chart_owners", data<Command_chart_owners>()},
 
     {"users", data<Command_users>()},
 

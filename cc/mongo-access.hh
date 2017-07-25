@@ -130,9 +130,9 @@ class MongodbAccess
             return mDb[aCollection].find({});
         }
 
-    inline auto distinct(const char* aCollection, const char* aField)
+    inline auto distinct(const char* aCollection, const char* aField, bson_view aFilter)
         {
-            return mDb[aCollection].distinct(std::string{aField}, {});
+            return mDb[aCollection].distinct(std::string{aField}, aFilter);
         }
 
     inline auto find_one(const char* aCollection, bson_view aFilter, const mongo_find& aOptions = mongo_find{})

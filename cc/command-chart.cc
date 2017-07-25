@@ -51,7 +51,7 @@ const char* Command_root_charts::description()
 void Command_chart_keywords::run()
 {
     auto acmacs_web_db = db();
-    auto cursor = MongodbAccess{acmacs_web_db}.distinct("charts", "keywords");
+    auto cursor = MongodbAccess{acmacs_web_db}.distinct("charts", "keywords", session().read_permissions());
     std::string result = json_writer::compact_json((*cursor.begin())["values"].get_array().value);
     send(json_object("keywords", json_raw{result}));
 
@@ -64,6 +64,25 @@ const char* Command_chart_keywords::description()
     return "returns set of keywords for available charts";
 
 } // Command_chart_keywords::description
+
+// ----------------------------------------------------------------------
+
+void Command_chart_owners::run()
+{
+    auto acmacs_web_db = db();
+    auto cursor = MongodbAccess{acmacs_web_db}.distinct("charts", "p.o", session().read_permissions());
+    std::string result = json_writer::compact_json((*cursor.begin())["values"].get_array().value);
+    send(json_object("owners", json_raw{result}));
+
+} // Command_chart_owners::run
+
+// ----------------------------------------------------------------------
+
+const char* Command_chart_owners::description()
+{
+    return "returns set of owners for available charts";
+
+} // Command_chart_owners::description
 
 // ----------------------------------------------------------------------
 

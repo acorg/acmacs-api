@@ -40,15 +40,9 @@ namespace client
         void set_search(Array*);
     };
 
-    struct Command_chart_keywords : public CommandData
-    {
-        inline Command_chart_keywords() : CommandData{"chart_keywords"_S} {}
-    };
-
-    struct Command_list_commands : public CommandData
-    {
-        inline Command_list_commands() : CommandData{"list_commands"_S} {}
-    };
+    struct Command_chart_keywords : public CommandData { inline Command_chart_keywords() : CommandData{"chart_keywords"_S} {} };
+    struct Command_chart_owners : public CommandData { inline Command_chart_owners() : CommandData{"chart_owners"_S} {} };
+    struct Command_list_commands : public CommandData { inline Command_list_commands() : CommandData{"list_commands"_S} {} };
 
     // struct ResultUsers : public ResponseData
     // {
@@ -95,6 +89,7 @@ class JsonPrinter : public OnMessage<ResponseData>
             this->send(new Command_list_commands{});
               // this->send(new Command_users{});
             this->send(new Command_chart_keywords{});
+            this->send(new Command_chart_owners{});
             this->send((new Command_root_charts{})->owners("eu")->search("turkey")->keywords("individual")); // ->owners("alpha")->keywords("individual")->search("labels", "TURKEY")
         }
 
