@@ -66,7 +66,7 @@ int main(int argc, char* const argv[])
 
         AcmacsAPISettings settings;
         settings.read(argv[1]);
-        Wspp wspp{settings};
+        Wspp wspp{settings, &WsppThread::make};
         sWspp = &wspp;
 
         std::signal(SIGINT, signal_handler);
