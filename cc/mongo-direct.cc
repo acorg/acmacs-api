@@ -172,7 +172,7 @@ class CommandUsers : public PrivilegedCommand
     virtual std::string process(Session& aSession)
         {
             DocumentFindResults results{aSession.db(), "users_groups",
-                        bson_make_value("_t", "acmacs.mongodb_collections.users_groups.User", aSession.read_permissions()),
+                        bson_object("_t", "acmacs.mongodb_collections.users_groups.User", aSession.read_permissions()),
                         MongodbAccess::exclude("_id", "_t", "_m", "password", "nonce")};
             return results.json();
         }
@@ -187,7 +187,7 @@ class CommandGroups : public PrivilegedCommand
     virtual std::string process(Session& aSession)
         {
             DocumentFindResults results{aSession.db(), "users_groups",
-                        bson_make_value("_t", "acmacs.mongodb_collections.users_groups.Group", aSession.read_permissions()),
+                        bson_object("_t", "acmacs.mongodb_collections.users_groups.Group", aSession.read_permissions()),
                         MongodbAccess::exclude("_id", "_t", "_m")};
             return results.json();
         }
@@ -202,7 +202,7 @@ class CommandCharts : public CommandBase
     virtual std::string process(Session& aSession)
         {
             DocumentFindResults results{aSession.db(), "charts",
-                        bson_make_value(MongodbAccess::field_null_or_absent("parent"), aSession.read_permissions()),
+                        bson_object(MongodbAccess::field_null_or_absent("parent"), aSession.read_permissions()),
                         MongodbAccess::exclude("_id", "_t", "table", "conformance", "search")};
             return results.json();
         }

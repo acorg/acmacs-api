@@ -41,7 +41,7 @@ template <typename ... Args> inline void bson_append(bsoncxx::builder::basic::ar
 }
 
 // iterator SFINAE: https://stackoverflow.com/questions/12161109/stdenable-if-or-sfinae-for-iterator-or-pointer
-template <typename Iterator, typename = decltype(*std::declval<Iterator&>(), void(), ++std::declval<Iterator&>(), void())> inline bsoncxx::array::value bson_make_array(Iterator first, Iterator last)
+template <typename Iterator, typename = decltype(*std::declval<Iterator&>(), void(), ++std::declval<Iterator&>(), void())> inline bsoncxx::array::value bson_array(Iterator first, Iterator last)
 {
     bsoncxx::builder::basic::array array;
     for (; first != last; ++first)
@@ -49,14 +49,14 @@ template <typename Iterator, typename = decltype(*std::declval<Iterator&>(), voi
     return array.extract();
 }
 
-template <typename ... Args> inline bsoncxx::array::value bson_make_array(Args ... args)
+template <typename ... Args> inline bsoncxx::array::value bson_array(Args ... args)
 {
     bsoncxx::builder::basic::array array;
     bson_append(array, args ...);
     return array.extract();
 }
 
-template <typename ... Args> inline bsoncxx::document::value bson_make_value(Args ... args)
+template <typename ... Args> inline bsoncxx::document::value bson_object(Args ... args)
 {
     bsoncxx::builder::basic::document doc;
     bson_append(doc, args ...);
@@ -77,7 +77,6 @@ class MongodbAccess
 
     using bson_value = bsoncxx::document::value;
     using bson_view = bsoncxx::document::view;
-    using bson_array = bsoncxx::array::value;
     static constexpr const auto bson_null = bsoncxx::types::b_null{};
 
     using cursor = mongocxx::cursor;
@@ -209,9 +208,9 @@ class MongodbAccess
 
     static inline bson_value field_null_or_absent(std::string aField)
         {
-            return bson_make_value("$or", bson_make_array(
-                                       bson_make_value(aField, bson_make_value("$exists", false)),
-                                       bson_make_value(aField, bson_make_value("$eq", bson_null))
+            return bson_object("$or", bson_array(
+                                       bson_object(aField, bson_object("$exists", false)),
+                                       bson_object(aField, bson_object("$eq", bson_null))
                                                           ));
         }
 
@@ -295,7 +294,7 @@ class StoredInMongodb : public MongodbAccess
         {
             auto doc_set = bld_doc{};
             add_fields_for_updating(doc_set);
-            auto result = update_one(bson_make_value("_id", bsoncxx::oid{aId}), bson_make_value("$set", doc_set.extract()));
+            auto result = update_one(bson_object("_id", bsoncxx::oid{aId}), bson_object("$set", doc_set.extract()));
             if (!result)
                 throw Error{"unacknowledged write during doc updating"};
         }

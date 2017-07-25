@@ -22,7 +22,7 @@ void Session::use_session(std::string aSessionId)
 {
     reset();
 
-    auto found = find_one(bson_make_value("_id", bsoncxx::oid{aSessionId}, "expires", bson_make_value("$gte", time_now())),
+    auto found = find_one(bson_object("_id", bsoncxx::oid{aSessionId}, "expires", bson_object("$gte", time_now())),
                           exclude("_t", "_m", "I", "expires", "expiration_in_seconds"));
     if (!found)
         throw Error{"invalid session"};
@@ -59,7 +59,7 @@ std::string Session::login_nonce(std::string aUser)
 
 void Session::find_user(std::string aUser, bool aGetPassword)
 {
-    auto found = find_one("users_groups", bson_make_value("name", aUser, "_t", "acmacs.mongodb_collections.users_groups.User"), exclude("_id", "_t", "recent_logins", "created", "p", "_m"));
+    auto found = find_one("users_groups", bson_object("name", aUser, "_t", "acmacs.mongodb_collections.users_groups.User"), exclude("_id", "_t", "recent_logins", "created", "p", "_m"));
     if (!found)
         throw Error{"invalid user or password"};
       // std::cerr << json_writer::json(*found, "user", 1) << std::endl;
@@ -145,7 +145,7 @@ void Session::add_fields_for_creation(bld_doc& aDoc)
     bson_append(aDoc,
                 "_t", "acmacs.mongodb_collections.permissions.Session",
                 "user", mUser,
-                "user_and_groups", bson_make_array(std::begin(mGroups), std::end(mGroups)),
+                "user_and_groups", bson_array(std::begin(mGroups), std::end(mGroups)),
                 "expiration_in_seconds", mExpirationInSeconds,
                 "expires", time_in_seconds(mExpirationInSeconds),
                 "commands", mCommands);
@@ -167,7 +167,7 @@ void Session::add_fields_for_updating(bld_doc& aDoc)
 
 void Session::find_groups_of_user()
 {
-    auto found = find("users_groups", bson_make_value("members", mUser), include("name").exclude("_id"));
+    auto found = find("users_groups", bson_object("members", mUser), include("name").exclude("_id"));
     std::unique_lock<decltype(mAccess)> lock{mAccess};
     mGroups.clear();
     mGroups.push_back(mUser);
@@ -180,7 +180,7 @@ void Session::find_groups_of_user()
 Session::bson_value Session::read_permissions() const
 {
     std::unique_lock<decltype(mAccess)> lock{mAccess};
-    return bson_make_value("p.r", bson_make_value("$in", bson_make_array(std::begin(mGroups), std::end(mGroups))));
+    return bson_object("p.r", bson_object("$in", bson_array(std::begin(mGroups), std::end(mGroups))));
 
 } // Session::read_permissions
 

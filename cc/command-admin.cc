@@ -18,7 +18,7 @@ void Command_users::run_admin()
 {
     auto acmacs_web_db = db();
     DocumentFindResults results{acmacs_web_db, "users_groups",
-                bson_make_value("_t", "acmacs.mongodb_collections.users_groups.User"),
+                bson_object("_t", "acmacs.mongodb_collections.users_groups.User"),
                 MongodbAccess::exclude("_id", "_t", "_m", "password", "nonce")};
     send(json_object("users", json_raw{results.json(false)}));
 
