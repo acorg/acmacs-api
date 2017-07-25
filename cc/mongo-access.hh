@@ -18,9 +18,6 @@
 
 // ----------------------------------------------------------------------
 
-
-// ----------------------------------------------------------------------
-
 class MongodbAccess
 {
  public:
@@ -131,6 +128,11 @@ class MongodbAccess
     inline auto find(const char* aCollection)
         {
             return mDb[aCollection].find({});
+        }
+
+    inline auto distinct(const char* aCollection, const char* aField)
+        {
+            return mDb[aCollection].distinct(std::string{aField}, {});
         }
 
     inline auto find_one(const char* aCollection, bson_view aFilter, const mongo_find& aOptions = mongo_find{})

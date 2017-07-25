@@ -5,7 +5,7 @@
 
 template <typename Writer> static std::string json_w(DocumentFindResults& aResults, std::string key)
 {
-    Writer writer{"DocumentFindResults"};
+    Writer writer;
     if (!key.empty())
         writer << json_writer::start_object << json_writer::key(key);
     writer << json_writer::start_array;

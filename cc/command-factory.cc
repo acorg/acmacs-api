@@ -14,8 +14,10 @@ const CommandFactory* CommandFactory::sFactory = nullptr;
 
 CommandFactory::CommandFactory()
     : mFactory{
-    {"users", data<Command_users>()},
     {"root_charts", data<Command_root_charts>()},
+    {"chart_keywords", data<Command_chart_keywords>()},
+
+    {"users", data<Command_users>()},
 
     {"version", data<Command_version>()},
     {"list_commands", data<Command_list_commands>()},

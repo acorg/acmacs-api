@@ -1,6 +1,7 @@
 #include <limits>
 #include "command-chart.hh"
 #include "session.hh"
+#include "bson-to-json.hh"
 
 // ----------------------------------------------------------------------
 
@@ -44,6 +45,25 @@ const char* Command_root_charts::description()
     return "lists root charts (table charts) available to the user.\n  search :[string case-insensitive]\nkeywords :[string]\n  owners :[string]\n skip :number = 0\n  limit :number = 0\n  chunk_size :number = 10";
 
 } // Command_root_charts::description
+
+// ----------------------------------------------------------------------
+
+void Command_chart_keywords::run()
+{
+    auto acmacs_web_db = db();
+    auto cursor = MongodbAccess{acmacs_web_db}.distinct("charts", "keywords");
+    std::string result = json_writer::compact_json((*cursor.begin())["values"].get_array().value);
+    send(json_object("keywords", json_raw{result}));
+
+} // Command_chart_keywords::run
+
+// ----------------------------------------------------------------------
+
+const char* Command_chart_keywords::description()
+{
+    return "returns set of keywords for available charts";
+
+} // Command_chart_keywords::description
 
 // ----------------------------------------------------------------------
 

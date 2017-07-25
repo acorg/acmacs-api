@@ -23,7 +23,7 @@ const char* Command_version::description()
 
 void Command_list_commands::run()
 {
-    json_writer::compact writer{"list_commands"};
+    json_writer::compact writer;
     writer << json_writer::start_array;
     for (const auto& command: CommandFactory::sFactory->commands()) {
         writer << json_writer::start_object
