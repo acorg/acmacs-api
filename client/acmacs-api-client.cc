@@ -89,7 +89,7 @@ class JsonPrinter : public OnMessage<ResponseData>
         {
             this->send(new Command_list_commands{});
               // this->send(new Command_users{});
-            this->send((new Command_root_charts{})->keywords("individual")); // ->owners("alpha")
+            this->send((new Command_root_charts{})->search("labels", "CDC")); // ->owners("alpha")->keywords("individual")
         }
 
  protected:

@@ -40,6 +40,18 @@ class Command : public json_importer::Object
     inline auto command_start() const { return mCommandStart; }
     inline double command_duration() const { return std::chrono::duration<double>{now() - command_start()}.count(); }
 
+      // mongo_operator: $in, $all
+    inline void bson_in_for_optional_array_of_strings(MongodbAccess::bld_doc& append_to, const char* key, const char* mongo_operator, std::function<json_importer::ConstArray()> getter)
+        {
+            try {
+                const auto array = getter();
+                if (!array.Empty())
+                    bson_append(append_to, key, bson_object(mongo_operator, bson_array(std::begin(array), std::end(array), &json_importer::get_string)));
+            }
+            catch (RapidjsonAssert&) {
+            }
+        }
+
  private:
     AcmacsAPIServer& mServer;
     const size_t mCommandNumber;
