@@ -12,7 +12,25 @@ void Command_root_charts::run()
         chunk_size = std::numeric_limits<decltype(chunk_size)>::max();
     int skip = get_skip();
     const int limit = get_limit() + skip;
-    auto criteria = bson_object(session().read_permissions(), MongodbAccess::field_null_or_absent("parent"), MongodbAccess::field_null_or_absent("backup_of"));
+
+    MongodbAccess::bld_doc criteria_bld;
+    bson_append(criteria_bld, session().read_permissions(), MongodbAccess::field_null_or_absent("parent"), MongodbAccess::field_null_or_absent("backup_of"));
+    try {
+        const auto owners = get_owners();
+        if (!owners.Empty())
+            bson_append(criteria_bld, "p.o", bson_object("$in", bson_array(std::begin(owners), std::end(owners), &json_importer::get_string)));
+    }
+    catch (RapidjsonAssert&) {
+    }
+    try {
+        const auto keywords = get_keywords();
+        if (!keywords.Empty())
+            bson_append(criteria_bld, "keywords", bson_object("$in", bson_array(std::begin(keywords), std::end(keywords), &json_importer::get_string)));
+    }
+    catch (RapidjsonAssert&) {
+    }
+
+    auto criteria = criteria_bld.extract();
     std::cerr << "Command_root_charts::run " << bsoncxx::to_json(criteria) << std::endl;
     for (; limit == 0 || skip < limit; skip += chunk_size) {
         DocumentFindResults results{acmacs_web_db, "charts",

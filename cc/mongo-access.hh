@@ -14,54 +14,10 @@
 
 #include "acmacs-base/time.hh"
 
-#include "bson-to-json.hh"
+#include "bson.hh"
 
 // ----------------------------------------------------------------------
 
-inline void bson_append(bsoncxx::builder::basic::document&) {}
-
-template <typename ... Args> inline void bson_append(bsoncxx::builder::basic::document& target, const bsoncxx::document::value& to_merge, Args ... args)
-{
-    target.append(bsoncxx::builder::concatenate(to_merge.view()));
-    bson_append(target, args ...);
-}
-
-template <typename Value, typename ... Args> inline void bson_append(bsoncxx::builder::basic::document& target, std::string key, Value value, Args ... args)
-{
-    target.append(bsoncxx::builder::basic::kvp(key, value));
-    bson_append(target, args ...);
-}
-
-inline void bson_append(bsoncxx::builder::basic::array&) {}
-
-template <typename ... Args> inline void bson_append(bsoncxx::builder::basic::array& target, const bsoncxx::document::value& to_append, Args ... args)
-{
-    target.append(bsoncxx::builder::concatenate(to_append.view()));
-    bson_append(target, args ...);
-}
-
-// iterator SFINAE: https://stackoverflow.com/questions/12161109/stdenable-if-or-sfinae-for-iterator-or-pointer
-template <typename Iterator, typename = decltype(*std::declval<Iterator&>(), void(), ++std::declval<Iterator&>(), void())> inline bsoncxx::array::value bson_array(Iterator first, Iterator last)
-{
-    bsoncxx::builder::basic::array array;
-    for (; first != last; ++first)
-        array.append(*first);
-    return array.extract();
-}
-
-template <typename ... Args> inline bsoncxx::array::value bson_array(Args ... args)
-{
-    bsoncxx::builder::basic::array array;
-    bson_append(array, args ...);
-    return array.extract();
-}
-
-template <typename ... Args> inline bsoncxx::document::value bson_object(Args ... args)
-{
-    bsoncxx::builder::basic::document doc;
-    bson_append(doc, args ...);
-    return doc.extract();
-}
 
 // ----------------------------------------------------------------------
 
@@ -94,7 +50,7 @@ class MongodbAccess
 
         inline find_options& exclude(std::initializer_list<std::string>&& fields)
             {
-                std::for_each(std::begin(fields), std::end(fields), [this](const auto& field) { mProjection.append(bsoncxx::builder::basic::kvp(field, false)); });
+                std::for_each(std::begin(fields), std::end(fields), [this](const auto& field) { bson_append(mProjection, field, false); });
                 return *this;
             }
 
@@ -102,7 +58,7 @@ class MongodbAccess
 
         inline find_options& include(std::initializer_list<std::string>&& fields)
             {
-                std::for_each(std::begin(fields), std::end(fields), [this](const auto& field) { mProjection.append(bsoncxx::builder::basic::kvp(field, true)); });
+                std::for_each(std::begin(fields), std::end(fields), [this](const auto& field) { bson_append(mProjection, field, true); });
                 return *this;
             }
 
@@ -110,7 +66,7 @@ class MongodbAccess
 
         inline find_options& sort(std::string field, int order = 1)
             {
-                mSort.append(bsoncxx::builder::basic::kvp(field, order));
+                bson_append(mSort, field, order);
                 return *this;
             }
 

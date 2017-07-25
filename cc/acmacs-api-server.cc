@@ -9,6 +9,7 @@
 #include "acmacs-api-server.hh"
 #include "command.hh"
 #include "command-factory.hh"
+#include "bson-to-json.hh"
 
 // ----------------------------------------------------------------------
 
