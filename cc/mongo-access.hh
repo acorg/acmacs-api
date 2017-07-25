@@ -18,31 +18,27 @@
 
 // ----------------------------------------------------------------------
 
-namespace mongo_bson_internal
+inline void bson_append(bsoncxx::builder::basic::document&) {}
+
+template <typename ... Args> inline void bson_append(bsoncxx::builder::basic::document& target, const bsoncxx::document::value& to_merge, Args ... args)
 {
-    inline void bson_append_key_value(bsoncxx::builder::basic::document&) {}
+    target.append(bsoncxx::builder::concatenate(to_merge.view()));
+    bson_append(target, args ...);
+}
 
-    template <typename ... Args> inline void bson_append_key_value(bsoncxx::builder::basic::document& target, const bsoncxx::document::value& to_merge, Args ... args)
-    {
-        target.append(bsoncxx::builder::concatenate(to_merge.view()));
-        bson_append_key_value(target, args ...);
-    }
+template <typename Value, typename ... Args> inline void bson_append(bsoncxx::builder::basic::document& target, std::string key, Value value, Args ... args)
+{
+    target.append(bsoncxx::builder::basic::kvp(key, value));
+    bson_append(target, args ...);
+}
 
-    template <typename Value, typename ... Args> inline void bson_append_key_value(bsoncxx::builder::basic::document& target, std::string key, Value value, Args ... args)
-    {
-        target.append(bsoncxx::builder::basic::kvp(key, value));
-        bson_append_key_value(target, args ...);
-    }
+inline void bson_append(bsoncxx::builder::basic::array&) {}
 
-    inline void bson_append_to_array(bsoncxx::builder::basic::array&) {}
-
-    template <typename ... Args> inline void bson_append_to_array(bsoncxx::builder::basic::array& target, const bsoncxx::document::value& to_append, Args ... args)
-    {
-        target.append(bsoncxx::builder::concatenate(to_append.view()));
-        bson_append_to_array(target, args ...);
-    }
-
-} // namespace mongo_bson_internal
+template <typename ... Args> inline void bson_append(bsoncxx::builder::basic::array& target, const bsoncxx::document::value& to_append, Args ... args)
+{
+    target.append(bsoncxx::builder::concatenate(to_append.view()));
+    bson_append(target, args ...);
+}
 
 // iterator SFINAE: https://stackoverflow.com/questions/12161109/stdenable-if-or-sfinae-for-iterator-or-pointer
 template <typename Iterator, typename = decltype(*std::declval<Iterator&>(), void(), ++std::declval<Iterator&>(), void())> inline bsoncxx::array::value bson_make_array(Iterator first, Iterator last)
@@ -56,14 +52,14 @@ template <typename Iterator, typename = decltype(*std::declval<Iterator&>(), voi
 template <typename ... Args> inline bsoncxx::array::value bson_make_array(Args ... args)
 {
     bsoncxx::builder::basic::array array;
-    mongo_bson_internal::bson_append_to_array(array, args ...);
+    bson_append(array, args ...);
     return array.extract();
 }
 
 template <typename ... Args> inline bsoncxx::document::value bson_make_value(Args ... args)
 {
     bsoncxx::builder::basic::document doc;
-    mongo_bson_internal::bson_append_key_value(doc, args ...);
+    bson_append(doc, args ...);
     return doc.extract();
 }
 
@@ -75,14 +71,6 @@ class MongodbAccess
     inline MongodbAccess(mongocxx::database& aDb) : mDb(aDb) {}
     inline MongodbAccess(const MongodbAccess& aSrc) : mDb(aSrc.mDb) {}
     virtual inline ~MongodbAccess() {}
-
-      //$
-    using stream_doc = bsoncxx::builder::stream::document;
-    static constexpr const auto bld_finalize = bsoncxx::builder::stream::finalize;
-    static constexpr const auto bld_open_document = bsoncxx::builder::stream::open_document;
-    static constexpr const auto bld_close_document = bsoncxx::builder::stream::close_document;
-    static constexpr const auto bld_open_array = bsoncxx::builder::stream::open_array;
-    static constexpr const auto bld_close_array = bsoncxx::builder::stream::close_array;
 
     using bld_doc = bsoncxx::builder::basic::document;
     using bld_array = bsoncxx::builder::basic::array;
@@ -287,10 +275,10 @@ class StoredInMongodb : public MongodbAccess
       // throws Error
     inline std::string create()
         {
-            auto doc = stream_doc{}; //$
-            add_fields_for_creation(doc);
+            auto doc_bld = bld_doc{};
+            add_fields_for_creation(doc_bld);
             try {
-                auto result = insert_one(doc << bld_finalize);
+                auto result = insert_one(doc_bld.extract().view());
                 if (!result)
                     throw Error{"unacknowledged write during doc insertion"};
                 if (result->inserted_id().type() != bsoncxx::type::k_oid)
@@ -305,22 +293,21 @@ class StoredInMongodb : public MongodbAccess
       // throws Error
     inline void update(std::string aId)
         {
-            auto doc_set = stream_doc{}; //$
+            auto doc_set = bld_doc{};
             add_fields_for_updating(doc_set);
-            auto result = update_one(stream_doc{} << "_id" << bsoncxx::oid{aId} << bld_finalize,
-                                     stream_doc{} << "$set" << bld_open_document << bsoncxx::builder::concatenate(doc_set.view()) << bld_close_document << bld_finalize);
+            auto result = update_one(bson_make_value("_id", bsoncxx::oid{aId}), bson_make_value("$set", doc_set.extract()));
             if (!result)
                 throw Error{"unacknowledged write during doc updating"};
         }
 
-    virtual inline void add_fields_for_creation(stream_doc& aDoc)
+    virtual inline void add_fields_for_creation(bld_doc& aDoc)
         {
-            aDoc << "_m" << time_now();
+            bson_append(aDoc, "_m", time_now());
         }
 
-    virtual inline void add_fields_for_updating(stream_doc& aDoc)
+    virtual inline void add_fields_for_updating(bld_doc& aDoc)
         {
-            aDoc << "_m" << time_now();
+            bson_append(aDoc, "_m", time_now());
         }
 
  private:

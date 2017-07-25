@@ -40,8 +40,8 @@ class Session : public StoredInMongodb
         }
 
  protected:
-    virtual void add_fields_for_creation(stream_doc& aDoc);
-    virtual void add_fields_for_updating(stream_doc& aDoc);
+    virtual void add_fields_for_creation(bld_doc& aDoc);
+    virtual void add_fields_for_updating(bld_doc& aDoc);
 
  private:
     mutable std::mutex mAccess;

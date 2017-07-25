@@ -22,7 +22,7 @@ void Session::use_session(std::string aSessionId)
 {
     reset();
 
-    auto found = find_one((stream_doc{} << "_id" << bsoncxx::oid{aSessionId} << "expires" << bld_open_document << "$gte" << time_now() << bld_close_document << bld_finalize),
+    auto found = find_one(bson_make_value("_id", bsoncxx::oid{aSessionId}, "expires", bson_make_value("$gte", time_now())),
                           exclude("_t", "_m", "I", "expires", "expiration_in_seconds"));
     if (!found)
         throw Error{"invalid session"};
@@ -139,30 +139,27 @@ void Session::create_session()
 
 // ----------------------------------------------------------------------
 
-void Session::add_fields_for_creation(stream_doc& aDoc)
+void Session::add_fields_for_creation(bld_doc& aDoc)
 {
     StoredInMongodb::add_fields_for_creation(aDoc);
-
-    aDoc << "_t" << "acmacs.mongodb_collections.permissions.Session"
-         << "user" << mUser;
-          // aDoc << "I" << "127.0.0.1";
-    auto groups = aDoc << "user_and_groups" << bld_open_array;
-    for (const auto& group: mGroups)
-        groups << group;
-    groups << bld_close_array;
-    aDoc << "expiration_in_seconds" << mExpirationInSeconds
-         << "expires" << time_in_seconds(mExpirationInSeconds)
-         << "commands" << mCommands;
+    bson_append(aDoc,
+                "_t", "acmacs.mongodb_collections.permissions.Session",
+                "user", mUser,
+                "user_and_groups", bson_make_array(std::begin(mGroups), std::end(mGroups)),
+                "expiration_in_seconds", mExpirationInSeconds,
+                "expires", time_in_seconds(mExpirationInSeconds),
+                "commands", mCommands);
 
 } // Session::add_fields_for_creation
 
 // ----------------------------------------------------------------------
 
-void Session::add_fields_for_updating(stream_doc& aDoc)
+void Session::add_fields_for_updating(bld_doc& aDoc)
 {
     StoredInMongodb::add_fields_for_updating(aDoc);
-    aDoc << "expires" << time_in_seconds(mExpirationInSeconds)
-         << "commands" << mCommands;
+    bson_append(aDoc,
+                "expires", time_in_seconds(mExpirationInSeconds),
+                "commands", mCommands);
 
 } // Session::add_fields_for_updating
 
