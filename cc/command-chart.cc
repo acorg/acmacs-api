@@ -17,20 +17,19 @@ void Command_root_charts::run()
     bson_append(criteria_bld, session().read_permissions(), MongodbAccess::field_null_or_absent("parent"), MongodbAccess::field_null_or_absent("backup_of"));
     bson_in_for_optional_array_of_strings(criteria_bld, "p.o", "$in", std::bind(&Command_root_charts::get_owners, this));
     bson_in_for_optional_array_of_strings(criteria_bld, "keywords", "$in", std::bind(&Command_root_charts::get_keywords, this));
-    bson_in_for_optional_array_of_strings(criteria_bld, "search", "$all", std::bind(&Command_root_charts::get_search, this));
+    bson_in_for_optional_array_of_strings(criteria_bld, "search", "$all", std::bind(&Command_root_charts::get_search, this), &json_importer::get_string_uppercase);
 
     auto criteria = criteria_bld.extract();
     std::cerr << "Command_root_charts::run " << bsoncxx::to_json(criteria) << std::endl;
     for (int chunk_no = 0; limit == 0 || skip < limit; skip += chunk_size, ++chunk_no) {
         DocumentFindResults results{acmacs_web_db, "charts",
                     criteria,
-//?
                       //MongodbAccess::exclude("_id", "_t", "table", "search", "conformance").sort("_m", -1)};
                     MongodbAccess::include("name", "parent", "_m", "keywords", "search", "p.o").sort("_m", -1).skip(skip).limit(limit == 0 ? chunk_size : std::min(chunk_size, limit - skip))
                     };
         const auto results_json = results.json(false); // results.count() is available only after calling results.json()
         if (chunk_no != 0 && results.count() == 0)
-            break;
+            break; // no more data but at least one chunk alreay reported
         send(json_object("charts_count", results.count(), "charts", json_raw{results_json}));
         if (chunk_size == 0)
             break;
