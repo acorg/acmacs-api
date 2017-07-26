@@ -18,6 +18,14 @@ static std::atomic<Wspp*> sWspp;
 
 // ----------------------------------------------------------------------
 
+// void WsppThreadWithMongoAccess::initialize()
+// {
+//     WsppThread::initialize();
+
+// } // WsppThreadWithMongoAccess::initialize
+
+// ----------------------------------------------------------------------
+
 class AcmacsAPISettings : public ServerSettings
 {
  public:

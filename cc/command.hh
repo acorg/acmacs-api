@@ -7,10 +7,10 @@
 #include "acmacs-webserver/websocketpp-asio.hh"
 
 #include "mongo-access.hh"
+#include "acmacs-api-server.hh"
 
 // ----------------------------------------------------------------------
 
-class AcmacsAPIServer;
 class Session;
 
 class Command : public json_importer::Object
@@ -32,8 +32,8 @@ class Command : public json_importer::Object
  protected:
     void send(std::string aMessage, websocketpp::frame::opcode::value op_code = websocketpp::frame::opcode::text);
     void send_error(std::string aMessage);
-    mongocxx::database db();
-    Session& session();
+    inline mongocxx::database& db() { return mServer.db(); }
+    inline Session& session() { return mServer.session(); }
 
     inline time_point now() const { return std::chrono::high_resolution_clock::now(); }
     inline void set_command_start() { mCommandStart = now(); }

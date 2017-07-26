@@ -1,13 +1,4 @@
 #include "command.hh"
-#include "session.hh"
-#include "acmacs-api-server.hh"
-
-// ----------------------------------------------------------------------
-
-Session& Command::session()
-{
-    return mServer.session();
-}
 
 // ----------------------------------------------------------------------
 
@@ -25,14 +16,6 @@ void Command::send_error(std::string aMessage)
     mServer.send(json_object("C", command_name(), "CN", command_number(), "E", aMessage));
 
 } // Command::send_error
-
-// ----------------------------------------------------------------------
-
-mongocxx::database Command::db()
-{
-    return mServer.db();
-
-} // Command::db
 
 // ----------------------------------------------------------------------
 /// Local Variables:

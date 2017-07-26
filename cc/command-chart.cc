@@ -51,8 +51,14 @@ const char* Command_root_charts::description()
 void Command_chart_keywords::run()
 {
     auto acmacs_web_db = db();
+    std::cerr << "Command_chart_keywords::run1" << std::endl;
     auto cursor = MongodbAccess{acmacs_web_db}.distinct("charts", "keywords", session().read_permissions());
-    std::string result = json_writer::compact_json((*cursor.begin())["values"].get_array().value);
+    std::cerr << "Command_chart_keywords::run2" << std::endl;
+    auto values = (*cursor.begin())["values"];
+    if (!values)
+        send_error("No data from server");
+    std::string result = json_writer::compact_json(values.get_array().value);
+    std::cerr << "Command_chart_keywords::run3 " << result << std::endl;
     send(json_object("keywords", json_raw{result}));
 
 } // Command_chart_keywords::run
@@ -70,8 +76,14 @@ const char* Command_chart_keywords::description()
 void Command_chart_owners::run()
 {
     auto acmacs_web_db = db();
+    std::cerr << "Command_chart_owners::run1" << std::endl;
     auto cursor = MongodbAccess{acmacs_web_db}.distinct("charts", "p.o", session().read_permissions());
-    std::string result = json_writer::compact_json((*cursor.begin())["values"].get_array().value);
+    std::cerr << "Command_chart_owners::run2" << std::endl;
+    auto values = (*cursor.begin())["values"];
+    if (!values)
+        send_error("No data from server");
+    std::string result = json_writer::compact_json(values.get_array().value);
+    std::cerr << "Command_chart_owners::run3 " << result << std::endl;
     send(json_object("owners", json_raw{result}));
 
 } // Command_chart_owners::run

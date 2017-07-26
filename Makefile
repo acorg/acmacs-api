@@ -7,18 +7,12 @@ MAKEFLAGS = -w
 
 # ----------------------------------------------------------------------
 
-MONGO_TEST = $(DIST)/mongo-test
-MONGO_FIND = $(DIST)/mongo-find
-MONGO_RAW = $(DIST)/mongo-raw
-MONGO_DIRECT = $(DIST)/mongo-direct
+API_DIRECT = $(DIST)/api-direct
 ACMACS_API_SERVER = $(DIST)/acmacs-api-server
 ACMACS_API_CLIENT_JS = $(DIST)/acmacs-api-client.js.gz
 ACMACS_API_CLIENT_CSS = $(DIST)/acmacs-api-client.css.gz
 
-MONGO_TEST_SOURCES = mongo-test.cc
-MONGO_FIND_SOURCES = mongo-find.cc
-MONGO_RAW_SOURCES = mongo-raw.cc session.cc
-MONGO_DIRECT_SOURCES = mongo-direct.cc mongo-access.cc session.cc
+API_DIRECT_SOURCES = api-direct.cc mongo-access.cc session.cc
 ACMACS_API_SERVER_SOURCES = acmacs-api-server.cc command-info.cc mongo-access.cc session.cc command.cc command-factory.cc command-session.cc command-admin.cc command-chart.cc
 ACMACS_API_CLIENT_SOURCES = acmacs-api-client.cc asm.cc session.cc
 
@@ -68,11 +62,10 @@ PKG_INCLUDES += -I/usr/local/opt/openssl/include
 # $$(pkg-config --cflags libuv)
 endif
 
-PROGS = $(MONGO_DIRECT) $(ACMACS_API_SERVER)
+PROGS = $(API_DIRECT) $(ACMACS_API_SERVER)
 ifeq ($(MAKE_CLIENT),1)
   PROGS += acmacs-api-client
 endif
-# $(MONGO_TEST) $(MONGO_FIND) $(MONGO_RAW)
 
 # ----------------------------------------------------------------------
 
@@ -97,16 +90,7 @@ checks: check-acmacsd-root check-cheerp check-sassc
 
 # ----------------------------------------------------------------------
 
-$(MONGO_TEST): $(patsubst %.cc,$(BUILD)/%.o,$(MONGO_TEST_SOURCES)) | $(DIST)
-	g++ $(LDFLAGS) -o $@ $^ $(MONGO_LDLIBS) $(LDLIBS)
-
-$(MONGO_FIND): $(patsubst %.cc,$(BUILD)/%.o,$(MONGO_FIND_SOURCES)) | $(DIST)
-	g++ $(LDFLAGS) -o $@ $^ $(MONGO_LDLIBS) $(LDLIBS)
-
-$(MONGO_RAW): $(patsubst %.cc,$(BUILD)/%.o,$(MONGO_RAW_SOURCES)) | $(DIST)
-	g++ $(LDFLAGS) -o $@ $^ $(MONGO_LDLIBS) $(LDLIBS)
-
-$(MONGO_DIRECT): $(patsubst %.cc,$(BUILD)/%.o,$(MONGO_DIRECT_SOURCES)) | $(DIST)
+$(API_DIRECT): $(patsubst %.cc,$(BUILD)/%.o,$(API_DIRECT_SOURCES)) | $(DIST)
 	@echo $@ '<--' $^
 	@g++ $(LDFLAGS) -o $@ $^ $(MONGO_LDLIBS) $(LDLIBS)
 

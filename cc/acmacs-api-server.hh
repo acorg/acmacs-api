@@ -1,5 +1,7 @@
 #pragma once
 
+#include <thread>
+
 #include "acmacs-webserver/server.hh"
 
 #include "mongo-access.hh"
@@ -13,28 +15,35 @@ class AcmacsAPIServer : public WsppWebsocketLocationHandler
 {
  public:
     inline AcmacsAPIServer(mongocxx::pool& aPool, CommandFactory& aCommandFactory)
-        : WsppWebsocketLocationHandler{}, mPool{aPool}, mCommandFactory{aCommandFactory}, mSession{db()}, mCommandNumber{0} {}
+        : WsppWebsocketLocationHandler{}, mPool{aPool}, mCommandFactory{aCommandFactory}, mCommandNumber{0} {}
     inline AcmacsAPIServer(const AcmacsAPIServer& aSrc)
-        : WsppWebsocketLocationHandler{aSrc}, mPool{aSrc.mPool}, mCommandFactory{aSrc.mCommandFactory}, mSession{aSrc.mSession}, mCommandNumber{0} {}
+        : WsppWebsocketLocationHandler{aSrc}, mPool{aSrc.mPool}, mCommandFactory{aSrc.mCommandFactory}, mCommandNumber{0} {}
 
- protected:
-    inline auto connection()
+    inline Session& session()
         {
-            if (!mConnection)
-                mConnection = mPool.acquire();
-            return mConnection;
-        }
-
-    inline mongocxx::database db(const char* aName)
-        {
-            return (*connection())[aName];
+            if (!mSession)
+                mSession = std::make_unique<Session>(db());
+            return *mSession;
         }
 
     inline mongocxx::database& db()
         {
             if (!mAcmacsWebDb)
                 mAcmacsWebDb = db("acmacs_web");
+            std::cerr << std::this_thread::get_id() << " acmacs_web db" << std::endl;
             return mAcmacsWebDb;
+        }
+
+ protected:
+    inline auto connection()
+        {
+            std::cerr << std::this_thread::get_id() << " mongo connection" << std::endl;
+            return mPool.acquire();
+        }
+
+    inline mongocxx::database db(const char* aName)
+        {
+            return (*connection())[aName];
         }
 
     virtual std::shared_ptr<WsppWebsocketLocationHandler> clone() const
@@ -61,17 +70,34 @@ class AcmacsAPIServer : public WsppWebsocketLocationHandler
 
  private:
     mongocxx::pool& mPool;
-    mongocxx::database mAcmacsWebDb;
     CommandFactory& mCommandFactory;
-    std::shared_ptr<mongocxx::client> mConnection;
-    Session mSession;
+    mongocxx::database mAcmacsWebDb;
+    std::unique_ptr<Session> mSession;
     std::atomic<size_t> mCommandNumber;
 
-    inline Session& session() { return mSession; }
-
-    friend class Command;
+      // friend class Command;
+    // friend class WsppThreadWithMongoAccess;
 
 }; // class AcmacsAPIServer
+
+// ----------------------------------------------------------------------
+
+// class WsppThreadWithMongoAccess : public WsppThread
+// {
+//  public:
+//     static inline WsppThread* make(Wspp& aWspp, AcmacsAPIServer& aAPIServer) { return new WsppThreadWithMongoAccess{aWspp, aAPIServer}; }
+
+//  protected:
+//     inline WsppThreadWithMongoAccess(Wspp& aWspp, AcmacsAPIServer& aAPIServer)
+//         : WsppThread{aWspp}, mAPIServer{aAPIServer} {}
+
+//     virtual void initialize();
+
+//  private:
+//     AcmacsAPIServer& mAPIServer;
+//     mongocxx::database mAcmacsWebDb;
+
+// }; // class WsppThreadWithMongoAccess
 
 // ----------------------------------------------------------------------
 /// Local Variables:

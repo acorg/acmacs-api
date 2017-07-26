@@ -90,7 +90,9 @@ class JsonPrinter : public OnMessage<ResponseData>
               // this->send(new Command_users{});
             this->send(new Command_chart_keywords{});
             this->send(new Command_chart_owners{});
-            this->send((new Command_root_charts{})->owners("eu")->search("turkey")->keywords("individual")); // ->owners("alpha")->keywords("individual")->search("labels", "TURKEY")
+            this->send(new Command_chart_keywords{});
+            this->send(new Command_chart_owners{});
+              //this->send((new Command_root_charts{})->owners("eu")->search("turkey")->keywords("individual")); // ->owners("alpha")->keywords("individual")->search("labels", "TURKEY")
         }
 
  protected:
