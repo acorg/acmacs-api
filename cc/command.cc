@@ -1,11 +1,13 @@
+#include <iostream>
+
 #include "command.hh"
 
 // ----------------------------------------------------------------------
 
-void Command::send(std::string aMessage, websocketpp::frame::opcode::value op_code)
+void Command::send(std::string aMessage, send_message_type aMessageType)
 {
-    mServer.send(json_object_prepend(aMessage, "C", command_name(), "CN", command_number(), "CT", command_duration()), op_code);
-    std::cerr << "Command::send: " << aMessage.substr(0, 100) << std::endl;
+    mSendFunc(json_object_prepend(aMessage, "C", command_name(), "CN", command_number(), "CT", command_duration()), aMessageType);
+      // std::cerr << "Command::send: " << aMessage.substr(0, 100) << std::endl;
 
 } // Command::send
 
@@ -13,7 +15,7 @@ void Command::send(std::string aMessage, websocketpp::frame::opcode::value op_co
 
 void Command::send_error(std::string aMessage)
 {
-    mServer.send(json_object("C", command_name(), "CN", command_number(), "E", aMessage));
+    mSendFunc(json_object("C", command_name(), "CN", command_number(), "E", aMessage), send_message_type::text);
 
 } // Command::send_error
 

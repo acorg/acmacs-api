@@ -148,8 +148,9 @@ int main(int argc, char* const argv[])
 
 void AcmacsAPIServer::message(std::string aMessage)
 {
-    std::cerr << std::this_thread::get_id() << " MSG: " << aMessage.substr(0, 80) << std::endl;
-    auto command = mCommandFactory.find(aMessage, *this, ++mCommandNumber);
+    std::cout << std::this_thread::get_id() << " MSG: " << aMessage.substr(0, 80) << std::endl;
+    using namespace std::placeholders;
+    auto command = mCommandFactory.find(aMessage, db(), session(), std::bind(&AcmacsAPIServer::send, this, _1, _2));
     try {
         command->run();
     }

@@ -3,23 +3,28 @@
 #include <string>
 #include <chrono>
 
-#include "acmacs-base/rapidjson.hh"
-#include "acmacs-webserver/websocketpp-asio.hh"
+#pragma GCC diagnostic push
+#include "mongo-diagnostics.hh"
+#include <mongocxx/database.hpp>
+#pragma GCC diagnostic pop
 
-#include "mongo-access.hh"
-#include "acmacs-api-server.hh"
+#include "acmacs-base/rapidjson.hh"
+
+#include "send-func.hh"
 
 // ----------------------------------------------------------------------
 
 class Session;
+
+// ----------------------------------------------------------------------
 
 class Command : public json_importer::Object
 {
  public:
     using time_point = decltype(std::chrono::high_resolution_clock::now());
 
-    inline Command(json_importer::Object&& aSrc, AcmacsAPIServer& aServer, size_t aCommandNumber)
-        : json_importer::Object{std::move(aSrc)}, mServer{aServer}, mCommandNumber{aCommandNumber}
+    inline Command(json_importer::Object&& aSrc, mongocxx::database& aDb, Session& aSession, SendFunc aSendFunc, size_t aCommandNumber)
+        : json_importer::Object{std::move(aSrc)}, mDb{aDb}, mSession{aSession}, mSendFunc{aSendFunc}, mCommandNumber{aCommandNumber}
         {
             set_command_start();
         }
@@ -30,30 +35,20 @@ class Command : public json_importer::Object
     virtual void run() = 0;
 
  protected:
-    void send(std::string aMessage, websocketpp::frame::opcode::value op_code = websocketpp::frame::opcode::text);
+    void send(std::string aMessage, send_message_type aMessageType = send_message_type::text);
     void send_error(std::string aMessage);
-    inline mongocxx::database& db() { return mServer.db(); }
-    inline Session& session() { return mServer.session(); }
+    inline mongocxx::database& db() { return mDb; }
+    inline Session& session() { return mSession; }
 
     inline time_point now() const { return std::chrono::high_resolution_clock::now(); }
     inline void set_command_start() { mCommandStart = now(); }
     inline auto command_start() const { return mCommandStart; }
     inline double command_duration() const { return std::chrono::duration<double>{now() - command_start()}.count(); }
 
-      // mongo_operator: $in, $all
-    inline void bson_in_for_optional_array_of_strings(MongodbAccess::bld_doc& append_to, const char* key, const char* mongo_operator, std::function<json_importer::ConstArray()> getter, std::function<std::string(const rapidjson::Value&)> transformer = &json_importer::get_string)
-        {
-            try {
-                const auto array = getter();
-                if (!array.Empty())
-                    bson_append(append_to, key, bson_object(mongo_operator, bson_array(std::begin(array), std::end(array), transformer)));
-            }
-            catch (RapidjsonAssert&) {
-            }
-        }
-
  private:
-    AcmacsAPIServer& mServer;
+    mongocxx::database& mDb;
+    Session& mSession;
+    SendFunc mSendFunc;
     const size_t mCommandNumber;
     time_point mCommandStart;
 

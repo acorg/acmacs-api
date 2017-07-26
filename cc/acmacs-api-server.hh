@@ -6,6 +6,7 @@
 
 #include "mongo-access.hh"
 #include "session.hh"
+#include "send-func.hh"
 
 // ----------------------------------------------------------------------
 
@@ -15,9 +16,9 @@ class AcmacsAPIServer : public WsppWebsocketLocationHandler
 {
  public:
     inline AcmacsAPIServer(mongocxx::pool& aPool, CommandFactory& aCommandFactory)
-        : WsppWebsocketLocationHandler{}, mPool{aPool}, mCommandFactory{aCommandFactory}, mCommandNumber{0} {}
+        : WsppWebsocketLocationHandler{}, mPool{aPool}, mCommandFactory{aCommandFactory} {}
     inline AcmacsAPIServer(const AcmacsAPIServer& aSrc)
-        : WsppWebsocketLocationHandler{aSrc}, mPool{aSrc.mPool}, mCommandFactory{aSrc.mCommandFactory}, mCommandNumber{0} {}
+        : WsppWebsocketLocationHandler{aSrc}, mPool{aSrc.mPool}, mCommandFactory{aSrc.mCommandFactory} {}
 
     inline Session& session()
         {
@@ -32,6 +33,21 @@ class AcmacsAPIServer : public WsppWebsocketLocationHandler
                 mAcmacsWebDb = db("acmacs_web");
             std::cerr << std::this_thread::get_id() << " acmacs_web db" << std::endl;
             return mAcmacsWebDb;
+        }
+
+    inline void send(std::string aMessage, send_message_type aMessageType = send_message_type::text)
+        {
+            auto op_code = websocketpp::frame::opcode::text;
+            switch (aMessageType) {
+              case send_message_type::text:
+                  op_code = websocketpp::frame::opcode::text;
+                  break;
+              case send_message_type::binary:
+                  op_code = websocketpp::frame::opcode::binary;
+                  break;
+            }
+            std::cout << std::this_thread::get_id() << " SEND: " << aMessage << std::endl;
+            WsppWebsocketLocationHandler::send(aMessage, op_code);
         }
 
  protected:
@@ -73,7 +89,6 @@ class AcmacsAPIServer : public WsppWebsocketLocationHandler
     CommandFactory& mCommandFactory;
     mongocxx::database mAcmacsWebDb;
     std::unique_ptr<Session> mSession;
-    std::atomic<size_t> mCommandNumber;
 
       // friend class Command;
     // friend class WsppThreadWithMongoAccess;

@@ -3,9 +3,10 @@
 
 #include "acmacs-base/stream.hh"
 
-#include "md5.hh"
 #include "mongo-access.hh"
 #include "session.hh"
+#include "command-factory.hh"
+#include "command.hh"
 
 // ----------------------------------------------------------------------
 
@@ -20,6 +21,7 @@ struct Args
 
 static void parse_command_line(int argc, char* const argv[], Args& aArgs);
 static void login(Session& aSession, Args& aArgs);
+static void send(std::string aMessage, send_message_type aMessageType = send_message_type::text);
 
 // ----------------------------------------------------------------------
 
@@ -38,6 +40,16 @@ int main(int argc, char* const argv[])
         Session session{db};
         login(session, args);
 
+        CommandFactory command_factory;
+        for (const auto& command_json: args.commands) {
+            auto command = command_factory.find(command_json, db, session, &send);
+            try {
+                command->run();
+            }
+            catch (std::exception& err) {
+                send(json_object("C", command->command_name(), "CN", command->command_number(), "E", err.what()));
+            }
+        }
     }
     catch (std::exception& err) {
         std::cerr << "ERROR: " << err.what() << std::endl;
@@ -115,6 +127,14 @@ void login(Session& aSession, Args& aArgs)
     }
 
 } // login
+
+// ----------------------------------------------------------------------
+
+void send(std::string aMessage, send_message_type /*aMessageType*/)
+{
+    std::cout << "SEND: " << aMessage << std::endl;
+
+} // send
 
 // ----------------------------------------------------------------------
 

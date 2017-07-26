@@ -7,14 +7,21 @@ MAKEFLAGS = -w
 
 # ----------------------------------------------------------------------
 
-API_DIRECT = $(DIST)/api-direct
 ACMACS_API_SERVER = $(DIST)/acmacs-api-server
+ACMACS_API_SERVER_SOURCES = acmacs-api-server.cc mongo-access.cc session.cc $(COMMANDS_SOURCES)
+
 ACMACS_API_CLIENT_JS = $(DIST)/acmacs-api-client.js.gz
 ACMACS_API_CLIENT_CSS = $(DIST)/acmacs-api-client.css.gz
-
-API_DIRECT_SOURCES = api-direct.cc mongo-access.cc session.cc
-ACMACS_API_SERVER_SOURCES = acmacs-api-server.cc command-info.cc mongo-access.cc session.cc command.cc command-factory.cc command-session.cc command-admin.cc command-chart.cc
 ACMACS_API_CLIENT_SOURCES = acmacs-api-client.cc asm.cc session.cc
+
+API_DIRECT = $(DIST)/api-direct
+API_DIRECT_SOURCES = api-direct.cc mongo-access.cc session.cc $(COMMANDS_SOURCES)
+
+# ----------------------------------------------------------------------
+
+COMMANDS_SOURCES = command.cc command-factory.cc command-info.cc command-session.cc command-admin.cc command-chart.cc
+
+# ----------------------------------------------------------------------
 
 MONGO_LDLIBS = -L$(LIB_DIR) -lmongocxx -lbsoncxx -L/usr/local/opt/openssl/lib $$(pkg-config --libs libssl)
 ACMACS_API_SERVER_LIBS = $(MONGO_LDLIBS) -lacmacswebserver
