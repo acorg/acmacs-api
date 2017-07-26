@@ -137,9 +137,6 @@ void send(std::string aMessage, send_message_type /*aMessageType*/)
 } // send
 
 // ----------------------------------------------------------------------
-
-
-// ----------------------------------------------------------------------
 /// Local Variables:
 /// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
 /// End:

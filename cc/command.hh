@@ -23,7 +23,7 @@ class Command : public json_importer::Object
  public:
     using time_point = decltype(std::chrono::high_resolution_clock::now());
 
-    inline Command(json_importer::Object&& aSrc, mongocxx::database& aDb, Session& aSession, SendFunc aSendFunc, size_t aCommandNumber)
+    inline Command(json_importer::Object&& aSrc, mongocxx::database aDb, Session& aSession, SendFunc aSendFunc, size_t aCommandNumber)
         : json_importer::Object{std::move(aSrc)}, mDb{aDb}, mSession{aSession}, mSendFunc{aSendFunc}, mCommandNumber{aCommandNumber}
         {
             set_command_start();
@@ -46,7 +46,7 @@ class Command : public json_importer::Object
     inline double command_duration() const { return std::chrono::duration<double>{now() - command_start()}.count(); }
 
  private:
-    mongocxx::database& mDb;
+    mongocxx::database mDb;
     Session& mSession;
     SendFunc mSendFunc;
     const size_t mCommandNumber;

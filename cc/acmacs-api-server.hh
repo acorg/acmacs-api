@@ -7,6 +7,7 @@
 #include "mongo-access.hh"
 #include "session.hh"
 #include "send-func.hh"
+#include "print.hh"
 
 // ----------------------------------------------------------------------
 
@@ -15,24 +16,17 @@ class CommandFactory;
 class AcmacsAPIServer : public WsppWebsocketLocationHandler
 {
  public:
-    inline AcmacsAPIServer(mongocxx::pool& aPool, CommandFactory& aCommandFactory)
-        : WsppWebsocketLocationHandler{}, mPool{aPool}, mCommandFactory{aCommandFactory} {}
+    inline AcmacsAPIServer(CommandFactory& aCommandFactory)
+        : WsppWebsocketLocationHandler{}, mCommandFactory{aCommandFactory} {}
     inline AcmacsAPIServer(const AcmacsAPIServer& aSrc)
-        : WsppWebsocketLocationHandler{aSrc}, mPool{aSrc.mPool}, mCommandFactory{aSrc.mCommandFactory} {}
+        : WsppWebsocketLocationHandler{aSrc}, mCommandFactory{aSrc.mCommandFactory} {}
 
-    inline Session& session()
+    inline Session& session(mongocxx::database aDb)
         {
-            if (!mSession)
-                mSession = std::make_unique<Session>(db());
+            if (!mSession) {
+                mSession = std::make_unique<Session>(aDb);
+            }
             return *mSession;
-        }
-
-    inline mongocxx::database& db()
-        {
-            if (!mAcmacsWebDb)
-                mAcmacsWebDb = db("acmacs_web");
-            std::cerr << std::this_thread::get_id() << " acmacs_web db" << std::endl;
-            return mAcmacsWebDb;
         }
 
     inline void send(std::string aMessage, send_message_type aMessageType = send_message_type::text)
@@ -46,22 +40,11 @@ class AcmacsAPIServer : public WsppWebsocketLocationHandler
                   op_code = websocketpp::frame::opcode::binary;
                   break;
             }
-            std::cout << std::this_thread::get_id() << " SEND: " << aMessage << std::endl;
+            print2("SEND: ", aMessage);
             WsppWebsocketLocationHandler::send(aMessage, op_code);
         }
 
  protected:
-    inline auto connection()
-        {
-            std::cerr << std::this_thread::get_id() << " mongo connection" << std::endl;
-            return mPool.acquire();
-        }
-
-    inline mongocxx::database db(const char* aName)
-        {
-            return (*connection())[aName];
-        }
-
     virtual std::shared_ptr<WsppWebsocketLocationHandler> clone() const
         {
             return std::make_shared<AcmacsAPIServer>(*this);
@@ -72,47 +55,43 @@ class AcmacsAPIServer : public WsppWebsocketLocationHandler
             return aLocation == "/api";
         }
 
-    virtual inline void opening(std::string)
+    virtual inline void opening(std::string, WsppThread& /*aThread*/)
         {
             send(json_object("hello", "acmacs-api-server-v1"));
         }
 
-    virtual void message(std::string aMessage);
+    virtual void message(std::string aMessage, WsppThread& aThread);
 
-    virtual void after_close(std::string)
+    virtual void after_close(std::string, WsppThread& /*aThread*/)
         {
-              //std::cout << std::this_thread::get_id() << " MyWS after_close" << std::endl;
+              //print1("AcmacsAPIServer after_close");
         }
 
  private:
-    mongocxx::pool& mPool;
     CommandFactory& mCommandFactory;
     mongocxx::database mAcmacsWebDb;
     std::unique_ptr<Session> mSession;
-
-      // friend class Command;
-    // friend class WsppThreadWithMongoAccess;
 
 }; // class AcmacsAPIServer
 
 // ----------------------------------------------------------------------
 
-// class WsppThreadWithMongoAccess : public WsppThread
-// {
-//  public:
-//     static inline WsppThread* make(Wspp& aWspp, AcmacsAPIServer& aAPIServer) { return new WsppThreadWithMongoAccess{aWspp, aAPIServer}; }
+class WsppThreadWithMongoAccess : public WsppThread
+{
+ public:
+    inline WsppThreadWithMongoAccess(Wspp& aWspp, std::string aMongoURI)
+        : WsppThread{aWspp}, mMongoURI{aMongoURI} {}
 
-//  protected:
-//     inline WsppThreadWithMongoAccess(Wspp& aWspp, AcmacsAPIServer& aAPIServer)
-//         : WsppThread{aWspp}, mAPIServer{aAPIServer} {}
+    auto& client() { return mClient; }
 
-//     virtual void initialize();
+ protected:
+    virtual void initialize();
 
-//  private:
-//     AcmacsAPIServer& mAPIServer;
-//     mongocxx::database mAcmacsWebDb;
+ private:
+    mongocxx::client mClient;
+    std::string mMongoURI;
 
-// }; // class WsppThreadWithMongoAccess
+}; // class WsppThreadWithMongoAccess
 
 // ----------------------------------------------------------------------
 /// Local Variables:

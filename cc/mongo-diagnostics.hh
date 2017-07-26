@@ -1,4 +1,4 @@
-#pragma once
+// No pragma once!
 
 #ifdef __clang__
 #pragma GCC diagnostic ignored "-Wdeprecated"

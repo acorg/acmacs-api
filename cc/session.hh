@@ -13,7 +13,7 @@ class Session : public StoredInMongodb
  public:
     class Error : public std::runtime_error { public: using std::runtime_error::runtime_error; };
 
-    inline Session(mongocxx::database& aDb)
+    inline Session(mongocxx::database aDb)
         : StoredInMongodb{aDb, "sessions"}, mCommands{0}, mExpirationInSeconds{3600} {}
     inline Session(const Session& aSrc)
         : StoredInMongodb{aSrc}, mId{aSrc.mId}, mUser{aSrc.mUser}, mDisplayName{aSrc.mDisplayName},

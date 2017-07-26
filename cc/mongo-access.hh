@@ -16,13 +16,14 @@
 #include "acmacs-base/time.hh"
 
 #include "bson.hh"
+#include "print.hh"
 
 // ----------------------------------------------------------------------
 
 class MongodbAccess
 {
  public:
-    inline MongodbAccess(mongocxx::database& aDb) : mDb(aDb) {}
+    inline MongodbAccess(mongocxx::database aDb) : mDb(aDb) {}
     inline MongodbAccess(const MongodbAccess& aSrc) : mDb(aSrc.mDb) {}
     virtual inline ~MongodbAccess() {}
 
@@ -121,34 +122,41 @@ class MongodbAccess
 
       // ----------------------------------------------------------------------
 
+    inline mongocxx::collection collection(const char* aCollection)
+        {
+            return mDb.collection(aCollection);
+        }
+
     inline auto find(const char* aCollection, bson_view aFilter, const mongo_find& aOptions = mongo_find{})
         {
-            return mDb[aCollection].find(aFilter, aOptions);
+            return collection(aCollection).find(aFilter, aOptions);
         }
 
     inline auto find(const char* aCollection)
         {
-            return mDb[aCollection].find({});
+            return collection(aCollection).find({});
         }
 
     inline auto distinct(const char* aCollection, const char* aField, bson_view aFilter)
         {
-            return mDb[aCollection].distinct(std::string{aField}, aFilter);
+            return collection(aCollection).distinct(std::string{aField}, aFilter);
         }
 
     inline auto find_one(const char* aCollection, bson_view aFilter, const mongo_find& aOptions = mongo_find{})
         {
-            return mDb[aCollection].find_one(aFilter, aOptions);
+            return collection(aCollection).find_one(aFilter, aOptions);
         }
 
     inline auto insert_one(const char* aCollection, bson_view aDoc)
         {
-            return mDb[aCollection].insert_one(aDoc);
+            print1("insert_one");
+            return collection(aCollection).insert_one(aDoc);
         }
 
     inline auto update_one(const char* aCollection, bson_view aFilter, bson_view aDoc)
         {
-            return mDb[aCollection].update_one(aFilter, aDoc);
+            print1("update_one");
+            return collection(aCollection).update_one(aFilter, aDoc);
         }
 
       // ----------------------------------------------------------------------
@@ -175,10 +183,10 @@ class MongodbAccess
 
       // ----------------------------------------------------------------------
 
-    inline mongocxx::database& db() { return mDb; }
+    // inline mongocxx::database& db() { return mDb; }
 
  private:
-    mongocxx::database& mDb;
+    mongocxx::database mDb;
 
 }; // class MongodbAccess
 
@@ -216,7 +224,7 @@ class DocumentFindResults : public MongodbAccess
 class StoredInMongodb : public MongodbAccess
 {
  public:
-    inline StoredInMongodb(mongocxx::database& aDb, const char* aCollection) : MongodbAccess{aDb}, mCollection{aCollection} {}
+    inline StoredInMongodb(mongocxx::database aDb, const char* aCollection) : MongodbAccess{aDb}, mCollection{aCollection} {}
 
  protected:
     using bld_key_context = bsoncxx::builder::stream::key_context<bsoncxx::builder::stream::key_context<bsoncxx::builder::stream::closed_context>>;
@@ -238,6 +246,7 @@ class StoredInMongodb : public MongodbAccess
             auto doc_bld = bld_doc{};
             add_fields_for_creation(doc_bld);
             try {
+                print1("create");
                 auto result = insert_one(doc_bld.extract().view());
                 if (!result)
                     throw Error{"unacknowledged write during doc insertion"};

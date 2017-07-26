@@ -34,7 +34,7 @@ CommandFactory::CommandFactory()
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<Command> CommandFactory::find(std::string aMessage, mongocxx::database& aDb, Session& aSession, SendFunc aSendFunc) const
+std::shared_ptr<Command> CommandFactory::find(std::string aMessage, mongocxx::database aDb, Session& aSession, SendFunc aSendFunc) const
 {
     ++mCommandNumber;
     json_importer::Object msg{aMessage};
