@@ -88,7 +88,7 @@ class JsonPrinter : public OnMessage<ResponseData>
         {
             this->send(new Command_list_commands{});
               // this->send(new Command_users{});
-            for (int i = 0; i < 20; ++i) {
+            for (int i = 0; i < 100; ++i) {
                 this->send(new Command_chart_keywords{});
                 this->send(new Command_chart_owners{});
             }
