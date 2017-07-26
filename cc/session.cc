@@ -128,7 +128,6 @@ void Session::login_with_password_digest(std::string aCNonce, std::string aPassw
 void Session::create_session()
 {
     find_groups_of_user();
-    print1("create_session");
       // std::cerr << "Groups: " << mGroups << std::endl;
     const auto id = create();
     std::unique_lock<decltype(mAccess)> lock{mAccess};

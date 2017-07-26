@@ -21,14 +21,6 @@ class AcmacsAPIServer : public WsppWebsocketLocationHandler
     inline AcmacsAPIServer(const AcmacsAPIServer& aSrc)
         : WsppWebsocketLocationHandler{aSrc}, mCommandFactory{aSrc.mCommandFactory} {}
 
-    inline Session& session(mongocxx::database aDb)
-        {
-            if (!mSession) {
-                mSession = std::make_unique<Session>(aDb);
-            }
-            return *mSession;
-        }
-
     inline void send(std::string aMessage, send_message_type aMessageType = send_message_type::text)
         {
             auto op_code = websocketpp::frame::opcode::text;
@@ -40,7 +32,7 @@ class AcmacsAPIServer : public WsppWebsocketLocationHandler
                   op_code = websocketpp::frame::opcode::binary;
                   break;
             }
-            print2("SEND: ", aMessage);
+            print2("SEND: ", aMessage.substr(0, 100));
             WsppWebsocketLocationHandler::send(aMessage, op_code);
         }
 
@@ -67,9 +59,16 @@ class AcmacsAPIServer : public WsppWebsocketLocationHandler
               //print1("AcmacsAPIServer after_close");
         }
 
+    inline Session& session(mongocxx::database aDb)
+        {
+            if (!mSession) {
+                mSession = std::make_unique<Session>(aDb);
+            }
+            return *mSession;
+        }
+
  private:
     CommandFactory& mCommandFactory;
-    mongocxx::database mAcmacsWebDb;
     std::unique_ptr<Session> mSession;
 
 }; // class AcmacsAPIServer

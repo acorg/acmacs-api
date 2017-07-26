@@ -22,9 +22,7 @@ static std::atomic<Wspp*> sWspp;
 void WsppThreadWithMongoAccess::initialize()
 {
     WsppThread::initialize();
-    print2("thread initialize ", string::to_hex_string(this));
     mClient = mongocxx::client{mongocxx::uri{mMongoURI}};
-    print2("client valid ", std::to_string(static_cast<bool>(mClient)));
 
 } // WsppThreadWithMongoAccess::initialize
 

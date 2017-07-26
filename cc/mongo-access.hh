@@ -149,13 +149,11 @@ class MongodbAccess
 
     inline auto insert_one(const char* aCollection, bson_view aDoc)
         {
-            print1("insert_one");
             return collection(aCollection).insert_one(aDoc);
         }
 
     inline auto update_one(const char* aCollection, bson_view aFilter, bson_view aDoc)
         {
-            print1("update_one");
             return collection(aCollection).update_one(aFilter, aDoc);
         }
 
@@ -181,10 +179,6 @@ class MongodbAccess
                                                           ));
         }
 
-      // ----------------------------------------------------------------------
-
-    // inline mongocxx::database& db() { return mDb; }
-
  private:
     mongocxx::database mDb;
 
@@ -197,11 +191,11 @@ class DocumentFindResults : public MongodbAccess
  public:
     class Error : public std::runtime_error { public: using std::runtime_error::runtime_error; };
 
-    inline DocumentFindResults(mongocxx::database& aDb) : MongodbAccess{aDb}, mCount{0} {}
-    inline DocumentFindResults(mongocxx::database& aDb, const char* aCollection) : MongodbAccess{aDb}, mCount{0} { build(aCollection); }
-    inline DocumentFindResults(mongocxx::database& aDb, const char* aCollection, bson_view aFilter, const mongo_find& aOptions = mongo_find{})
+    inline DocumentFindResults(mongocxx::database aDb) : MongodbAccess{aDb}, mCount{0} {}
+    inline DocumentFindResults(mongocxx::database aDb, const char* aCollection) : MongodbAccess{aDb}, mCount{0} { build(aCollection); }
+    inline DocumentFindResults(mongocxx::database aDb, const char* aCollection, bson_view aFilter, const mongo_find& aOptions = mongo_find{})
         : MongodbAccess{aDb}, mCount{0} { build(aCollection, aFilter, aOptions); }
-    inline DocumentFindResults(mongocxx::database& aDb, const char* aCollection, const bson_value& aFilter, const mongo_find& aOptions = mongo_find{})
+    inline DocumentFindResults(mongocxx::database aDb, const char* aCollection, const bson_value& aFilter, const mongo_find& aOptions = mongo_find{})
         : DocumentFindResults(aDb, aCollection, aFilter.view(), aOptions) {}
 
     std::string json(bool pretty = true, std::string key = std::string{});
@@ -241,33 +235,10 @@ class StoredInMongodb : public MongodbAccess
 
       // returns new _id
       // throws Error
-    inline std::string create()
-        {
-            auto doc_bld = bld_doc{};
-            add_fields_for_creation(doc_bld);
-            try {
-                print1("create");
-                auto result = insert_one(doc_bld.extract().view());
-                if (!result)
-                    throw Error{"unacknowledged write during doc insertion"};
-                if (result->inserted_id().type() != bsoncxx::type::k_oid)
-                    throw Error{"cannot insert doc: inserted id was not an OID type"};
-                return result->inserted_id().get_oid().value.to_string();
-            }
-            catch (const mongocxx::exception& err) {
-                throw Error{std::string{"cannot insert doc: "} + err.what()};
-            }
-        }
+    std::string create();
 
       // throws Error
-    inline void update(std::string aId)
-        {
-            auto doc_set = bld_doc{};
-            add_fields_for_updating(doc_set);
-            auto result = update_one(bson_object("_id", bsoncxx::oid{aId}), bson_object("$set", doc_set.extract()));
-            if (!result)
-                throw Error{"unacknowledged write during doc updating"};
-        }
+    void update(std::string aId);
 
     virtual inline void add_fields_for_creation(bld_doc& aDoc)
         {

@@ -88,10 +88,10 @@ class JsonPrinter : public OnMessage<ResponseData>
         {
             this->send(new Command_list_commands{});
               // this->send(new Command_users{});
-            this->send(new Command_chart_keywords{});
-            this->send(new Command_chart_owners{});
-            this->send(new Command_chart_keywords{});
-            this->send(new Command_chart_owners{});
+            for (int i = 0; i < 20; ++i) {
+                this->send(new Command_chart_keywords{});
+                this->send(new Command_chart_owners{});
+            }
               //this->send((new Command_root_charts{})->owners("eu")->search("turkey")->keywords("individual")); // ->owners("alpha")->keywords("individual")->search("labels", "TURKEY")
         }
 

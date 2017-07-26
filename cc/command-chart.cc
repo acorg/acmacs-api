@@ -22,7 +22,7 @@ void Command_root_charts::run()
     bson_in_for_optional_array_of_strings(criteria_bld, "search", "$all", std::bind(&Command_root_charts::get_search, this), &json_importer::get_string_uppercase);
 
     auto criteria = criteria_bld.extract();
-    print2("Command_root_charts::run ", bsoncxx::to_json(criteria));
+      // print2("Command_root_charts::run ", bsoncxx::to_json(criteria));
     for (int chunk_no = 0; limit == 0 || skip < limit; skip += chunk_size, ++chunk_no) {
         DocumentFindResults results{acmacs_web_db, "charts",
                     criteria,
@@ -52,14 +52,11 @@ const char* Command_root_charts::description()
 void Command_chart_keywords::run()
 {
     auto acmacs_web_db = db();
-    print1("Command_chart_keywords::run1");
     auto cursor = MongodbAccess{acmacs_web_db}.distinct("charts", "keywords", session().read_permissions());
-    print1("Command_chart_keywords::run2");
     auto values = (*cursor.begin())["values"];
     if (!values)
         send_error("No data from server");
     std::string result = json_writer::compact_json(values.get_array().value);
-    print2("Command_chart_keywords::run3 ", result);
     send(json_object("keywords", json_raw{result}));
 
 } // Command_chart_keywords::run
@@ -77,14 +74,11 @@ const char* Command_chart_keywords::description()
 void Command_chart_owners::run()
 {
     auto acmacs_web_db = db();
-    print1("Command_chart_owners::run1");
     auto cursor = MongodbAccess{acmacs_web_db}.distinct("charts", "p.o", session().read_permissions());
-    print1("Command_chart_owners::run2");
     auto values = (*cursor.begin())["values"];
     if (!values)
         send_error("No data from server");
     std::string result = json_writer::compact_json(values.get_array().value);
-    print2("Command_chart_owners::run3 ", result);
     send(json_object("owners", json_raw{result}));
 
 } // Command_chart_owners::run
