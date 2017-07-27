@@ -48,10 +48,12 @@ ifeq ($(CLANG),Y)
   WEVERYTHING = -Weverything -Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-padded
   WARNINGS = -Wno-weak-vtables # -Wno-padded
   STD = c++1z
+  GXX = g++
 else
   WEVERYTHING = -Wall -Wextra
   WARNINGS =
-  STD = c++1z
+  GXX = $(shell if g++-7 --version 2>&1; then echo g++-7; else echo g++)
+  STD = $(shell if g++-7 --version 2>&1; then echo c++17; else echo c++1z)
 endif
 
 LIB_DIR = $(ACMACSD_ROOT)/lib
@@ -99,11 +101,11 @@ checks: check-acmacsd-root check-cheerp check-sassc
 
 $(API_DIRECT): $(patsubst %.cc,$(BUILD)/%.o,$(API_DIRECT_SOURCES)) | $(DIST)
 	@echo $@ '<--' $^
-	@g++ $(LDFLAGS) -o $@ $^ $(MONGO_LDLIBS) $(LDLIBS)
+	@$(GXX) $(LDFLAGS) -o $@ $^ $(MONGO_LDLIBS) $(LDLIBS)
 
 $(ACMACS_API_SERVER): $(patsubst %.cc,$(BUILD)/%.o,$(ACMACS_API_SERVER_SOURCES)) | $(DIST)
 	@echo $@ '<--' $^
-	@g++ $(LDFLAGS) -o $@ $^ $(ACMACS_API_SERVER_LIBS) $(LDLIBS)
+	@$(GXX) $(LDFLAGS) -o $@ $^ $(ACMACS_API_SERVER_LIBS) $(LDLIBS)
 
 acmacs-api-client: $(ACMACS_API_CLIENT_JS) $(ACMACS_API_CLIENT_CSS)
 
@@ -125,7 +127,7 @@ distclean: clean
 
 $(BUILD)/%.o: $(CC)/%.cc | $(BUILD)
 	@echo $<
-	@g++ $(CXXFLAGS) -c -o $@ $<
+	@$(GXX) $(CXXFLAGS) -c -o $@ $<
 
 $(BUILD)/%.bc: $(CLIENT)/%.cc | $(BUILD)
 	@echo cheerp $<
