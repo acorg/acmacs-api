@@ -49,6 +49,21 @@ class Command_chart_owners : public Command
 }; // class Command_chart_owners
 
 // ----------------------------------------------------------------------
+
+class Command_chart : public Command
+{
+ public:
+    using Command::Command;
+
+    virtual void run();
+
+    inline auto get_id() const { return bsoncxx::oid{get_string("id")}; }
+
+    static const char* description();
+
+}; // class Command_chart
+
+// ----------------------------------------------------------------------
 /// Local Variables:
 /// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
 /// End:

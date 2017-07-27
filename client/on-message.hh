@@ -51,12 +51,12 @@ class OnMessageBase
 
     inline void send(client::Object* aData)
         {
-            send(to_string(aData));
+            send(to_String(aData));
         }
 
     inline void send(const char* aData)
         {
-            send(to_string(aData));
+            send(to_String(aData));
         }
 
     template <typename NewHandler> inline void transfer(NewHandler&& aHandler)

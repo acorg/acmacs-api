@@ -25,17 +25,17 @@ inline client::String* stringify(client::Object* value, size_t indent = 0)
 
 // ----------------------------------------------------------------------
 
-inline client::String* to_string(client::Object* value)
+inline client::String* to_String(client::Object* value)
 {
     return is_string(value) ? static_cast<client::String*>(value) : stringify(value);
 }
 
-inline client::String* to_string(client::String* value)
+inline client::String* to_String(client::String* value)
 {
     return value;
 }
 
-inline client::String* to_string(const char* value)
+inline client::String* to_String(const char* value)
 {
     return new client::String{value};
 }
@@ -50,12 +50,12 @@ inline client::String* to_string(const char* value)
 
 // template <typename ... Args> inline std::enable_if_t<(... && std::is_same<Args, const char*>::value), client::Array*> to_Array_String(Args ... args)
 // {
-//     return new client::Array(to_string(std::forward<Args>(args)) ...);
+//     return new client::Array(to_String(std::forward<Args>(args)) ...);
 // }
 
 template <typename ... Args> inline client::Array* to_Array_String(Args ... args)
 {
-    return new client::Array(to_string(std::forward<Args>(args)) ...);
+    return new client::Array(to_String(std::forward<Args>(args)) ...);
 }
 
 // ----------------------------------------------------------------------
@@ -65,7 +65,7 @@ inline client::String* concat(client::String* first, client::Object* second)
     // if (!is_string(second))
     //     second = client::JSON.stringify(second, cheerp::Callback(&stringify_replacer));
     // return first->concat(static_cast<client::String*>(second));
-    return first->concat(to_string(second));
+    return first->concat(to_String(second));
 }
 
 inline client::String* concat(client::String* first, client::String* second)
@@ -105,11 +105,11 @@ template <typename First, typename Second, typename ... Args> inline client::Str
 namespace string_internal
 {
     inline client::Object* to_object(client::Object* src) { return src; }
-    inline client::Object* to_object(const char* src) { return to_string(src); }
+    inline client::Object* to_object(const char* src) { return to_String(src); }
 
     template <typename Key, typename Value> inline void add_to_object(client::Object* target, Key key, Value value)
     {
-        target->set_(*to_string(key), to_object(value));
+        target->set_(*to_String(key), to_object(value));
     }
 
     template <typename Key, typename Value, typename ... Args> inline void add_to_object(client::Object* target, Key key, Value value, Args ... args)

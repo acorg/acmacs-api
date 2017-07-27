@@ -16,6 +16,7 @@ namespace json_writer
 
 template <typename RW> json_writer::writer<RW>& operator <<(json_writer::writer<RW>& aWriter, const bsoncxx::array::view& array);
 template <typename RW> json_writer::writer<RW>& operator <<(json_writer::writer<RW>& aWriter, const bsoncxx::document::view& document);
+template <typename RW> json_writer::writer<RW>& operator <<(json_writer::writer<RW>& aWriter, const bsoncxx::document::value& document);
 
 template <typename Stream> Stream& operator << (Stream& out, const bsoncxx::types::value& aV);
 template <typename Stream> Stream& operator << (Stream& out, const bsoncxx::array::element& aE);
@@ -156,6 +157,11 @@ template <typename RW> inline json_writer::writer<RW>& operator <<(json_writer::
     for (const auto& e: document)
         aWriter << json_writer::key(e.key().to_string()) << e.get_value();
     return aWriter << json_writer::end_object;
+}
+
+template <typename RW> inline json_writer::writer<RW>& operator <<(json_writer::writer<RW>& aWriter, const bsoncxx::document::value& document)
+{
+    return aWriter << document.view();
 }
 
 // ----------------------------------------------------------------------

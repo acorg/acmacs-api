@@ -105,6 +105,29 @@ const char* Command_chart_owners::description()
 
 // ----------------------------------------------------------------------
 
+void Command_chart::run()
+{
+    auto acmacs_web_db = db();
+    auto chart = MongodbAccess{acmacs_web_db}.find_one(
+        "charts",
+        bson_object("_id", get_id(), session().read_permissions()),
+        MongodbAccess::exclude("_id", "projections", "conformance"));
+    if (!chart)
+        throw Error{"not found"};
+    json_writer::compact writer;
+    writer << *chart;
+    send(json_object("chart", json_raw{writer << json_writer::finalize}));
+
+} // Command_chart::run
+
+// ----------------------------------------------------------------------
+
+const char* Command_chart::description()
+{
+    return R"(gets chart in ace format (json, unzipped) by id
+    id :id)";
+
+} // Command_chart::description
 
 // ----------------------------------------------------------------------
 /// Local Variables:

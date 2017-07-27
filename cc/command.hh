@@ -21,6 +21,7 @@ class Session;
 class Command : public json_importer::Object
 {
  public:
+    class Error : public std::runtime_error { public: using std::runtime_error::runtime_error; };
     using time_point = decltype(std::chrono::high_resolution_clock::now());
 
     inline Command(json_importer::Object&& aSrc, mongocxx::database aDb, Session& aSession, SendFunc aSendFunc, size_t aCommandNumber)

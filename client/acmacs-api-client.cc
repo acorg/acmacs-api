@@ -22,6 +22,13 @@ namespace client
         inline Command_users() : CommandData{"users"_S} {}
     };
 
+    struct Command_chart : public CommandData
+    {
+        template <typename IdType> inline Command_chart(IdType id) : CommandData{"chart"_S} { set_id(id); }
+        inline void set_id(const char* id) { set_id(to_String(id)); }
+        void set_id(String*);
+    };
+
     struct Command_root_charts : public CommandData
     {
         inline Command_root_charts(int skip = 0, int limit = 0, int chunk_size = 0)
@@ -115,19 +122,21 @@ class JsonPrinter : public OnMessage<ResponseData>
 
     virtual void upon_transfer()
         {
-            this->send(new Command_list_commands{});
+            // this->send(new Command_list_commands{});
 
-            this->send(new Command_chain_types{});
-            this->send(new Command_chain_owners{});
-            this->send(new Command_chain_keywords{});
-            this->send((new Command_chains{})->owners("whocc-tables")->types("acmacs.inspectors.routine_diagnostics.IncrementalChain", "acmacs.inspectors.routine_diagnostics.IncrementalChainForked"));
+            // this->send(new Command_chain_types{});
+            // this->send(new Command_chain_owners{});
+            // this->send(new Command_chain_keywords{});
+            // this->send((new Command_chains{})->owners("whocc-tables")->types("acmacs.inspectors.routine_diagnostics.IncrementalChain", "acmacs.inspectors.routine_diagnostics.IncrementalChainForked"));
 
-              // this->send(new Command_users{});
+            this->send(new Command_chart{"593a87ee48618fc1e72da4fe"});
             // for (int i = 0; i < 100; ++i) {
             //     this->send(new Command_chart_keywords{});
             //     this->send(new Command_chart_owners{});
             // }
               //this->send((new Command_root_charts{})->owners("eu")->search("turkey")->keywords("individual")); // ->owners("alpha")->keywords("individual")->search("labels", "TURKEY")
+
+              // this->send(new Command_users{});
         }
 
  protected:
