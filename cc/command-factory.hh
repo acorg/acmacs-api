@@ -4,6 +4,7 @@
 #include <map>
 #include <memory>
 #include <thread>
+#include <atomic>
 
 #pragma GCC diagnostic push
 #include "mongo-diagnostics.hh"
