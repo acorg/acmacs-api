@@ -113,7 +113,7 @@ int main(int argc, char* const argv[])
 
 AcmacsAPIServer::~AcmacsAPIServer()
 {
-    print_cerr("~AcmacsAPIServer ", this);
+      // print_cerr("~AcmacsAPIServer ", this);
 
 } // AcmacsAPIServer::~AcmacsAPIServer
 
@@ -123,14 +123,14 @@ void AcmacsAPIServer::message(std::string aMessage, WsppThread& aThread)
 {
     auto& thread = dynamic_cast<WsppThreadWithMongoAccess&>(aThread);
 
-      // print2("MSG: ", aMessage.substr(0, 80));
+      // print_cerr("MSG: ", aMessage.substr(0, 80));
     using namespace std::placeholders;
     auto command = mCommandFactory.find(aMessage, thread.client()["acmacs_web"], session(thread.client()["acmacs_web"]), std::bind(&AcmacsAPIServer::send, this, _1, _2));
     try {
         command->run();
     }
     catch (std::exception& err) {
-        send(json_object("C", command->command_name(), "CN", command->command_number(), "E", err.what()));
+        command->send_error(err.what());
     }
 
 } // AcmacsAPIServer::message

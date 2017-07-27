@@ -1,5 +1,7 @@
 #include <iostream>
 
+#include "acmacs-webserver/print.hh"
+
 #include "command.hh"
 
 // ----------------------------------------------------------------------
@@ -15,7 +17,9 @@ void Command::send(std::string aMessage, send_message_type aMessageType)
 
 void Command::send_error(std::string aMessage)
 {
-    mSendFunc(json_object("C", command_name(), "CN", command_number(), "E", aMessage), send_message_type::text);
+    const auto message = json_object("C", command_name(), "CN", command_number(), "E", aMessage);
+    print_cerr("send ERROR: ", message);
+    mSendFunc(message, send_message_type::text);
 
 } // Command::send_error
 

@@ -33,7 +33,7 @@ class AcmacsAPIServer : public WsppWebsocketLocationHandler
                   op_code = websocketpp::frame::opcode::binary;
                   break;
             }
-              // print2("SEND: ", aMessage.substr(0, 100));
+              // print_cerr("SEND: ", aMessage.substr(0, 100));
             WsppWebsocketLocationHandler::send(aMessage, op_code);
         }
 
@@ -57,7 +57,7 @@ class AcmacsAPIServer : public WsppWebsocketLocationHandler
 
     virtual void after_close(std::string, WsppThread& /*aThread*/)
         {
-              //print1("AcmacsAPIServer after_close");
+              //print_cerr("AcmacsAPIServer after_close");
         }
 
     inline Session& session(mongocxx::database aDb)

@@ -34,9 +34,10 @@ class Command : public json_importer::Object
 
     virtual void run() = 0;
 
- protected:
     void send(std::string aMessage, send_message_type aMessageType = send_message_type::text);
     void send_error(std::string aMessage);
+
+ protected:
     inline mongocxx::database& db() { return mDb; }
     inline Session& session() { return mSession; }
 

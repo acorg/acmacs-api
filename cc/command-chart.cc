@@ -22,7 +22,7 @@ void Command_root_charts::run()
     bson_in_for_optional_array_of_strings(criteria_bld, "search", "$all", std::bind(&Command_root_charts::get_search, this), &json_importer::get_string_uppercase);
 
     auto criteria = criteria_bld.extract();
-      // print2("Command_root_charts::run ", bsoncxx::to_json(criteria));
+      // print_cerr("Command_root_charts::run ", bsoncxx::to_json(criteria));
     for (int chunk_no = 0; limit == 0 || skip < limit; skip += chunk_size, ++chunk_no) {
         DocumentFindResults results{acmacs_web_db, "charts",
                     criteria,
