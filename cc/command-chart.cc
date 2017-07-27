@@ -24,15 +24,17 @@ void Command_root_charts::run()
     auto criteria = criteria_bld.extract();
       // print_cerr("Command_root_charts::run ", bsoncxx::to_json(criteria));
     for (int chunk_no = 0; limit == 0 || skip < limit; skip += chunk_size, ++chunk_no) {
+        const int use_limit = limit == 0 ? chunk_size : std::min(chunk_size, limit - skip);
         DocumentFindResults results{acmacs_web_db, "charts",
                     criteria,
-                      //MongodbAccess::exclude("_id", "_t", "table", "search", "conformance").sort("_m", -1)};
-                    MongodbAccess::include("name", "parent", "_m", "keywords", "search", "p.o").sort("_m", -1).skip(skip).limit(limit == 0 ? chunk_size : std::min(chunk_size, limit - skip))
+                      //MongodbAccess::exclude("_id", "_t", "table", "search", "conformance")
+                    MongodbAccess::include("name", "parent", "_m", "keywords", "search", "p.o")
+                    .sort("_m", -1).skip(skip).limit(use_limit)
                     };
         const auto results_json = results.json(false); // results.count() is available only after calling results.json()
         if (chunk_no != 0 && results.count() == 0)
             break; // no more data but at least one chunk alreay reported
-        send(json_object("charts_count", results.count(), "charts", json_raw{results_json}));
+        send(json_object("chart_count", results.count(), "charts", json_raw{results_json}));
         if (chunk_size == 0)
             break;
     }
@@ -43,7 +45,13 @@ void Command_root_charts::run()
 
 const char* Command_root_charts::description()
 {
-    return "lists root charts (table charts) available to the user.\n  search :[string case-insensitive]\nkeywords :[string]\n  owners :[string]\n skip :number = 0\n  limit :number = 0\n  chunk_size :number = 10";
+    return R"(lists root charts (table charts) available to the user.
+  search :[string case-insensitive]
+  keywords :[string]
+  owners :[string]
+  skip :number = 0
+  limit :number = 0
+  chunk_size :number = 0)";
 
 } // Command_root_charts::description
 

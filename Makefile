@@ -19,7 +19,7 @@ API_DIRECT_SOURCES = api-direct.cc mongo-access.cc session.cc $(COMMANDS_SOURCES
 
 # ----------------------------------------------------------------------
 
-COMMANDS_SOURCES = command.cc command-factory.cc command-info.cc command-session.cc command-admin.cc command-chart.cc
+COMMANDS_SOURCES = command.cc command-factory.cc command-info.cc command-session.cc command-admin.cc command-chart.cc command-chain.cc
 
 # ----------------------------------------------------------------------
 

@@ -7,6 +7,7 @@
 #include "command-session.hh"
 #include "command-admin.hh"
 #include "command-chart.hh"
+#include "command-chain.hh"
 
 // ----------------------------------------------------------------------
 
@@ -14,6 +15,11 @@ const CommandFactory* CommandFactory::sFactory = nullptr;
 
 CommandFactory::CommandFactory()
     : mFactory{
+    {"chains",    data<Command_chains>()},
+    {"chain_owners",   data<Command_chain_owners>()},
+    {"chain_keywords",   data<Command_chain_keywords>()},
+    {"chain_types",   data<Command_chain_types>()},
+
     {"root_charts",    data<Command_root_charts>()},
     {"chart_keywords", data<Command_chart_keywords>()},
     {"chart_owners",   data<Command_chart_owners>()},

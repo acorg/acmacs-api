@@ -42,6 +42,35 @@ namespace client
 
     struct Command_chart_keywords : public CommandData { inline Command_chart_keywords() : CommandData{"chart_keywords"_S} {} };
     struct Command_chart_owners : public CommandData { inline Command_chart_owners() : CommandData{"chart_owners"_S} {} };
+
+    struct Command_chains : public CommandData
+    {
+        inline Command_chains(int skip = 0, int limit = 0, int chunk_size = 0)
+            : CommandData{"chains"_S}
+            { set_skip(skip); set_limit(limit); set_chunk_size(chunk_size); }
+
+        template <typename ... Args> inline Command_chains* owners(Args ... args) { set_owners(to_Array_String(args ...)); return this; }
+        template <typename ... Args> inline Command_chains* keywords(Args ... args) { set_keywords(to_Array_String(args ...)); return this; }
+        template <typename ... Args> inline Command_chains* search(Args ... args) { set_search(to_Array_String(args ...)); return this; }
+        template <typename ... Args> inline Command_chains* types(Args ... args) { set_types(to_Array_String(args ...)); return this; }
+
+        void set_chunk_size(int);
+        void set_skip(int);
+        void set_limit(int);
+        void set_owners(Array*);
+        void set_keywords(Array*);
+        void set_search(Array*);
+        void set_types(Array*);
+    };
+    struct Command_chain_keywords : public CommandData
+    {
+        inline Command_chain_keywords() : CommandData{"chain_keywords"_S} {}
+        inline Command_chain_keywords* include_rd_keywords(bool include) { set_include_rd_keywords(include); return this; }
+        void set_include_rd_keywords(bool);
+    };
+    struct Command_chain_owners : public CommandData { inline Command_chain_owners() : CommandData{"chain_owners"_S} {} };
+    struct Command_chain_types : public CommandData { inline Command_chain_types() : CommandData{"chain_types"_S} {} };
+
     struct Command_list_commands : public CommandData { inline Command_list_commands() : CommandData{"list_commands"_S} {} };
 
     // struct ResultUsers : public ResponseData
@@ -87,11 +116,17 @@ class JsonPrinter : public OnMessage<ResponseData>
     virtual void upon_transfer()
         {
             this->send(new Command_list_commands{});
+
+            this->send(new Command_chain_types{});
+            this->send(new Command_chain_owners{});
+            this->send(new Command_chain_keywords{});
+            this->send((new Command_chains{})->owners("whocc-tables")->types("acmacs.inspectors.routine_diagnostics.IncrementalChain", "acmacs.inspectors.routine_diagnostics.IncrementalChainForked"));
+
               // this->send(new Command_users{});
-            for (int i = 0; i < 100; ++i) {
-                this->send(new Command_chart_keywords{});
-                this->send(new Command_chart_owners{});
-            }
+            // for (int i = 0; i < 100; ++i) {
+            //     this->send(new Command_chart_keywords{});
+            //     this->send(new Command_chart_owners{});
+            // }
               //this->send((new Command_root_charts{})->owners("eu")->search("turkey")->keywords("individual")); // ->owners("alpha")->keywords("individual")->search("labels", "TURKEY")
         }
 
