@@ -53,11 +53,13 @@ void Command_chart_keywords::run()
 {
     auto acmacs_web_db = db();
     auto cursor = MongodbAccess{acmacs_web_db}.distinct("charts", "keywords", session().read_permissions());
-    auto values = (*cursor.begin())["values"];
-    if (!values)
+    if (auto values = (*cursor.begin())["values"]; values) {
+        const std::string result = json_writer::compact_json(values.get_array().value);
+        send(json_object("keywords", json_raw{result}));
+    }
+    else {
         send_error("No data from server");
-    std::string result = json_writer::compact_json(values.get_array().value);
-    send(json_object("keywords", json_raw{result}));
+    }
 
 } // Command_chart_keywords::run
 
@@ -75,11 +77,13 @@ void Command_chart_owners::run()
 {
     auto acmacs_web_db = db();
     auto cursor = MongodbAccess{acmacs_web_db}.distinct("charts", "p.o", session().read_permissions());
-    auto values = (*cursor.begin())["values"];
-    if (!values)
+    if (auto values = (*cursor.begin())["values"]; values) {
+        const std::string result = json_writer::compact_json(values.get_array().value);
+        send(json_object("owners", json_raw{result}));
+    }
+    else {
         send_error("No data from server");
-    std::string result = json_writer::compact_json(values.get_array().value);
-    send(json_object("owners", json_raw{result}));
+    }
 
 } // Command_chart_owners::run
 
