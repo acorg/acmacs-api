@@ -105,6 +105,12 @@ const char* Command_chart_owners::description()
 
 // ----------------------------------------------------------------------
 
+inline json_raw json_value(const bsoncxx::document::value& value)
+{
+    json_writer::compact writer;
+    return writer << value << json_writer::finalize;
+}
+
 void Command_chart::run()
 {
     auto acmacs_web_db = db();
@@ -114,9 +120,7 @@ void Command_chart::run()
         MongodbAccess::exclude("_id", "projections", "conformance"));
     if (!chart)
         throw Error{"not found"};
-    json_writer::compact writer;
-    writer << *chart;
-    send(json_object("chart", json_raw{writer << json_writer::finalize}));
+    send(json_object("chart", json_value(*chart)));
 
 } // Command_chart::run
 
