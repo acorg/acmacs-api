@@ -6,8 +6,8 @@
 
 #include "mongo-access.hh"
 #include "session.hh"
+#include "acmacs-webserver/print.hh"
 #include "send-func.hh"
-#include "print.hh"
 
 // ----------------------------------------------------------------------
 
@@ -20,6 +20,7 @@ class AcmacsAPIServer : public WsppWebsocketLocationHandler
         : WsppWebsocketLocationHandler{}, mCommandFactory{aCommandFactory} {}
     inline AcmacsAPIServer(const AcmacsAPIServer& aSrc)
         : WsppWebsocketLocationHandler{aSrc}, mCommandFactory{aSrc.mCommandFactory} {}
+    virtual ~AcmacsAPIServer();
 
     inline void send(std::string aMessage, send_message_type aMessageType = send_message_type::text)
         {
@@ -32,7 +33,7 @@ class AcmacsAPIServer : public WsppWebsocketLocationHandler
                   op_code = websocketpp::frame::opcode::binary;
                   break;
             }
-            print2("SEND: ", aMessage.substr(0, 100));
+              // print2("SEND: ", aMessage.substr(0, 100));
             WsppWebsocketLocationHandler::send(aMessage, op_code);
         }
 

@@ -5,12 +5,12 @@
 #include <csignal>
 
 #include "acmacs-webserver/server-settings.hh"
+#include "acmacs-webserver/print.hh"
 
 #include "acmacs-api-server.hh"
 #include "command.hh"
 #include "command-factory.hh"
 #include "bson-to-json.hh"
-#include "print.hh"
 
 // ----------------------------------------------------------------------
 
@@ -95,7 +95,7 @@ int main(int argc, char* const argv[])
         return 0;
     }
     catch (std::exception& err) {
-        std::cerr << "ERROR: " << err.what() << std::endl;
+        print_cerr("ERROR: ", err.what());
         return 1;
     }
 }
@@ -111,11 +111,19 @@ int main(int argc, char* const argv[])
 
 // ----------------------------------------------------------------------
 
+AcmacsAPIServer::~AcmacsAPIServer()
+{
+    print_cerr("~AcmacsAPIServer ", this);
+
+} // AcmacsAPIServer::~AcmacsAPIServer
+
+// ----------------------------------------------------------------------
+
 void AcmacsAPIServer::message(std::string aMessage, WsppThread& aThread)
 {
     auto& thread = dynamic_cast<WsppThreadWithMongoAccess&>(aThread);
 
-    print2("MSG: ", aMessage.substr(0, 80));
+      // print2("MSG: ", aMessage.substr(0, 80));
     using namespace std::placeholders;
     auto command = mCommandFactory.find(aMessage, thread.client()["acmacs_web"], session(thread.client()["acmacs_web"]), std::bind(&AcmacsAPIServer::send, this, _1, _2));
     try {
