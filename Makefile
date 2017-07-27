@@ -43,24 +43,7 @@ SASSC = sassc
 
 # ----------------------------------------------------------------------
 
-CLANG = $(shell if g++ --version 2>&1 | grep -i llvm >/dev/null; then echo Y; else echo N; fi)
-GXX7 = $(shell if g++-7 --version >/dev/null; then echo Y; else echo N; fi)
-ifeq ($(CLANG),Y)
-  WEVERYTHING = -Weverything -Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-padded
-  WARNINGS = -Wno-weak-vtables # -Wno-padded
-  STD = c++1z
-  GXX = g++
-else
-  WEVERYTHING = -Wall -Wextra
-  WARNINGS =
-  ifeq ($(GXX7),Y)
-    GXX = g++-7
-    STD = c++17
-  else
-    GXX = g++
-    STD = c++1z
-  endif
-endif
+include $(ACMACSD_ROOT)/share/Makefile.g++
 
 LIB_DIR = $(ACMACSD_ROOT)/lib
 
