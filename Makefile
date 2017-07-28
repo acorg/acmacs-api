@@ -17,6 +17,9 @@ ACMACS_API_CLIENT_SOURCES = acmacs-api-client.cc asm.cc session.cc
 API_DIRECT = $(DIST)/api-direct
 API_DIRECT_SOURCES = api-direct.cc mongo-access.cc session.cc $(COMMANDS_SOURCES)
 
+ACMACS_C2 = $(DIST)/acmacs-c2
+ACMACS_C2_SOURCES = acmacs-c2.cc
+
 # ----------------------------------------------------------------------
 
 COMMANDS_SOURCES = command.cc command-factory.cc command-info.cc command-session.cc command-admin.cc command-chart.cc command-chain.cc
@@ -60,7 +63,7 @@ PKG_INCLUDES += -I/usr/local/opt/openssl/include
 # $$(pkg-config --cflags libuv)
 endif
 
-PROGS = $(API_DIRECT) $(ACMACS_API_SERVER)
+PROGS = $(API_DIRECT) $(ACMACS_API_SERVER) $(ACMACS_C2)
 ifeq ($(MAKE_CLIENT),1)
   PROGS += acmacs-api-client
 endif
@@ -95,6 +98,10 @@ $(API_DIRECT): $(patsubst %.cc,$(BUILD)/%.o,$(API_DIRECT_SOURCES)) | $(DIST)
 $(ACMACS_API_SERVER): $(patsubst %.cc,$(BUILD)/%.o,$(ACMACS_API_SERVER_SOURCES)) | $(DIST)
 	@echo $@ '<--' $^
 	@$(GXX) $(LDFLAGS) -o $@ $^ $(ACMACS_API_SERVER_LIBS) $(LDLIBS)
+
+$(ACMACS_C2): $(patsubst %.cc,$(BUILD)/%.o,$(ACMACS_C2_SOURCES)) | $(DIST)
+	@echo $@ '<--' $^
+	@$(GXX) $(LDFLAGS) -o $@ $^ $(LDLIBS) -lcurl
 
 acmacs-api-client: $(ACMACS_API_CLIENT_JS) $(ACMACS_API_CLIENT_CSS)
 
