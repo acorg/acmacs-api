@@ -30,6 +30,7 @@ int main(int argc, char* const argv[])
 
         AcmacsC2 acmacs;
         acmacs.uri(args.acmacs_uri);
+        acmacs.session(args.session);
         acmacs.verbose(args.verbose);
         for (const auto& command: args.commands) {
             std::cout << "==> " << command << std::endl;

@@ -50,6 +50,7 @@ std::string AcmacsC2::command(std::string aCommand)
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &AcmacsC2::response_receiver);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, this);
 
+    aCommand = embed_session_in_command(aCommand);
     curl_easy_setopt(curl, CURLOPT_POSTFIELDS, aCommand.c_str());
     curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, static_cast<long>(aCommand.size()));
 
@@ -69,6 +70,22 @@ size_t AcmacsC2::response_receiver(const char* contents, size_t memb_size, size_
     return size;
 
 } // AcmacsC2::response_receiver
+
+// ----------------------------------------------------------------------
+
+std::string AcmacsC2::embed_session_in_command(std::string source)
+{
+    std::string result;
+    if (source.find("\"S\"") == std::string::npos) {
+        result = source.substr(0, source.size() - 1) + ",\"S\":\"" + mSession + "\"}";
+    }
+    else {
+        result = source;
+    }
+    std::cerr << "! " << result << std::endl;
+    return result;
+
+} // AcmacsC2::embed_session_in_command
 
 // ----------------------------------------------------------------------
 /// Local Variables:
