@@ -18,7 +18,7 @@ API_DIRECT = $(DIST)/api-direct
 API_DIRECT_SOURCES = api-direct.cc mongo-access.cc session.cc $(COMMANDS_SOURCES)
 
 ACMACS_C2 = $(DIST)/acmacs-c2
-ACMACS_C2_SOURCES = acmacs-c2.cc
+ACMACS_C2_SOURCES = acmacs-c2.cc acmacs-c2-main.cc
 
 # ----------------------------------------------------------------------
 
@@ -83,7 +83,7 @@ install: checks $(PROGS)
 test: install
 	test/test
 
-checks: check-acmacsd-root check-cheerp check-sassc
+checks: check-acmacsd-root check-cheerp check-sassc check-libcurl
 
 # ----------------------------------------------------------------------
 
@@ -144,6 +144,9 @@ check-cheerp:
 ifeq ($(MAKE_CLIENT),1)
 	@$(CHEERP) -v >/dev/null 2>&1 || ( echo "ERROR: Please install cheerp (http://leaningtech.com/cheerp/download/)" >&2 && false )
 endif
+
+check-libcurl:
+	ls /usr/lib/libcurl.* >/dev/null 2>&1 || ls /usr/lib/*/libcurl.so.4 >/dev/null 2>&1 || ( echo "ERROR: Please install libcurl (apt-get install libcurl4-openssl-dev)" >&2 && false )
 
 ifeq ($(shell uname -s),Darwin)
  SASSC_INSTALL = "brew install sassc (https://github.com/sass/sassc)"
