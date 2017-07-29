@@ -16,10 +16,10 @@ class Command_chains : public Command
     inline int get_chunk_size() const { return get("chunk_size", 0); }
     inline int get_skip() const { return get("skip", 0); }
     inline int get_limit() const { return get("limit", 0); }
-    inline from_json::ConstArray get_owners() const { return get_array("owners"); } // throws RapidjsonAssert
-    inline from_json::ConstArray get_keywords() const { return get_array("keywords"); } // throws RapidjsonAssert
-    // inline from_json::ConstArray get_search() const { return get_array("search"); } // throws RapidjsonAssert
-    inline from_json::ConstArray get_types() const { return get_array("types"); } // throws RapidjsonAssert
+    inline from_json::ConstArray get_owners() const { return get_array("owners"); } // throws rapidjson_assert
+    inline from_json::ConstArray get_keywords() const { return get_array("keywords"); } // throws rapidjson_assert
+    // inline from_json::ConstArray get_search() const { return get_array("search"); } // throws rapidjson_assert
+    inline from_json::ConstArray get_types() const { return get_array("types"); } // throws rapidjson_assert
 
     static const char* description();
 
@@ -34,7 +34,7 @@ class Command_chain_keywords : public Command
 
     virtual void run();
 
-    inline bool include_rd_keywords() const { return get("include_rd_keywords", false); } // throws RapidjsonAssert
+    inline bool include_rd_keywords() const { return get("include_rd_keywords", false); } // throws rapidjson_assert
 
     static const char* description();
 
