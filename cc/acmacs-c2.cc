@@ -1,8 +1,13 @@
 #include <iostream>
+#include <sstream>
 #include <string>
 
 #include <functional>
 #include <curl/curl.h>
+
+#include "acmacs-base/range.hh"
+#include "acmacs-base/stream.hh"
+#include "acmacs-base/rapidjson.hh"
 
 #include "acmacs-c2.hh"
 
@@ -51,6 +56,8 @@ std::string AcmacsC2::command(std::string aCommand)
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &AcmacsC2::response_receiver); // response_receiver may be called multiple times for a single response
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, this);
 
+    if (mVerbose)
+        std::cerr << "==> " << aCommand << std::endl;
     aCommand = embed_session_in_command(aCommand);
     curl_easy_setopt(curl, CURLOPT_POSTFIELDS, aCommand.c_str());
     curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, static_cast<long>(aCommand.size()));
@@ -86,6 +93,20 @@ std::string AcmacsC2::embed_session_in_command(std::string source)
     return result;
 
 } // AcmacsC2::embed_session_in_command
+
+// ----------------------------------------------------------------------
+
+std::string AcmacsC2::ace_uncompressed(std::string aObjectId, size_t aMaxNumberOfProjections)
+{
+    std::vector<size_t> projections{Range<size_t>::begin(aMaxNumberOfProjections), Range<size_t>::end()};
+    std::ostringstream os;
+    os << projections;
+    std::string result = command(std::string{R"({"C":"chart_export","format":"ace_uncompressed","pretty":false,"id":")"} + aObjectId + R"(","projection":)" + os.str() + "}");
+      // "chart_json" is a string with embedded json
+    json_importer::Object doc{result};
+    return doc.get_string("chart_json");
+
+} // AcmacsC2::ace_uncompressed
 
 // ----------------------------------------------------------------------
 /// Local Variables:

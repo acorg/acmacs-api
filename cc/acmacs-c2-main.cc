@@ -34,7 +34,13 @@ int main(int argc, char* const argv[])
         acmacs.verbose(args.verbose);
         for (const auto& command: args.commands) {
             std::cout << "==> " << command << std::endl;
-            const auto response = acmacs.command(command);
+            std::string response;
+            if (command.substr(0, 17) == "ace_uncompressed:") { // ace_uncompressed:object-id:max-num_projections
+                response = acmacs.ace_uncompressed(command.substr(17, 24), std::stoul(command.substr(17 + 25)));
+            }
+            else {
+                response = acmacs.command(command);
+            }
             std::cout << "<== " << response << std::endl;
         }
     }

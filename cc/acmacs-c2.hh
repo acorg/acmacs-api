@@ -18,6 +18,8 @@ class AcmacsC2
     std::string command(std::string aCommand);
     void verbose(bool aVerbose) { mVerbose = aVerbose; }
 
+    std::string ace_uncompressed(std::string aObjectId, size_t aMaxNumberOfProjections);
+
  private:
     std::string acmacs_uri;
     std::string mSession;
