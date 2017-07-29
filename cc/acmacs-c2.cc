@@ -6,7 +6,7 @@
 #include <curl/curl.h>
 
 #include "acmacs-base/range.hh"
-#include "acmacs-base/stream.hh"
+#include "acmacs-base/string.hh"
 #include "acmacs-base/rapidjson.hh"
 
 #include "acmacs-c2.hh"
@@ -98,10 +98,8 @@ std::string AcmacsC2::embed_session_in_command(std::string source)
 
 std::string AcmacsC2::ace_uncompressed(std::string aObjectId, size_t aMaxNumberOfProjections)
 {
-    std::vector<size_t> projections{Range<size_t>::begin(aMaxNumberOfProjections), Range<size_t>::end()};
-    std::ostringstream os;
-    os << projections;
-    std::string result = command(std::string{R"({"C":"chart_export","format":"ace_uncompressed","pretty":false,"id":")"} + aObjectId + R"(","projection":)" + os.str() + "}");
+    const auto projections = "[" + string::join(",", Range<size_t>::begin(aMaxNumberOfProjections), Range<size_t>::end()) + "]";
+    std::string result = command(std::string{R"({"C":"chart_export","format":"ace_uncompressed","pretty":false,"id":")"} + aObjectId + R"(","projection":)" + projections + "}");
       // "chart_json" is a string with embedded json
     json_importer::Object doc{result};
     return doc.get_string("chart_json");
