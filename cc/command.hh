@@ -8,7 +8,8 @@
 #include <mongocxx/database.hpp>
 #pragma GCC diagnostic pop
 
-#include "acmacs-base/rapidjson.hh"
+#include "acmacs-base/from-json.hh"
+#include "acmacs-base/to-json.hh"
 
 #include "send-func.hh"
 
@@ -18,14 +19,14 @@ class Session;
 
 // ----------------------------------------------------------------------
 
-class Command : public json_importer::Object
+class Command : public from_json::object
 {
  public:
     class Error : public std::runtime_error { public: using std::runtime_error::runtime_error; };
     using time_point = decltype(std::chrono::high_resolution_clock::now());
 
-    inline Command(json_importer::Object&& aSrc, mongocxx::database aDb, Session& aSession, SendFunc aSendFunc, size_t aCommandNumber)
-        : json_importer::Object{std::move(aSrc)}, mDb{aDb}, mSession{aSession}, mSendFunc{aSendFunc}, mCommandNumber{aCommandNumber}
+    inline Command(from_json::object&& aSrc, mongocxx::database aDb, Session& aSession, SendFunc aSendFunc, size_t aCommandNumber)
+        : from_json::object{std::move(aSrc)}, mDb{aDb}, mSession{aSession}, mSendFunc{aSendFunc}, mCommandNumber{aCommandNumber}
         {
             set_command_start();
         }

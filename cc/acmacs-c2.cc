@@ -7,7 +7,7 @@
 
 #include "acmacs-base/range.hh"
 #include "acmacs-base/string.hh"
-#include "acmacs-base/rapidjson.hh"
+#include "acmacs-base/from-json.hh"
 
 #include "acmacs-c2.hh"
 
@@ -101,7 +101,7 @@ std::string AcmacsC2::ace_uncompressed(std::string aObjectId, size_t aMaxNumberO
     const auto projections = "[" + string::join(",", Range<size_t>::begin(aMaxNumberOfProjections), Range<size_t>::end()) + "]";
     std::string result = command(std::string{R"({"C":"chart_export","format":"ace_uncompressed","pretty":false,"id":")"} + aObjectId + R"(","projection":)" + projections + "}");
       // "chart_json" is a string with embedded json
-    json_importer::Object doc{result};
+    from_json::object doc{result};
     return doc.get_string("chart_json");
 
 } // AcmacsC2::ace_uncompressed

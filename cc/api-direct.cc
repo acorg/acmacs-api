@@ -2,6 +2,7 @@
 #include <getopt.h>
 
 #include "acmacs-base/stream.hh"
+#include "acmacs-base/to-json.hh"
 
 #include "mongo-access.hh"
 #include "session.hh"
@@ -47,7 +48,7 @@ int main(int argc, char* const argv[])
                 command->run();
             }
             catch (std::exception& err) {
-                send(json_object("C", command->command_name(), "CN", command->command_number(), "E", err.what()));
+                send(to_json::object("C", command->command_name(), "CN", command->command_number(), "E", err.what()));
             }
         }
     }

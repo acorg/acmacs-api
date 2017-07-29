@@ -16,10 +16,10 @@ class Command_chains : public Command
     inline int get_chunk_size() const { return get("chunk_size", 0); }
     inline int get_skip() const { return get("skip", 0); }
     inline int get_limit() const { return get("limit", 0); }
-    inline json_importer::ConstArray get_owners() const { return get_array("owners"); } // throws RapidjsonAssert
-    inline json_importer::ConstArray get_keywords() const { return get_array("keywords"); } // throws RapidjsonAssert
-    // inline json_importer::ConstArray get_search() const { return get_array("search"); } // throws RapidjsonAssert
-    inline json_importer::ConstArray get_types() const { return get_array("types"); } // throws RapidjsonAssert
+    inline from_json::ConstArray get_owners() const { return get_array("owners"); } // throws RapidjsonAssert
+    inline from_json::ConstArray get_keywords() const { return get_array("keywords"); } // throws RapidjsonAssert
+    // inline from_json::ConstArray get_search() const { return get_array("search"); } // throws RapidjsonAssert
+    inline from_json::ConstArray get_types() const { return get_array("types"); } // throws RapidjsonAssert
 
     static const char* description();
 

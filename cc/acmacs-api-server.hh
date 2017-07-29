@@ -2,6 +2,7 @@
 
 #include <thread>
 
+#include "acmacs-base/to-json.hh"
 #include "acmacs-webserver/server.hh"
 
 #include "mongo-access.hh"
@@ -50,7 +51,7 @@ class AcmacsAPIServer : public WsppWebsocketLocationHandler
 
     virtual inline void opening(std::string, WsppThread& /*aThread*/)
         {
-            send(json_object("hello", "acmacs-api-server-v1"));
+            send(to_json::object("hello", "acmacs-api-server-v1"));
         }
 
     virtual void message(std::string aMessage, WsppThread& aThread);

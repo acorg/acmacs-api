@@ -31,9 +31,11 @@ void WsppThreadWithMongoAccess::initialize()
 class AcmacsAPISettings : public ServerSettings
 {
  public:
+    using ServerSettings::ServerSettings;
+
     inline auto mongodb_uri() const
         {
-            auto uri = json_importer::get(mDoc, "mongodb_uri", std::string{});
+            auto uri = mDoc.get("mongodb_uri", std::string{});
             if (uri.empty())
                 uri = "mongodb://localhost:27017/";
             return uri;
@@ -75,8 +77,7 @@ int main(int argc, char* const argv[])
         mongocxx::instance inst{};
         CommandFactory command_factory;
 
-        AcmacsAPISettings settings;
-        settings.read(argv[1]);
+        AcmacsAPISettings settings{argv[1]};
         std::cout << "mongodb_uri: [" << settings.mongodb_uri() << "]" << std::endl;
         auto thread_maker = [&settings](Wspp& aWspp) -> WsppThread* {
             return new WsppThreadWithMongoAccess{aWspp, settings.mongodb_uri()};

@@ -19,7 +19,7 @@ void Command_root_charts::run()
     bson_append(criteria_bld, session().read_permissions(), MongodbAccess::field_null_or_absent("parent"), MongodbAccess::field_null_or_absent("backup_of"));
     bson_in_for_optional_array_of_strings(criteria_bld, "p.o", "$in", std::bind(&Command_root_charts::get_owners, this));
     bson_in_for_optional_array_of_strings(criteria_bld, "keywords", "$in", std::bind(&Command_root_charts::get_keywords, this));
-    bson_in_for_optional_array_of_strings(criteria_bld, "search", "$all", std::bind(&Command_root_charts::get_search, this), &json_importer::get_string_uppercase);
+    bson_in_for_optional_array_of_strings(criteria_bld, "search", "$all", std::bind(&Command_root_charts::get_search, this), &from_json::get_string_uppercase);
 
     auto criteria = criteria_bld.extract();
       // print_cerr("Command_root_charts::run ", bsoncxx::to_json(criteria));
@@ -34,7 +34,7 @@ void Command_root_charts::run()
         const auto results_json = results.json(false); // results.count() is available only after calling results.json()
         if (chunk_no != 0 && results.count() == 0)
             break; // no more data but at least one chunk alreay reported
-        send(json_object("chart_count", results.count(), "charts", json_raw{results_json}));
+        send(to_json::object("chart_count", results.count(), "charts", to_json::raw{results_json}));
         if (chunk_size == 0)
             break;
     }
@@ -63,7 +63,7 @@ void Command_chart_keywords::run()
     auto cursor = MongodbAccess{acmacs_web_db}.distinct("charts", "keywords", session().read_permissions());
     if (auto values = (*cursor.begin())["values"]; values) {
         const std::string result = json_writer::compact_json(values.get_array().value);
-        send(json_object("keywords", json_raw{result}));
+        send(to_json::object("keywords", to_json::raw{result}));
     }
     else {
         send_error("No data from server");
@@ -87,7 +87,7 @@ void Command_chart_owners::run()
     auto cursor = MongodbAccess{acmacs_web_db}.distinct("charts", "p.o", session().read_permissions());
     if (auto values = (*cursor.begin())["values"]; values) {
         const std::string result = json_writer::compact_json(values.get_array().value);
-        send(json_object("owners", json_raw{result}));
+        send(to_json::object("owners", to_json::raw{result}));
     }
     else {
         send_error("No data from server");
@@ -105,7 +105,7 @@ const char* Command_chart_owners::description()
 
 // ----------------------------------------------------------------------
 
-inline json_raw json_value(const bsoncxx::document::value& value)
+inline to_json::raw json_value(const bsoncxx::document::value& value)
 {
     json_writer::compact writer;
     return writer << value << json_writer::finalize;
@@ -120,7 +120,7 @@ void Command_chart::run()
         MongodbAccess::exclude("_id", "projections", "conformance"));
     if (!chart)
         throw Error{"not found"};
-    send(json_object("chart", json_value(*chart)));
+    send(to_json::object("chart", json_value(*chart)));
 
 } // Command_chart::run
 

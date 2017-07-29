@@ -11,11 +11,10 @@
 #include <mongocxx/database.hpp>
 #pragma GCC diagnostic pop
 
+#include "acmacs-base/from-json.hh"
 #include "send-func.hh"
 
 // ----------------------------------------------------------------------
-
-namespace json_importer { class Object; }
 
 class Command;
 class Session;
@@ -33,7 +32,7 @@ class CommandFactory
     const auto& commands() const { return mFactory; }
 
  private:
-    using FactoryFunc = std::shared_ptr<Command> (CommandFactory::*)(json_importer::Object&&, mongocxx::database, Session&, SendFunc, size_t) const;
+    using FactoryFunc = std::shared_ptr<Command> (CommandFactory::*)(from_json::object&&, mongocxx::database, Session&, SendFunc, size_t) const;
 
     struct Data
     {
@@ -42,7 +41,7 @@ class CommandFactory
         std::function<const char* ()> description;
     };
 
-    template <typename Cmd> inline std::shared_ptr<Command> make(json_importer::Object&& aSrc, mongocxx::database aDb, Session& aSession, SendFunc aSendFunc, size_t aCommandNumber) const
+    template <typename Cmd> inline std::shared_ptr<Command> make(from_json::object&& aSrc, mongocxx::database aDb, Session& aSession, SendFunc aSendFunc, size_t aCommandNumber) const
         {
             return std::make_shared<Cmd>(std::move(aSrc), aDb, aSession, aSendFunc, aCommandNumber);
         }

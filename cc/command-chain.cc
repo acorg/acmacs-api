@@ -22,7 +22,7 @@ void Command_chains::run()
     bson_in_for_optional_array_of_strings(criteria_bld, "p.o", "$in", std::bind(&Command_chains::get_owners, this));
     bson_in_for_optional_array_of_strings(criteria_bld, "keywords", "$in", std::bind(&Command_chains::get_keywords, this));
     bson_in_for_optional_array_of_strings(criteria_bld, "_t", "$in", std::bind(&Command_chains::get_types, this));
-    // bson_in_for_optional_array_of_strings(criteria_bld, "search", "$all", std::bind(&Command_chains::get_search, this), &json_importer::get_string_uppercase);
+    // bson_in_for_optional_array_of_strings(criteria_bld, "search", "$all", std::bind(&Command_chains::get_search, this), &from_json::get_string_uppercase);
 
     auto criteria = criteria_bld.extract();
       // print_cerr("Command_chains::run ", bsoncxx::to_json(criteria));
@@ -37,7 +37,7 @@ void Command_chains::run()
         const auto results_json = results.json(false); // results.count() is available only after calling results.json()
         if (chunk_no != 0 && results.count() == 0)
             break; // no more data but at least one chunk alreay reported
-        send(json_object("chain_count", results.count(), "chains", json_raw{results_json}));
+        send(to_json::object("chain_count", results.count(), "chains", to_json::raw{results_json}));
         if (chunk_size == 0)
             break;
     }
@@ -82,10 +82,10 @@ void Command_chain_keywords::run()
             for (const auto& element: array) {
                 const auto kw = element.get_utf8().value.to_string();
                 if (!std::regex_match(kw, sExludeRdKeywords))
-                    result = json_array_append(result, kw);
+                    result = to_json::array_append(result, kw);
             }
         }
-        send(json_object("keywords", json_raw{result}));
+        send(to_json::object("keywords", to_json::raw{result}));
     }
     else {
         send_error("No data from server");
@@ -109,7 +109,7 @@ void Command_chain_owners::run()
     auto cursor = MongodbAccess{acmacs_web_db}.distinct("inspectors", "p.o", session().read_permissions());
     if (auto values = (*cursor.begin())["values"]; values) {
         const std::string result = json_writer::compact_json(values.get_array().value);
-        send(json_object("owners", json_raw{result}));
+        send(to_json::object("owners", to_json::raw{result}));
     }
     else {
         send_error("No data from server");
@@ -133,7 +133,7 @@ void Command_chain_types::run()
     auto cursor = MongodbAccess{acmacs_web_db}.distinct("inspectors", "_t", session().read_permissions());
     if (auto values = (*cursor.begin())["values"]; values) {
         const std::string result = json_writer::compact_json(values.get_array().value);
-        send(json_object("types", json_raw{result}));
+        send(to_json::object("types", to_json::raw{result}));
     }
     else {
         send_error("No data from server");

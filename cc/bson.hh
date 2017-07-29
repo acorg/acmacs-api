@@ -6,7 +6,7 @@
 // #include <bsoncxx/json.hpp>
 #pragma GCC diagnostic pop
 
-#include "acmacs-base/rapidjson.hh"
+#include "acmacs-base/from-json.hh"
 
 // ----------------------------------------------------------------------
 
@@ -68,14 +68,14 @@ template <typename ... Args> inline bsoncxx::document::value bson_object(Args ..
 // ----------------------------------------------------------------------
 
       // mongo_operator: $in, $all
-inline void bson_in_for_optional_array_of_strings(bsoncxx::builder::basic::document& append_to, const char* key, const char* mongo_operator, std::function<json_importer::ConstArray()> getter, std::function<std::string(const rapidjson::Value&)> transformer = &json_importer::get_string)
+inline void bson_in_for_optional_array_of_strings(bsoncxx::builder::basic::document& append_to, const char* key, const char* mongo_operator, std::function<from_json::ConstArray()> getter, std::function<std::string(const rapidjson::Value&)> transformer = &from_json::get_string)
 {
     try {
         const auto array = getter();
         if (!array.Empty())
             bson_append(append_to, key, bson_object(mongo_operator, bson_array(std::begin(array), std::end(array), transformer)));
     }
-    catch (RapidjsonAssert&) {
+    catch (from_json::rapidjson_assert&) {
     }
 }
 

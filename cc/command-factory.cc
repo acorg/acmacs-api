@@ -1,5 +1,3 @@
-#include "acmacs-base/rapidjson.hh"
-
 #include "command-factory.hh"
 #include "acmacs-api-server.hh"
 
@@ -44,7 +42,7 @@ CommandFactory::CommandFactory()
 std::shared_ptr<Command> CommandFactory::find(std::string aMessage, mongocxx::database aDb, Session& aSession, SendFunc aSendFunc) const
 {
     ++mCommandNumber;
-    json_importer::Object msg{aMessage};
+    from_json::object msg{aMessage};
     std::shared_ptr<Command> result;
     const auto found = mFactory.find(msg.get_string("C"));
     if (found != mFactory.end())
