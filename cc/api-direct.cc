@@ -40,16 +40,10 @@ int main(int argc, char* const argv[])
         MongoAcmacsC2Access mongo_acmacs_c2{args.mongo_uri, acmacs_c2};
         mongo_acmacs_c2.create_client();
 
-        // mongocxx::pool pool{args.mongo_uri.empty() ? mongocxx::uri{} : mongocxx::uri{args.mongo_uri}};
-        // auto conn = pool.acquire(); // shared_ptr<mongocxx::client>
-        // auto db = (*conn)["acmacs_web"]; // mongocxx::database
-
-        Session session{mongo_acmacs_c2.client()["acmacs_web"]};
-        login(session, args);
-
         CommandFactory command_factory;
         for (const auto& command_json: args.commands) {
             auto command = command_factory.find(command_json, mongo_acmacs_c2, &send);
+            login(command->session(), args);
             try {
                 command->run();
             }

@@ -37,6 +37,8 @@ class Session : public StoredInMongodb
 
     inline bool is_admin() const
         {
+            if (!mId)
+                throw Error{"Session has no id"};
             return std::find_if(std::begin(mGroups), std::end(mGroups), [](const auto& group) { return group == "admin"; }) != std::end(mGroups);
         }
 

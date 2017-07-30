@@ -28,12 +28,6 @@ class Command : public from_json::object
 
     Command(from_json::object&& aSrc, MongoAcmacsC2Access& aMongoAccess, SendFunc aSendFunc, size_t aCommandNumber);
 
-    // inline Command(from_json::object&& aSrc, mongocxx::database aDb, Session& aSession, SendFunc aSendFunc, size_t aCommandNumber)
-    //     : from_json::object{std::move(aSrc)}, mDb{aDb}, mSession{aSession}, mSendFunc{aSendFunc}, mCommandNumber{aCommandNumber}
-    //     {
-    //         set_command_start();
-    //     }
-
     inline std::string command_name() const { return get_string("C"); }
     inline size_t command_number() const { return mCommandNumber; }
 
@@ -42,9 +36,10 @@ class Command : public from_json::object
     void send(std::string aMessage, send_message_type aMessageType = send_message_type::text);
     void send_error(std::string aMessage);
 
+    inline Session& session() { return mSession; }
+
  protected:
     inline mongocxx::database& db() { return mDb; }
-    inline Session& session() { return mSession; }
 
     inline time_point now() const { return std::chrono::high_resolution_clock::now(); }
     inline void set_command_start() { mCommandStart = now(); }

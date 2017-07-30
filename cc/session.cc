@@ -179,6 +179,8 @@ void Session::find_groups_of_user()
 
 Session::bson_value Session::read_permissions() const
 {
+    if (!mId)
+        throw Error{"Session has no id"};
     std::unique_lock<decltype(mAccess)> lock{mAccess};
     return bson_object("p.r", bson_object("$in", bson_array(std::begin(mGroups), std::end(mGroups))));
 
