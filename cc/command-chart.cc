@@ -1,8 +1,8 @@
 #include <limits>
 #include "acmacs-webserver/print.hh"
+#include "bson-to-json.hh"
 #include "command-chart.hh"
 #include "session.hh"
-#include "bson-to-json.hh"
 #include "acmacs-api-server.hh"
 #include "acmacs-c2.hh"
 
@@ -115,12 +115,6 @@ Command_chart::Command_chart(from_json::object&& aSrc, MongoAcmacsC2Access& aMon
 
 // ----------------------------------------------------------------------
 
-inline to_json::raw json_value(const bsoncxx::document::value& value)
-{
-    json_writer::compact writer;
-    return writer << value << json_writer::finalize;
-}
-
 void Command_chart::run()
 {
     auto acmacs_web_db = db();
@@ -131,7 +125,8 @@ void Command_chart::run()
     if (!chart)
         throw Error{"not found"};
     const auto ace = mAcmacsC2.ace_uncompressed(session().id(), get_string("id"), 5);
-    send(to_json::object("chart", json_value(*chart), "chart_ace", to_json::raw{ace}));
+    const auto& chart_ref = *chart;
+    send(to_json::object("chart", to_json::raw{to_json::value(chart_ref)}, "chart_ace", to_json::raw{ace}));
 
 } // Command_chart::run
 

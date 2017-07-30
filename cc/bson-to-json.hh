@@ -4,8 +4,10 @@
 #include "mongo-diagnostics.hh"
 #include <bsoncxx/builder/stream/document.hpp>
 #include <bsoncxx/builder/basic/document.hpp>
-// #include <bsoncxx/json.hpp>
+#include <bsoncxx/types/value.hpp>
 #pragma GCC diagnostic pop
+
+#include "acmacs-base/to-json.hh"
 
 // ----------------------------------------------------------------------
 
@@ -163,6 +165,18 @@ template <typename RW> inline json_writer::writer<RW>& operator <<(json_writer::
 {
     return aWriter << document.view();
 }
+
+// ----------------------------------------------------------------------
+
+namespace to_json
+{
+    inline std::string value(const bsoncxx::document::value& value)
+    {
+        json_writer::compact writer;
+        return writer << value.view() << json_writer::finalize;
+    }
+
+} // namespace to_json
 
 // ----------------------------------------------------------------------
 /// Local Variables:
