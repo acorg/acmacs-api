@@ -40,6 +40,14 @@ class AcmacsAPISettings : public ServerSettings
                 uri = "mongodb://localhost:27017/";
             return uri;
         }
+
+    inline auto acmacs_c2_uri() const
+        {
+            auto uri = mDoc.get("acmacs_c2_uri", std::string{});
+            if (uri.empty())
+                uri = "https://localhost:1168/api";
+            return uri;
+        }
 };
 
 // ----------------------------------------------------------------------
@@ -79,8 +87,11 @@ int main(int argc, char* const argv[])
 
         AcmacsAPISettings settings{argv[1]};
         std::cout << "mongodb_uri: [" << settings.mongodb_uri() << "]" << std::endl;
-        auto thread_maker = [&settings](Wspp& aWspp) -> WsppThread* {
-            return new WsppThreadWithMongoAccess{aWspp, settings.mongodb_uri()};
+        std::cout << "acmacs_c2_uri: [" << settings.acmacs_c2_uri() << "]" << std::endl;
+        AcmacsC2 acmacs_c2;
+        acmacs_c2.uri(settings.acmacs_c2_uri());
+        auto thread_maker = [&settings,&acmacs_c2](Wspp& aWspp) -> WsppThread* {
+            return new WsppThreadWithMongoAccess{aWspp, settings.mongodb_uri(), acmacs_c2};
         };
         Wspp wspp{settings, thread_maker};
         sWspp = &wspp;

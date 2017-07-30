@@ -9,6 +9,7 @@
 #include "session.hh"
 #include "acmacs-webserver/print.hh"
 #include "send-func.hh"
+#include "acmacs-c2.hh"
 
 // ----------------------------------------------------------------------
 
@@ -80,8 +81,8 @@ class AcmacsAPIServer : public WsppWebsocketLocationHandler
 class WsppThreadWithMongoAccess : public WsppThread
 {
  public:
-    inline WsppThreadWithMongoAccess(Wspp& aWspp, std::string aMongoURI)
-        : WsppThread{aWspp}, mMongoURI{aMongoURI} {}
+    inline WsppThreadWithMongoAccess(Wspp& aWspp, std::string aMongoURI, AcmacsC2& aAcmacsC2)
+        : WsppThread{aWspp}, mMongoURI{aMongoURI}, mAcmacsC2{aAcmacsC2} {}
 
     auto& client() { return mClient; }
 
@@ -91,6 +92,7 @@ class WsppThreadWithMongoAccess : public WsppThread
  private:
     mongocxx::client mClient;
     std::string mMongoURI;
+    AcmacsC2& mAcmacsC2;
 
 }; // class WsppThreadWithMongoAccess
 

@@ -2,7 +2,11 @@
 
 #include <string>
 
+#include "acmacs-base/from-json.hh"
+
 // ----------------------------------------------------------------------
+
+class SessionId;
 
 class AcmacsC2
 {
@@ -13,23 +17,23 @@ class AcmacsC2
     ~AcmacsC2();
 
     inline void uri(std::string aUri) { acmacs_uri = aUri; }
-    inline void session(std::string aSession) { mSession = aSession; }
+    // inline void session(std::string aSession) { mSession = aSession; }
 
-    std::string command(std::string aCommand);
+    from_json::object command(const SessionId& aSession, std::string aCommand);
     void verbose(bool aVerbose) { mVerbose = aVerbose; }
 
-    std::string ace_uncompressed(std::string aObjectId, size_t aMaxNumberOfProjections);
+    std::string ace_uncompressed(const SessionId& aSession, std::string aObjectId, size_t aMaxNumberOfProjections);
 
  private:
     std::string acmacs_uri;
-    std::string mSession;
+    // std::string mSession;
     bool mVerbose;
     using CURL = void;
     CURL* curl;
     std::string response;
 
     static size_t response_receiver(const char* contents, size_t size, size_t nmemb, AcmacsC2* self);
-    std::string embed_session_in_command(std::string source);
+    std::string embed_session_in_command(const SessionId& aSession, std::string source);
 
 }; // class AcmacsC2
 

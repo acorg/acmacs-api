@@ -7,9 +7,9 @@
 
 #include "acmacs-base/range.hh"
 #include "acmacs-base/string.hh"
-#include "acmacs-base/from-json.hh"
 
 #include "acmacs-c2.hh"
+#include "session-id.hh"
 
 // #pragma GCC diagnostic push
 #ifdef __clang__
@@ -41,7 +41,7 @@ AcmacsC2::~AcmacsC2()
 
 // ----------------------------------------------------------------------
 
-std::string AcmacsC2::command(std::string aCommand)
+from_json::object AcmacsC2::command(const SessionId& aSession, std::string aCommand)
 {
     if (!curl)
         throw Error{"curl not initialized"};
@@ -58,14 +58,28 @@ std::string AcmacsC2::command(std::string aCommand)
 
     if (mVerbose)
         std::cerr << "==> " << aCommand << std::endl;
-    aCommand = embed_session_in_command(aCommand);
+    aCommand = embed_session_in_command(aSession, aCommand);
     curl_easy_setopt(curl, CURLOPT_POSTFIELDS, aCommand.c_str());
     curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, static_cast<long>(aCommand.size()));
 
     if (CURLcode res = curl_easy_perform(curl); res != CURLE_OK)
         throw Error(std::string{"curl_easy_perform failed: "} + curl_easy_strerror(res));
 
-    return response;
+    from_json::object doc{response};
+    try {
+        std::string msg;
+        for (const auto& entry: doc.get_array("E")) {
+            if (!msg.empty())
+                msg += "\n       ";
+            msg += from_json::get(entry, "code", std::string{}) + ": " + from_json::get(entry, "description", std::string{});
+        }
+        throw Error{msg};
+    }
+    catch (from_json::rapidjson_assert&) {
+          // no "E" - no error
+    }
+
+    return doc;
 
 } // AcmacsC2::command
 
@@ -81,11 +95,11 @@ size_t AcmacsC2::response_receiver(const char* contents, size_t memb_size, size_
 
 // ----------------------------------------------------------------------
 
-std::string AcmacsC2::embed_session_in_command(std::string source)
+std::string AcmacsC2::embed_session_in_command(const SessionId& aSession, std::string source)
 {
     std::string result;
     if (source.find("\"S\"") == std::string::npos) {
-        result = source.substr(0, source.size() - 1) + ",\"S\":\"" + mSession + "\"}";
+        result = source.substr(0, source.size() - 1) + ",\"S\":\"" + aSession + "\"}";
     }
     else {
         result = source;
@@ -96,13 +110,12 @@ std::string AcmacsC2::embed_session_in_command(std::string source)
 
 // ----------------------------------------------------------------------
 
-std::string AcmacsC2::ace_uncompressed(std::string aObjectId, size_t aMaxNumberOfProjections)
+std::string AcmacsC2::ace_uncompressed(const SessionId& aSession, std::string aObjectId, size_t aMaxNumberOfProjections)
 {
     const auto projections = "[" + string::join(",", Range<size_t>::begin(aMaxNumberOfProjections), Range<size_t>::end()) + "]";
-    std::string result = command(std::string{R"({"C":"chart_export","format":"ace_uncompressed","pretty":false,"id":")"} + aObjectId + R"(","projection":)" + projections + "}");
+    auto result = command(aSession, std::string{R"({"C":"chart_export","format":"ace_uncompressed","pretty":false,"id":")"} + aObjectId + R"(","projection":)" + projections + "}");
       // "chart_json" is a string with embedded json
-    from_json::object doc{result};
-    return doc.get_string("chart_json");
+    return result.get_string("chart_json");
 
 } // AcmacsC2::ace_uncompressed
 

@@ -10,7 +10,7 @@
 void Session::reset()
 {
     std::unique_lock<decltype(mAccess)> lock{mAccess};
-    mId.clear();
+    mId.reset();
     mUser.clear();
     mGroups.clear();
 
@@ -42,7 +42,7 @@ void Session::use_session(std::string aSessionId)
     }
 
     increment_commands();
-    update(mId);
+    update(mId.id());
 
 } // Session::use_session
 

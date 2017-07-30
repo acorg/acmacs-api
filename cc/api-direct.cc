@@ -122,7 +122,7 @@ void login(Session& aSession, Args& aArgs)
                 std::cerr << "Invalid session: " << err.what() << std::endl;
         }
     }
-    if (aSession.id().empty() && !aArgs.user.empty()) {
+    if (!aSession.id() && !aArgs.user.empty()) {
         aSession.login(aArgs.user, aArgs.password);
         std::cout << "--session " << aSession.id() << std::endl;
     }

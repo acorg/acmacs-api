@@ -3,7 +3,9 @@
 #include <vector>
 #include <getopt.h>
 
+#include "acmacs-base/to-json.hh"
 #include "acmacs-c2.hh"
+#include "session-id.hh"
 
 // ----------------------------------------------------------------------
 
@@ -28,18 +30,18 @@ int main(int argc, char* const argv[])
         Args args;
         parse_command_line(argc, argv, args);
 
+        SessionId session{args.session};
         AcmacsC2 acmacs;
         acmacs.uri(args.acmacs_uri);
-        acmacs.session(args.session);
         acmacs.verbose(args.verbose);
         for (const auto& command: args.commands) {
             std::cout << "==> " << command << std::endl;
             std::string response;
             if (command.substr(0, 17) == "ace_uncompressed:") { // ace_uncompressed:object-id:max-num_projections
-                response = acmacs.ace_uncompressed(command.substr(17, 24), std::stoul(command.substr(17 + 25)));
+                response = acmacs.ace_uncompressed(session, command.substr(17, 24), std::stoul(command.substr(17 + 25)));
             }
             else {
-                response = acmacs.command(command);
+                response = acmacs.command(session, command).to_json();
             }
             std::cout << "<== " << response << std::endl;
         }

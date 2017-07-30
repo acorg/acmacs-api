@@ -5,6 +5,7 @@
 #include <mutex>
 
 #include "mongo-access.hh"
+#include "session-id.hh"
 
 // ----------------------------------------------------------------------
 
@@ -25,7 +26,7 @@ class Session : public StoredInMongodb
 
     void login(std::string aUser, std::string aPassword);
 
-    inline std::string id() const { return mId; }
+    inline SessionId id() const { return mId; }
     inline std::string user() const { return mUser; }
     inline std::string display_name() const { return mDisplayName; }
     inline const std::vector<std::string>& groups() const { return mGroups; }
@@ -45,7 +46,7 @@ class Session : public StoredInMongodb
 
  private:
     mutable std::mutex mAccess;
-    std::string mId;
+    SessionId mId;
     std::string mUser;
     std::string mDisplayName;
     std::string mPassword;

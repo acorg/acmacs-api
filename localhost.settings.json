@@ -2,6 +2,7 @@
     "host": "localhost",
     "port": 1169,
     "mongodb_uri": "",
+    "acmacs_c2_uri": "https://localhost:1168/api",
     "number_of_threads": 3,
     "certificate_chain_file": "/Users/eu/AD/sources/acmacs-webserver/ssl/self-signed.crt",
     "private_key_file": "/Users/eu/AD/sources/acmacs-webserver/ssl/self-signed.key",

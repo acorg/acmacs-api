@@ -8,7 +8,7 @@ MAKEFLAGS = -w
 # ----------------------------------------------------------------------
 
 ACMACS_API_SERVER = $(DIST)/acmacs-api-server
-ACMACS_API_SERVER_SOURCES = acmacs-api-server.cc mongo-access.cc session.cc $(COMMANDS_SOURCES)
+ACMACS_API_SERVER_SOURCES = acmacs-api-server.cc mongo-access.cc session.cc acmacs-c2.cc $(COMMANDS_SOURCES)
 
 ACMACS_API_CLIENT_JS = $(DIST)/acmacs-api-client.js.gz
 ACMACS_API_CLIENT_CSS = $(DIST)/acmacs-api-client.css.gz
@@ -54,7 +54,7 @@ OPTIMIZATION = -O3 #-fvisibility=hidden -flto
 PROFILE = # -pg
 CXXFLAGS = -g -MMD $(OPTIMIZATION) $(PROFILE) -fPIC -std=$(STD) $(WEVERYTHING) $(WARNINGS) -Icc -I$(BUILD)/include -I$(ACMACSD_ROOT)/include $(PKG_INCLUDES)
 LDFLAGS = $(OPTIMIZATION) $(PROFILE)
-LDLIBS = -L$(LIB_DIR) -lboost_filesystem -lboost_system -lpthread $$(pkg-config --libs liblzma)
+LDLIBS = -L$(LIB_DIR) -lboost_filesystem -lboost_system -lpthread $$(pkg-config --libs liblzma) -lcurl
 
 PKG_INCLUDES = -I$(ACMACSD_ROOT)/include/mongocxx/v_noabi -I$(ACMACSD_ROOT)/include/bsoncxx/v_noabi $$(pkg-config --cflags liblzma) $$(pkg-config --cflags libcrypto)
 
@@ -101,7 +101,7 @@ $(ACMACS_API_SERVER): $(patsubst %.cc,$(BUILD)/%.o,$(ACMACS_API_SERVER_SOURCES))
 
 $(ACMACS_C2): $(patsubst %.cc,$(BUILD)/%.o,$(ACMACS_C2_SOURCES)) | $(DIST)
 	@echo $@ '<--' $^
-	@$(GXX) $(LDFLAGS) -o $@ $^ $(LDLIBS) -lcurl
+	@$(GXX) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
 acmacs-api-client: $(ACMACS_API_CLIENT_JS) $(ACMACS_API_CLIENT_CSS)
 
