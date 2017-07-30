@@ -16,7 +16,7 @@
 
 // ----------------------------------------------------------------------
 
-class WsppThreadWithMongoAccess;
+class MongoAcmacsC2Access;
 
 // ----------------------------------------------------------------------
 
@@ -26,7 +26,7 @@ class Command : public from_json::object
     class Error : public std::runtime_error { public: using std::runtime_error::runtime_error; };
     using time_point = decltype(std::chrono::high_resolution_clock::now());
 
-    Command(from_json::object&& aSrc, WsppThreadWithMongoAccess& aMongoAccess, SendFunc aSendFunc, size_t aCommandNumber);
+    Command(from_json::object&& aSrc, MongoAcmacsC2Access& aMongoAccess, SendFunc aSendFunc, size_t aCommandNumber);
 
     // inline Command(from_json::object&& aSrc, mongocxx::database aDb, Session& aSession, SendFunc aSendFunc, size_t aCommandNumber)
     //     : from_json::object{std::move(aSrc)}, mDb{aDb}, mSession{aSession}, mSendFunc{aSendFunc}, mCommandNumber{aCommandNumber}

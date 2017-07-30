@@ -15,7 +15,7 @@ ACMACS_API_CLIENT_CSS = $(DIST)/acmacs-api-client.css.gz
 ACMACS_API_CLIENT_SOURCES = acmacs-api-client.cc asm.cc session.cc
 
 API_DIRECT = $(DIST)/api-direct
-API_DIRECT_SOURCES = api-direct.cc mongo-access.cc session.cc $(COMMANDS_SOURCES)
+API_DIRECT_SOURCES = api-direct.cc mongo-access.cc session.cc acmacs-c2.cc $(COMMANDS_SOURCES)
 
 ACMACS_C2 = $(DIST)/acmacs-c2
 ACMACS_C2_SOURCES = acmacs-c2.cc acmacs-c2-main.cc

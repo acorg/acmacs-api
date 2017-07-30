@@ -5,11 +5,10 @@
 #include "acmacs-base/to-json.hh"
 #include "acmacs-webserver/server.hh"
 
-#include "mongo-access.hh"
 #include "session.hh"
 #include "acmacs-webserver/print.hh"
 #include "send-func.hh"
-#include "acmacs-c2.hh"
+#include "mongo-acmacs-c2-access.hh"
 
 // ----------------------------------------------------------------------
 
@@ -78,22 +77,14 @@ class AcmacsAPIServer : public WsppWebsocketLocationHandler
 
 // ----------------------------------------------------------------------
 
-class WsppThreadWithMongoAccess : public WsppThread
+class WsppThreadWithMongoAccess : public WsppThread, public MongoAcmacsC2Access
 {
  public:
     inline WsppThreadWithMongoAccess(Wspp& aWspp, std::string aMongoURI, AcmacsC2& aAcmacsC2)
-        : WsppThread{aWspp}, mMongoURI{aMongoURI}, mAcmacsC2{aAcmacsC2} {}
-
-    auto& client() { return mClient; }
-    auto& acmacs_c2() { return mAcmacsC2; }
+        : WsppThread{aWspp}, MongoAcmacsC2Access{aMongoURI, aAcmacsC2} {}
 
  protected:
     virtual void initialize();
-
- private:
-    mongocxx::client mClient;
-    std::string mMongoURI;
-    AcmacsC2& mAcmacsC2;
 
 }; // class WsppThreadWithMongoAccess
 

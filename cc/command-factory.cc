@@ -1,5 +1,4 @@
 #include "command-factory.hh"
-#include "acmacs-api-server.hh"
 
 #include "command-info.hh"
 #include "command-session.hh"
@@ -39,7 +38,7 @@ CommandFactory::CommandFactory()
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<Command> CommandFactory::find(std::string aMessage, WsppThreadWithMongoAccess& aMongoAccess, SendFunc aSendFunc) const
+std::shared_ptr<Command> CommandFactory::find(std::string aMessage, MongoAcmacsC2Access& aMongoAccess, SendFunc aSendFunc) const
 {
     ++mCommandNumber;
     from_json::object msg{aMessage};

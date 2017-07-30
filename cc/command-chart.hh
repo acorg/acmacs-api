@@ -55,7 +55,7 @@ class Command_chart_owners : public Command
 class Command_chart : public Command
 {
  public:
-    Command_chart(from_json::object&& aSrc, WsppThreadWithMongoAccess& aMongoAccess, SendFunc aSendFunc, size_t aCommandNumber);
+    Command_chart(from_json::object&& aSrc, MongoAcmacsC2Access& aMongoAccess, SendFunc aSendFunc, size_t aCommandNumber);
 
     virtual void run();
 

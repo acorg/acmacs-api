@@ -8,6 +8,8 @@
 #include "session.hh"
 #include "command-factory.hh"
 #include "command.hh"
+#include "acmacs-c2.hh"
+#include "mongo-acmacs-c2-access.hh"
 
 // ----------------------------------------------------------------------
 
@@ -34,16 +36,20 @@ int main(int argc, char* const argv[])
         parse_command_line(argc, argv, args);
 
         mongocxx::instance inst{};
-        mongocxx::pool pool{args.mongo_uri.empty() ? mongocxx::uri{} : mongocxx::uri{args.mongo_uri}};
-        auto conn = pool.acquire(); // shared_ptr<mongocxx::client>
-        auto db = (*conn)["acmacs_web"]; // mongocxx::database
+        AcmacsC2 acmacs_c2;
+        MongoAcmacsC2Access mongo_acmacs_c2{args.mongo_uri, acmacs_c2};
+        mongo_acmacs_c2.create_client();
 
-        Session session{db};
+        // mongocxx::pool pool{args.mongo_uri.empty() ? mongocxx::uri{} : mongocxx::uri{args.mongo_uri}};
+        // auto conn = pool.acquire(); // shared_ptr<mongocxx::client>
+        // auto db = (*conn)["acmacs_web"]; // mongocxx::database
+
+        Session session{mongo_acmacs_c2.client()["acmacs_web"]};
         login(session, args);
 
         CommandFactory command_factory;
         for (const auto& command_json: args.commands) {
-            auto command = command_factory.find(command_json, db, session, &send);
+            auto command = command_factory.find(command_json, mongo_acmacs_c2, &send);
             try {
                 command->run();
             }

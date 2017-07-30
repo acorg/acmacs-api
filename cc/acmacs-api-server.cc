@@ -8,6 +8,7 @@
 #include "acmacs-webserver/print.hh"
 
 #include "acmacs-api-server.hh"
+#include "acmacs-c2.hh"
 #include "command.hh"
 #include "command-factory.hh"
 #include "bson-to-json.hh"
@@ -22,7 +23,7 @@ static std::atomic<Wspp*> sWspp;
 void WsppThreadWithMongoAccess::initialize()
 {
     WsppThread::initialize();
-    mClient = mongocxx::client{mongocxx::uri{mMongoURI}};
+    create_client();
 
 } // WsppThreadWithMongoAccess::initialize
 

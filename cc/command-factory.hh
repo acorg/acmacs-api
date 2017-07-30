@@ -18,7 +18,7 @@
 
 class Command;
 class Session;
-class WsppThreadWithMongoAccess;
+class MongoAcmacsC2Access;
 
 // ----------------------------------------------------------------------
 
@@ -28,14 +28,14 @@ class CommandFactory
     CommandFactory();
 
     // std::shared_ptr<Command> find(std::string aMessage, mongocxx::database aDb, Session& aSession, SendFunc aSendFunc) const;
-    std::shared_ptr<Command> find(std::string aMessage, WsppThreadWithMongoAccess& aMongoAccess, SendFunc aSendFunc) const;
+    std::shared_ptr<Command> find(std::string aMessage, MongoAcmacsC2Access& aMongoAccess, SendFunc aSendFunc) const;
 
     static const CommandFactory* sFactory; // global pointer for list_commands command
     const auto& commands() const { return mFactory; }
 
  private:
       // using FactoryFunc = std::shared_ptr<Command> (CommandFactory::*)(from_json::object&&, mongocxx::database, Session&, SendFunc, size_t) const;
-    using FactoryFunc = std::shared_ptr<Command> (CommandFactory::*)(from_json::object&&, WsppThreadWithMongoAccess&, SendFunc, size_t) const;
+    using FactoryFunc = std::shared_ptr<Command> (CommandFactory::*)(from_json::object&&, MongoAcmacsC2Access&, SendFunc, size_t) const;
 
     struct Data
     {
@@ -44,7 +44,7 @@ class CommandFactory
         std::function<const char* ()> description;
     };
 
-    template <typename Cmd> inline std::shared_ptr<Command> make(from_json::object&& aSrc, WsppThreadWithMongoAccess& aMongoAccess, SendFunc aSendFunc, size_t aCommandNumber) const
+    template <typename Cmd> inline std::shared_ptr<Command> make(from_json::object&& aSrc, MongoAcmacsC2Access& aMongoAccess, SendFunc aSendFunc, size_t aCommandNumber) const
         {
             return std::make_shared<Cmd>(std::move(aSrc), aMongoAccess, aSendFunc, aCommandNumber);
         }

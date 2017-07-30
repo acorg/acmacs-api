@@ -4,6 +4,7 @@
 #include "session.hh"
 #include "bson-to-json.hh"
 #include "acmacs-api-server.hh"
+#include "acmacs-c2.hh"
 
 // ----------------------------------------------------------------------
 
@@ -106,7 +107,7 @@ const char* Command_chart_owners::description()
 
 // ----------------------------------------------------------------------
 
-Command_chart::Command_chart(from_json::object&& aSrc, WsppThreadWithMongoAccess& aMongoAccess, SendFunc aSendFunc, size_t aCommandNumber)
+Command_chart::Command_chart(from_json::object&& aSrc, MongoAcmacsC2Access& aMongoAccess, SendFunc aSendFunc, size_t aCommandNumber)
     : Command{std::move(aSrc), aMongoAccess, aSendFunc, aCommandNumber}, mAcmacsC2{aMongoAccess.acmacs_c2()}
 {
 
