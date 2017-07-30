@@ -39,19 +39,37 @@ CommandFactory::CommandFactory()
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<Command> CommandFactory::find(std::string aMessage, mongocxx::database aDb, Session& aSession, SendFunc aSendFunc) const
+std::shared_ptr<Command> CommandFactory::find(std::string aMessage, WsppThreadWithMongoAccess& aMongoAccess, SendFunc aSendFunc) const
 {
     ++mCommandNumber;
     from_json::object msg{aMessage};
     std::shared_ptr<Command> result;
     const auto found = mFactory.find(msg.get_string("C"));
     if (found != mFactory.end())
-        result = (this->*found->second.maker)(std::move(msg), aDb, aSession, aSendFunc, mCommandNumber);
+          // result = (this->*found->second.maker)(std::move(msg), aDb, aSession, aSendFunc, mCommandNumber);
+        result = (this->*found->second.maker)(std::move(msg), aMongoAccess, aSendFunc, mCommandNumber);
     else
-        result = make<Command_unknown>(std::move(msg), aDb, aSession, aSendFunc, mCommandNumber);
+          // result = make<Command_unknown>(std::move(msg), aDb, aSession, aSendFunc, mCommandNumber);
+        result = make<Command_unknown>(std::move(msg), aMongoAccess, aSendFunc, mCommandNumber);
     return result;
 
 } // CommandFactory::find
+
+// ----------------------------------------------------------------------
+
+// std::shared_ptr<Command> CommandFactory::find(std::string aMessage, mongocxx::database aDb, Session& aSession, SendFunc aSendFunc) const
+// {
+//     ++mCommandNumber;
+//     from_json::object msg{aMessage};
+//     std::shared_ptr<Command> result;
+//     const auto found = mFactory.find(msg.get_string("C"));
+//     if (found != mFactory.end())
+//         result = (this->*found->second.maker)(std::move(msg), aDb, aSession, aSendFunc, mCommandNumber);
+//     else
+//         result = make<Command_unknown>(std::move(msg), aDb, aSession, aSendFunc, mCommandNumber);
+//     return result;
+
+// } // CommandFactory::find
 
 // ----------------------------------------------------------------------
 

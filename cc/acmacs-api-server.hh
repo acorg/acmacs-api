@@ -85,6 +85,7 @@ class WsppThreadWithMongoAccess : public WsppThread
         : WsppThread{aWspp}, mMongoURI{aMongoURI}, mAcmacsC2{aAcmacsC2} {}
 
     auto& client() { return mClient; }
+    auto& acmacs_c2() { return mAcmacsC2; }
 
  protected:
     virtual void initialize();

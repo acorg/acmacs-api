@@ -2,6 +2,8 @@
 
 #include "command.hh"
 
+class AcmacsC2;
+
 // ----------------------------------------------------------------------
 
 class Command_root_charts : public Command
@@ -53,13 +55,16 @@ class Command_chart_owners : public Command
 class Command_chart : public Command
 {
  public:
-    using Command::Command;
+    Command_chart(from_json::object&& aSrc, WsppThreadWithMongoAccess& aMongoAccess, SendFunc aSendFunc, size_t aCommandNumber);
 
     virtual void run();
 
     inline auto get_id() const { return bsoncxx::oid{get_string("id")}; }
 
     static const char* description();
+
+ private:
+    AcmacsC2& mAcmacsC2;
 
 }; // class Command_chart
 

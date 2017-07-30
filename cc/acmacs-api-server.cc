@@ -137,7 +137,8 @@ void AcmacsAPIServer::message(std::string aMessage, WsppThread& aThread)
 
       // print_cerr("MSG: ", aMessage.substr(0, 80));
     using namespace std::placeholders;
-    auto command = mCommandFactory.find(aMessage, thread.client()["acmacs_web"], session(thread.client()["acmacs_web"]), std::bind(&AcmacsAPIServer::send, this, _1, _2));
+    auto command = mCommandFactory.find(aMessage, thread, std::bind(&AcmacsAPIServer::send, this, _1, _2));
+      // auto command = mCommandFactory.find(aMessage, thread.client()["acmacs_web"], session(thread.client()["acmacs_web"]), std::bind(&AcmacsAPIServer::send, this, _1, _2));
     try {
         command->run();
     }

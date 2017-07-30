@@ -3,6 +3,16 @@
 #include "acmacs-webserver/print.hh"
 
 #include "command.hh"
+#include "acmacs-api-server.hh"
+
+// ----------------------------------------------------------------------
+
+Command::Command(from_json::object&& aSrc, WsppThreadWithMongoAccess& aMongoAccess, SendFunc aSendFunc, size_t aCommandNumber)
+    : from_json::object{std::move(aSrc)}, mDb{aMongoAccess.client()["acmacs_web"]}, mSession{aMongoAccess.client()["acmacs_web"]}, mSendFunc{aSendFunc}, mCommandNumber{aCommandNumber}
+{
+    set_command_start();
+
+} // Command::Command
 
 // ----------------------------------------------------------------------
 

@@ -3,6 +3,7 @@
 #include "command-chart.hh"
 #include "session.hh"
 #include "bson-to-json.hh"
+#include "acmacs-api-server.hh"
 
 // ----------------------------------------------------------------------
 
@@ -105,6 +106,14 @@ const char* Command_chart_owners::description()
 
 // ----------------------------------------------------------------------
 
+Command_chart::Command_chart(from_json::object&& aSrc, WsppThreadWithMongoAccess& aMongoAccess, SendFunc aSendFunc, size_t aCommandNumber)
+    : Command{std::move(aSrc), aMongoAccess, aSendFunc, aCommandNumber}, mAcmacsC2{aMongoAccess.acmacs_c2()}
+{
+
+} // Command_chart::Command_chart
+
+// ----------------------------------------------------------------------
+
 inline to_json::raw json_value(const bsoncxx::document::value& value)
 {
     json_writer::compact writer;
@@ -120,7 +129,8 @@ void Command_chart::run()
         MongodbAccess::exclude("_id", "projections", "conformance"));
     if (!chart)
         throw Error{"not found"};
-    send(to_json::object("chart", json_value(*chart)));
+    const auto ace = mAcmacsC2.ace_uncompressed(session().id(), get_string("id"), 5);
+    send(to_json::object("chart", json_value(*chart), "chart_ace", to_json::raw{ace}));
 
 } // Command_chart::run
 
