@@ -17,7 +17,6 @@ class AcmacsC2
     ~AcmacsC2();
 
     inline void uri(std::string aUri) { acmacs_uri = aUri; }
-    // inline void session(std::string aSession) { mSession = aSession; }
 
     from_json::object command(const SessionId& aSession, std::string aCommand);
     void verbose(bool aVerbose) { mVerbose = aVerbose; }
@@ -26,7 +25,6 @@ class AcmacsC2
 
  private:
     std::string acmacs_uri;
-    // std::string mSession;
     bool mVerbose;
     using CURL = void;
     CURL* curl;

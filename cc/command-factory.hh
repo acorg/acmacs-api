@@ -27,14 +27,12 @@ class CommandFactory
  public:
     CommandFactory();
 
-    // std::shared_ptr<Command> find(std::string aMessage, mongocxx::database aDb, Session& aSession, SendFunc aSendFunc) const;
     std::shared_ptr<Command> find(std::string aMessage, MongoAcmacsC2Access& aMongoAccess, SendFunc aSendFunc) const;
 
     static const CommandFactory* sFactory; // global pointer for list_commands command
     const auto& commands() const { return mFactory; }
 
  private:
-      // using FactoryFunc = std::shared_ptr<Command> (CommandFactory::*)(from_json::object&&, mongocxx::database, Session&, SendFunc, size_t) const;
     using FactoryFunc = std::shared_ptr<Command> (CommandFactory::*)(from_json::object&&, MongoAcmacsC2Access&, SendFunc, size_t) const;
 
     struct Data
@@ -49,22 +47,15 @@ class CommandFactory
             return std::make_shared<Cmd>(std::move(aSrc), aMongoAccess, aSendFunc, aCommandNumber);
         }
 
-    // template <typename Cmd> inline std::shared_ptr<Command> make(from_json::object&& aSrc, mongocxx::database aDb, Session& aSession, SendFunc aSendFunc, size_t aCommandNumber) const
-    //     {
-    //         return std::make_shared<Cmd>(std::move(aSrc), aDb, aSession, aSendFunc, aCommandNumber);
-    //     }
-
     template <typename Cmd> inline static Data data()
         {
             return {&CommandFactory::make<Cmd>, &Cmd::description};
         }
 
-      // std::map<std::string, std::function<std::shared_ptr<Command> (std::string)>> mFactory;
     std::map<std::string, Data> mFactory;
     mutable std::atomic<size_t> mCommandNumber;
 
 }; // class CommandFactory
-
 
 // ----------------------------------------------------------------------
 /// Local Variables:

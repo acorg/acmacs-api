@@ -97,9 +97,6 @@ void StoredInMongodb::update(std::string aId)
 } // StoredInMongodb::update
 
 // ----------------------------------------------------------------------
-
-
-// ----------------------------------------------------------------------
 /// Local Variables:
 /// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
 /// End:

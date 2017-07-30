@@ -9,7 +9,6 @@
 #include <mongocxx/client.hpp>
 #include <mongocxx/instance.hpp>
 #include <mongocxx/pool.hpp>
-//#include <mongocxx/exception/exception.hpp>
 #include <mongocxx/exception/query_exception.hpp>
 #pragma GCC diagnostic pop
 
