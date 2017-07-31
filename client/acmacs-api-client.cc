@@ -7,6 +7,7 @@
 #include "string.hh"
 #include "argv.hh"
 #include "session.hh"
+#include "login.hh"
 
 // ----------------------------------------------------------------------
 

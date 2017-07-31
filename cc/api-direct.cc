@@ -24,7 +24,25 @@ struct Args
 
 static void parse_command_line(int argc, char* const argv[], Args& aArgs);
 static void login(Session& aSession, Args& aArgs);
-static void send(std::string aMessage, send_message_type aMessageType = send_message_type::text);
+
+// ----------------------------------------------------------------------
+
+class SimulatedConnection : public ClientConnection
+{
+ public:
+    using ClientConnection::ClientConnection;
+
+    virtual inline void send(std::string aMessage, send_message_type /*aMessageType*/ = send_message_type::text)
+        {
+            print_cerr("SEND: ", aMessage);
+        }
+
+}; // class SimulatedConnection
+
+// ----------------------------------------------------------------------
+
+// class WsppThread {};
+// class WsppThreadWithMongoAccess{};
 
 // ----------------------------------------------------------------------
 
@@ -40,15 +58,19 @@ int main(int argc, char* const argv[])
         MongoAcmacsC2Access mongo_acmacs_c2{args.mongo_uri, acmacs_c2};
         mongo_acmacs_c2.create_client();
 
+        SimulatedConnection client_connection;
+        auto db = mongo_acmacs_c2.client()["acmacs_web"];
+        client_connection.make_session(db);
+        login(client_connection.session(), args);
+
         CommandFactory command_factory;
         for (const auto& command_json: args.commands) {
-            auto command = command_factory.find(command_json, mongo_acmacs_c2, &send);
-            login(command->session(), args);
+            auto command = command_factory.find(command_json, mongo_acmacs_c2, client_connection);
             try {
                 command->run();
             }
             catch (std::exception& err) {
-                send(to_json::object("C", command->command_name(), "CN", command->command_number(), "E", err.what()));
+                client_connection.send(to_json::object("C", command->command_name(), "CN", command->command_number(), "E", err.what()));
             }
         }
     }
@@ -128,14 +150,6 @@ void login(Session& aSession, Args& aArgs)
     }
 
 } // login
-
-// ----------------------------------------------------------------------
-
-void send(std::string aMessage, send_message_type /*aMessageType*/)
-{
-    std::cout << "SEND: " << aMessage << std::endl;
-
-} // send
 
 // ----------------------------------------------------------------------
 /// Local Variables:

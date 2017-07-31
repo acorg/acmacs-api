@@ -9,10 +9,7 @@
 #pragma GCC diagnostic pop
 
 #include "acmacs-base/from-json.hh"
-#include "acmacs-base/to-json.hh"
-
-#include "send-func.hh"
-#include "session.hh"
+#include "client-connection.hh"
 
 // ----------------------------------------------------------------------
 
@@ -26,7 +23,7 @@ class Command : public from_json::object
     class Error : public std::runtime_error { public: using std::runtime_error::runtime_error; };
     using time_point = decltype(std::chrono::high_resolution_clock::now());
 
-    Command(from_json::object&& aSrc, MongoAcmacsC2Access& aMongoAccess, SendFunc aSendFunc, size_t aCommandNumber);
+    Command(from_json::object&& aSrc, MongoAcmacsC2Access& aMongoAccess, ClientConnection& aClientConnection, size_t aCommandNumber);
 
     inline std::string command_name() const { return get_string("C"); }
     inline size_t command_number() const { return mCommandNumber; }
@@ -36,10 +33,10 @@ class Command : public from_json::object
     void send(std::string aMessage, send_message_type aMessageType = send_message_type::text);
     void send_error(std::string aMessage);
 
-    inline Session& session() { return mSession; }
-
  protected:
     inline mongocxx::database& db() { return mDb; }
+    inline Session& session() { return mClientConnection.session(); }
+    inline void make_session() { return mClientConnection.make_session(db()); }
 
     inline time_point now() const { return std::chrono::high_resolution_clock::now(); }
     inline void set_command_start() { mCommandStart = now(); }
@@ -48,8 +45,7 @@ class Command : public from_json::object
 
  private:
     mongocxx::database mDb;
-    Session mSession;
-    SendFunc mSendFunc;
+    ClientConnection& mClientConnection;
     const size_t mCommandNumber;
     time_point mCommandStart;
 

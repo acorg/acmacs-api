@@ -3,6 +3,8 @@
 #include <iostream>
 #include <string>
 
+#include "acmacs-base/to-json.hh"
+
 // ----------------------------------------------------------------------
 
 class SessionId
@@ -30,6 +32,14 @@ inline std::ostream& operator << (std::ostream& out, const SessionId& aId)
 inline std::string operator + (std::string left, const SessionId& aId)
 {
     return left + aId.id();
+}
+
+namespace to_json
+{
+    template <> inline std::string value(SessionId aValue)
+    {
+        return value(aValue.id());
+    }
 }
 
 // ----------------------------------------------------------------------

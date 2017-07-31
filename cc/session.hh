@@ -19,6 +19,7 @@ class Session : public StoredInMongodb
     inline Session(const Session& aSrc)
         : StoredInMongodb{aSrc}, mId{aSrc.mId}, mUser{aSrc.mUser}, mDisplayName{aSrc.mDisplayName},
           mGroups{aSrc.mGroups}, mCommands{aSrc.mCommands}, mExpirationInSeconds{aSrc.mExpirationInSeconds} {}
+    // virtual ~Session();
 
     void use_session(std::string aSessionId); // throws Error
     std::string login_nonce(std::string aUser);

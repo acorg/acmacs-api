@@ -29,6 +29,41 @@ void WsppThreadWithMongoAccess::initialize()
 
 // ----------------------------------------------------------------------
 
+void BrowserConnection::message(std::string aMessage, WsppThread& aThread)
+{
+    auto& thread = dynamic_cast<WsppThreadWithMongoAccess&>(aThread);
+
+    print_cerr("MSG: ", aMessage.substr(0, 80));
+    auto command = mCommandFactory.find(aMessage, thread, *this);
+    try {
+        command->run();
+    }
+    catch (std::exception& err) {
+        command->send_error(err.what());
+    }
+
+} // BrowserConnection::message
+
+// ----------------------------------------------------------------------
+
+void BrowserConnection::send(std::string aMessage, send_message_type aMessageType)
+{
+    auto op_code = websocketpp::frame::opcode::text;
+    switch (aMessageType) {
+      case send_message_type::text:
+          op_code = websocketpp::frame::opcode::text;
+          break;
+      case send_message_type::binary:
+          op_code = websocketpp::frame::opcode::binary;
+          break;
+    }
+    print_cerr("SEND: ", aMessage.substr(0, 100));
+    WsppWebsocketLocationHandler::send(aMessage, op_code);
+
+} // BrowserConnection::send
+
+// ----------------------------------------------------------------------
+
 class AcmacsAPISettings : public ServerSettings
 {
  public:
@@ -102,7 +137,7 @@ int main(int argc, char* const argv[])
         std::signal(SIGQUIT, signal_handler);
 
         wspp.add_location_handler(std::make_shared<RootPage>());
-        wspp.add_location_handler(std::make_shared<AcmacsAPIServer>(command_factory));
+        wspp.add_location_handler(std::make_shared<BrowserConnection>(command_factory));
 
         wspp.run();
         return 0;
@@ -121,33 +156,6 @@ int main(int argc, char* const argv[])
     sWspp.load()->stop_listening();
     std::exit(-signal);
 }
-
-// ----------------------------------------------------------------------
-
-AcmacsAPIServer::~AcmacsAPIServer()
-{
-      // print_cerr("~AcmacsAPIServer ", this);
-
-} // AcmacsAPIServer::~AcmacsAPIServer
-
-// ----------------------------------------------------------------------
-
-void AcmacsAPIServer::message(std::string aMessage, WsppThread& aThread)
-{
-    auto& thread = dynamic_cast<WsppThreadWithMongoAccess&>(aThread);
-
-      // print_cerr("MSG: ", aMessage.substr(0, 80));
-    using namespace std::placeholders;
-    auto command = mCommandFactory.find(aMessage, thread, std::bind(&AcmacsAPIServer::send, this, _1, _2));
-      // auto command = mCommandFactory.find(aMessage, thread.client()["acmacs_web"], session(thread.client()["acmacs_web"]), std::bind(&AcmacsAPIServer::send, this, _1, _2));
-    try {
-        command->run();
-    }
-    catch (std::exception& err) {
-        command->send_error(err.what());
-    }
-
-} // AcmacsAPIServer::message
 
 // ----------------------------------------------------------------------
 /// Local Variables:

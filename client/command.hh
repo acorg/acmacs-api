@@ -9,6 +9,7 @@ namespace client
     struct CommandData : public Object
     {
         inline CommandData(String* aCmd) { set_C(aCmd) ; }
+
         void set_C(String*);
     };
 

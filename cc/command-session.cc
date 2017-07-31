@@ -5,6 +5,7 @@
 
 void Command_login_session::run()
 {
+    make_session();
     session().use_session(session_id());
     send(to_json::object("S", session().id(), "user", session().user(), "display_name", session().display_name()));
 
@@ -22,6 +23,7 @@ const char* Command_login_session::description()
 
 void Command_login_nonce::run()
 {
+    make_session();
     const auto nonce = session().login_nonce(user());
     send(to_json::object("login_nonce", nonce));
 

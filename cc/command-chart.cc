@@ -107,8 +107,8 @@ const char* Command_chart_owners::description()
 
 // ----------------------------------------------------------------------
 
-Command_chart::Command_chart(from_json::object&& aSrc, MongoAcmacsC2Access& aMongoAccess, SendFunc aSendFunc, size_t aCommandNumber)
-    : Command{std::move(aSrc), aMongoAccess, aSendFunc, aCommandNumber}, mAcmacsC2{aMongoAccess.acmacs_c2()}
+Command_chart::Command_chart(from_json::object&& aSrc, MongoAcmacsC2Access& aMongoAccess, ClientConnection& aClientConnection, size_t aCommandNumber)
+    : Command{std::move(aSrc), aMongoAccess, aClientConnection, aCommandNumber}, mAcmacsC2{aMongoAccess.acmacs_c2()}
 {
 
 } // Command_chart::Command_chart

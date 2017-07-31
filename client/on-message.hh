@@ -8,6 +8,7 @@
 #include "weak-tables-off.hh"
 #include "asm.hh"
 #include "string.hh"
+#include "session.hh"
 
 // ----------------------------------------------------------------------
 
@@ -49,9 +50,9 @@ class OnMessageBase
             mWS->send(aData);
         }
 
-    inline void send(client::Object* aData)
+    inline void send(client::CommandData* aCommand)
         {
-            send(to_String(aData));
+            send(to_String(aCommand));
         }
 
     inline void send(const char* aData)
@@ -70,10 +71,10 @@ class OnMessageBase
             transfer(NewHandler{mWS, args ...});
         }
 
-    template <typename NewHandler, typename ... Args> inline void transfer_send(client::Object* aMessage, Args ... args)
+    template <typename NewHandler, typename ... Args> inline void transfer_send(client::CommandData* aCommand, Args ... args)
         {
             transfer<NewHandler>(args ...);
-            send(aMessage);
+            send(aCommand);
         }
 
     inline void transfer_to(TransferTo aHandlerMaker)

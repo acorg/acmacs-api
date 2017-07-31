@@ -1,5 +1,6 @@
 #include "session.hh"
 #include "argv.hh"
+#include "login.hh"
 
 // ----------------------------------------------------------------------
 

@@ -38,16 +38,16 @@ CommandFactory::CommandFactory()
 
 // ----------------------------------------------------------------------
 
-std::shared_ptr<Command> CommandFactory::find(std::string aMessage, MongoAcmacsC2Access& aMongoAccess, SendFunc aSendFunc) const
+std::shared_ptr<Command> CommandFactory::find(std::string aMessage, MongoAcmacsC2Access& aMongoAccess, ClientConnection& aClientConnection) const
 {
     ++mCommandNumber;
     from_json::object msg{aMessage};
     std::shared_ptr<Command> result;
     const auto found = mFactory.find(msg.get_string("C"));
     if (found != mFactory.end())
-        result = (this->*found->second.maker)(std::move(msg), aMongoAccess, aSendFunc, mCommandNumber);
+        result = (this->*found->second.maker)(std::move(msg), aMongoAccess, aClientConnection, mCommandNumber);
     else
-        result = make<Command_unknown>(std::move(msg), aMongoAccess, aSendFunc, mCommandNumber);
+        result = make<Command_unknown>(std::move(msg), aMongoAccess, aClientConnection, mCommandNumber);
     return result;
 
 } // CommandFactory::find

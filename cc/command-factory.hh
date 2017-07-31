@@ -12,13 +12,12 @@
 #pragma GCC diagnostic pop
 
 #include "acmacs-base/from-json.hh"
-#include "send-func.hh"
 
 // ----------------------------------------------------------------------
 
 class Command;
-class Session;
 class MongoAcmacsC2Access;
+class ClientConnection;
 
 // ----------------------------------------------------------------------
 
@@ -27,13 +26,13 @@ class CommandFactory
  public:
     CommandFactory();
 
-    std::shared_ptr<Command> find(std::string aMessage, MongoAcmacsC2Access& aMongoAccess, SendFunc aSendFunc) const;
+    std::shared_ptr<Command> find(std::string aMessage, MongoAcmacsC2Access& aMongoAccess, ClientConnection& aClientConnection) const;
 
     static const CommandFactory* sFactory; // global pointer for list_commands command
     const auto& commands() const { return mFactory; }
 
  private:
-    using FactoryFunc = std::shared_ptr<Command> (CommandFactory::*)(from_json::object&&, MongoAcmacsC2Access&, SendFunc, size_t) const;
+    using FactoryFunc = std::shared_ptr<Command> (CommandFactory::*)(from_json::object&&, MongoAcmacsC2Access&, ClientConnection&, size_t) const;
 
     struct Data
     {
@@ -42,9 +41,9 @@ class CommandFactory
         std::function<const char* ()> description;
     };
 
-    template <typename Cmd> inline std::shared_ptr<Command> make(from_json::object&& aSrc, MongoAcmacsC2Access& aMongoAccess, SendFunc aSendFunc, size_t aCommandNumber) const
+    template <typename Cmd> inline std::shared_ptr<Command> make(from_json::object&& aSrc, MongoAcmacsC2Access& aMongoAccess, ClientConnection& aClientConnection, size_t aCommandNumber) const
         {
-            return std::make_shared<Cmd>(std::move(aSrc), aMongoAccess, aSendFunc, aCommandNumber);
+            return std::make_shared<Cmd>(std::move(aSrc), aMongoAccess, aClientConnection, aCommandNumber);
         }
 
     template <typename Cmd> inline static Data data()
