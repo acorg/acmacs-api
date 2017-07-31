@@ -36,7 +36,7 @@ inline std::string operator + (std::string left, const SessionId& aId)
 
 namespace to_json
 {
-    template <> inline std::string value(SessionId aValue)
+    template <> inline std::string value(SessionId&& aValue)
     {
         return value(aValue.id());
     }

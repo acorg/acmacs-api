@@ -170,7 +170,7 @@ template <typename RW> inline json_writer::writer<RW>& operator <<(json_writer::
 
 namespace to_json
 {
-    inline std::string value(const bsoncxx::document::value& value)
+    template <> inline std::string value(bsoncxx::document::value&& value)
     {
         json_writer::compact writer;
         return writer << value.view() << json_writer::finalize;

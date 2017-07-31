@@ -125,8 +125,7 @@ void Command_chart::run()
     if (!chart)
         throw Error{"not found"};
     const auto ace = mAcmacsC2.ace_uncompressed(session().id(), get_string("id"), 5);
-    const auto& chart_ref = *chart;
-    send(to_json::object("chart", to_json::raw{to_json::value(chart_ref)}, "chart_ace", to_json::raw{ace}));
+    send(to_json::object("chart", to_json::raw{to_json::value(std::move(*chart))}, "chart_ace", to_json::raw{ace}));
 
 } // Command_chart::run
 
