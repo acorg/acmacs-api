@@ -29,7 +29,7 @@ void Session::use_session(std::string aSessionId)
 {
     reset();
 
-    auto found = find_one(bson_object("_id", bsoncxx::oid{aSessionId}, "expires", bson_object("$gte", time_now())),
+    auto found = find_one(to_bson::object("_id", bsoncxx::oid{aSessionId}, "expires", to_bson::object("$gte", time_now())),
                           exclude("_t", "_m", "I", "expires", "expiration_in_seconds"));
     if (!found)
         throw Error{"invalid session"};
@@ -66,7 +66,7 @@ std::string Session::login_nonce(std::string aUser)
 
 void Session::find_user(std::string aUser, bool aGetPassword)
 {
-    auto found = find_one("users_groups", bson_object("name", aUser, "_t", "acmacs.mongodb_collections.users_groups.User"), exclude("_id", "_t", "recent_logins", "created", "p", "_m"));
+    auto found = find_one("users_groups", to_bson::object("name", aUser, "_t", "acmacs.mongodb_collections.users_groups.User"), exclude("_id", "_t", "recent_logins", "created", "p", "_m"));
     if (!found)
         throw Error{"invalid user or password"};
       // std::cerr << json_writer::json(*found, "user", 1) << std::endl;
@@ -149,10 +149,10 @@ void Session::create_session()
 void Session::add_fields_for_creation(bld_doc& aDoc)
 {
     StoredInMongodb::add_fields_for_creation(aDoc);
-    bson_append(aDoc,
+    to_bson::append(aDoc,
                 "_t", "acmacs.mongodb_collections.permissions.Session",
                 "user", mUser,
-                "user_and_groups", bson_array(std::begin(mGroups), std::end(mGroups)),
+                "user_and_groups", to_bson::array(std::begin(mGroups), std::end(mGroups)),
                 "expiration_in_seconds", mExpirationInSeconds,
                 "expires", time_in_seconds(mExpirationInSeconds),
                 "commands", mCommands);
@@ -164,7 +164,7 @@ void Session::add_fields_for_creation(bld_doc& aDoc)
 void Session::add_fields_for_updating(bld_doc& aDoc)
 {
     StoredInMongodb::add_fields_for_updating(aDoc);
-    bson_append(aDoc,
+    to_bson::append(aDoc,
                 "expires", time_in_seconds(mExpirationInSeconds),
                 "commands", mCommands);
 
@@ -174,7 +174,7 @@ void Session::add_fields_for_updating(bld_doc& aDoc)
 
 void Session::find_groups_of_user()
 {
-    auto found = find("users_groups", bson_object("members", mUser), include("name").exclude("_id"));
+    auto found = find("users_groups", to_bson::object("members", mUser), include("name").exclude("_id"));
     std::unique_lock<decltype(mAccess)> lock{mAccess};
     mGroups.clear();
     mGroups.push_back(mUser);
@@ -189,7 +189,7 @@ Session::bson_value Session::read_permissions() const
     if (!mId)
         throw Error{"Session has no id"};
     std::unique_lock<decltype(mAccess)> lock{mAccess};
-    return bson_object("p.r", bson_object("$in", bson_array(std::begin(mGroups), std::end(mGroups))));
+    return to_bson::object("p.r", to_bson::object("$in", to_bson::array(std::begin(mGroups), std::end(mGroups))));
 
 } // Session::read_permissions
 

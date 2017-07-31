@@ -90,7 +90,7 @@ void StoredInMongodb::update(std::string aId)
 {
     auto doc_set = bld_doc{};
     add_fields_for_updating(doc_set);
-    auto result = update_one(bson_object("_id", bsoncxx::oid{aId}), bson_object("$set", doc_set.extract()));
+    auto result = update_one(to_bson::object("_id", bsoncxx::oid{aId}), to_bson::object("$set", doc_set.extract()));
     if (!result)
         throw Error{"unacknowledged write during doc updating"};
 

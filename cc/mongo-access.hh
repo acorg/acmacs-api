@@ -48,7 +48,7 @@ class MongodbAccess
 
         inline find_options& exclude(std::initializer_list<std::string>&& fields)
             {
-                std::for_each(std::begin(fields), std::end(fields), [this](const auto& field) { bson_append(mProjection, field, false); });
+                std::for_each(std::begin(fields), std::end(fields), [this](const auto& field) { to_bson::append(mProjection, field, false); });
                 return *this;
             }
 
@@ -56,7 +56,7 @@ class MongodbAccess
 
         inline find_options& include(std::initializer_list<std::string>&& fields)
             {
-                std::for_each(std::begin(fields), std::end(fields), [this](const auto& field) { bson_append(mProjection, field, true); });
+                std::for_each(std::begin(fields), std::end(fields), [this](const auto& field) { to_bson::append(mProjection, field, true); });
                 return *this;
             }
 
@@ -64,7 +64,7 @@ class MongodbAccess
 
         inline find_options& sort(std::string field, int order = 1)
             {
-                bson_append(mSort, field, order);
+                to_bson::append(mSort, field, order);
                 return *this;
             }
 
@@ -172,9 +172,9 @@ class MongodbAccess
 
     static inline bson_value field_null_or_absent(std::string aField)
         {
-            return bson_object("$or", bson_array(
-                                       bson_object(aField, bson_object("$exists", false)),
-                                       bson_object(aField, bson_object("$eq", bson_null))
+            return to_bson::object("$or", to_bson::array(
+                                       to_bson::object(aField, to_bson::object("$exists", false)),
+                                       to_bson::object(aField, to_bson::object("$eq", bson_null))
                                                           ));
         }
 
@@ -241,12 +241,12 @@ class StoredInMongodb : public MongodbAccess
 
     virtual inline void add_fields_for_creation(bld_doc& aDoc)
         {
-            bson_append(aDoc, "_m", time_now());
+            to_bson::append(aDoc, "_m", time_now());
         }
 
     virtual inline void add_fields_for_updating(bld_doc& aDoc)
         {
-            bson_append(aDoc, "_m", time_now());
+            to_bson::append(aDoc, "_m", time_now());
         }
 
  private:

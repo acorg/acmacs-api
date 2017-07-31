@@ -18,11 +18,11 @@ void Command_chains::run()
     const int limit = get_limit() + skip;
 
     MongodbAccess::bld_doc criteria_bld;
-    bson_append(criteria_bld, session().read_permissions(), MongodbAccess::field_null_or_absent("parent"), MongodbAccess::field_null_or_absent("backup_of"));
-    bson_in_for_optional_array_of_strings(criteria_bld, "p.o", "$in", std::bind(&Command_chains::get_owners, this));
-    bson_in_for_optional_array_of_strings(criteria_bld, "keywords", "$in", std::bind(&Command_chains::get_keywords, this));
-    bson_in_for_optional_array_of_strings(criteria_bld, "_t", "$in", std::bind(&Command_chains::get_types, this));
-    // bson_in_for_optional_array_of_strings(criteria_bld, "search", "$all", std::bind(&Command_chains::get_search, this), &from_json::get_string_uppercase);
+    to_bson::append(criteria_bld, session().read_permissions(), MongodbAccess::field_null_or_absent("parent"), MongodbAccess::field_null_or_absent("backup_of"));
+    to_bson::in_for_optional_array_of_strings(criteria_bld, "p.o", "$in", std::bind(&Command_chains::get_owners, this));
+    to_bson::in_for_optional_array_of_strings(criteria_bld, "keywords", "$in", std::bind(&Command_chains::get_keywords, this));
+    to_bson::in_for_optional_array_of_strings(criteria_bld, "_t", "$in", std::bind(&Command_chains::get_types, this));
+    // to_bson::in_for_optional_array_of_strings(criteria_bld, "search", "$all", std::bind(&Command_chains::get_search, this), &from_json::get_string_uppercase);
 
     auto criteria = criteria_bld.extract();
       // print_cerr("Command_chains::run ", bsoncxx::to_json(criteria));

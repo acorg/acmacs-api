@@ -18,10 +18,10 @@ void Command_root_charts::run()
     const int limit = get_limit() + skip;
 
     MongodbAccess::bld_doc criteria_bld;
-    bson_append(criteria_bld, session().read_permissions(), MongodbAccess::field_null_or_absent("parent"), MongodbAccess::field_null_or_absent("backup_of"));
-    bson_in_for_optional_array_of_strings(criteria_bld, "p.o", "$in", std::bind(&Command_root_charts::get_owners, this));
-    bson_in_for_optional_array_of_strings(criteria_bld, "keywords", "$in", std::bind(&Command_root_charts::get_keywords, this));
-    bson_in_for_optional_array_of_strings(criteria_bld, "search", "$all", std::bind(&Command_root_charts::get_search, this), &from_json::get_string_uppercase);
+    to_bson::append(criteria_bld, session().read_permissions(), MongodbAccess::field_null_or_absent("parent"), MongodbAccess::field_null_or_absent("backup_of"));
+    to_bson::in_for_optional_array_of_strings(criteria_bld, "p.o", "$in", std::bind(&Command_root_charts::get_owners, this));
+    to_bson::in_for_optional_array_of_strings(criteria_bld, "keywords", "$in", std::bind(&Command_root_charts::get_keywords, this));
+    to_bson::in_for_optional_array_of_strings(criteria_bld, "search", "$all", std::bind(&Command_root_charts::get_search, this), &from_json::get_string_uppercase);
 
     auto criteria = criteria_bld.extract();
       // print_cerr("Command_root_charts::run ", bsoncxx::to_json(criteria));
@@ -120,7 +120,7 @@ void Command_chart::run()
     auto acmacs_web_db = db();
     auto chart = MongodbAccess{acmacs_web_db}.find_one(
         "charts",
-        bson_object("_id", get_id(), session().read_permissions()),
+        to_bson::object("_id", get_id(), session().read_permissions()),
         MongodbAccess::exclude("_id", "projections", "conformance"));
     if (!chart)
         throw Error{"not found"};
