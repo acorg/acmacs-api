@@ -92,6 +92,9 @@ class LoginNonce : public LoginStep<client::LoginNonceData>
 class Login : public LoginStep<client::HelloFromServer>
 {
  public:
+    // inline Login(client::WebSocket* aWS, OnMessageBase::TransferTo aTransferTo) : LoginStep<client::HelloFromServer>{aWS, aTransferTo} { client::console_log("Login"); }
+    // inline Login(const Login&) = default;
+    // inline ~Login() { client::console_log("~Login", mNo); }
     using Message = client::HelloFromServer;
     using LoginStep<Message>::LoginStep;
 

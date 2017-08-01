@@ -1,3 +1,4 @@
+#include "toolkit-basic.hh"
 #include "session.hh"
 #include "argv.hh"
 #include "login.hh"
@@ -87,7 +88,7 @@ void Login::widget()
     auto* username_input = static_cast<HTMLInputElement*>(document.createElement("input"));
     username_input->setAttribute("autocomplete", "username");
     username_input->setAttribute("spellcheck", "false");
-    username_input->setAttribute("tabindex", "0");
+    username_input->setAttribute("tabIndex", "1");
     username_input->setAttribute("name", "username");
     username_input->setAttribute("type", "email");
     form->appendChild(username_input);
@@ -102,13 +103,13 @@ void Login::widget()
     auto* password_input = static_cast<HTMLInputElement*>(document.createElement("input"));
     password_input->setAttribute("autocomplete", "password");
     password_input->setAttribute("spellcheck", "false");
-    password_input->setAttribute("tabindex", "1");
+    password_input->setAttribute("tabIndex", "2");
     password_input->setAttribute("name", "password");
     password_input->setAttribute("type", "password");
     form->appendChild(password_input);
 
     auto* password_separator = document.createElement("div");
-    password_separator->set_className("separator separator-focused");
+    password_separator->set_className("separator");
     form->appendChild(password_separator);
 
     auto* login_button = document.createElement("div");
@@ -125,12 +126,27 @@ void Login::widget()
                       }
                   };
 
-    auto focused = [](FocusEvent* aEvent) {
-                       static_cast<HTMLInputElement*>(aEvent->get_target())->select();
-                   };
+    username_input->addEventListener("focus", cheerp::Callback([username_input,username_separator,username_label](FocusEvent*) {
+        username_input->select();
+        toolkit::add_class(username_separator, "separator-focused");
+        toolkit::add_class(username_label, "label-focused");
+    }));
 
-    username_input->addEventListener("focus", cheerp::Callback(focused));
-    password_input->addEventListener("focus", cheerp::Callback(focused));
+    username_input->addEventListener("blur", cheerp::Callback([username_label,username_separator](FocusEvent*) {
+        toolkit::remove_class(username_separator, "separator-focused");
+        toolkit::remove_class(username_label, "label-focused");
+    }));
+
+    password_input->addEventListener("focus", cheerp::Callback([password_input,password_separator,password_label](FocusEvent*) {
+        password_input->select();
+        toolkit::add_class(password_separator, "separator-focused");
+        toolkit::add_class(password_label, "label-focused");
+    }));
+
+    password_input->addEventListener("blur", cheerp::Callback([password_label,password_separator](FocusEvent*) {
+        toolkit::remove_class(password_separator, "separator-focused");
+        toolkit::remove_class(password_label, "label-focused");
+    }));
 
     username_input->addEventListener("keydown", cheerp::Callback([password_input](KeyboardEvent* aEvent) -> void {
         if (eq(aEvent->get_key(), "Enter")) {
