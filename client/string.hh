@@ -70,38 +70,60 @@ template <typename ... Args> inline client::Array* to_Array_String(Args ... args
 
 // ----------------------------------------------------------------------
 
-inline String* concat(String* first, client::Object* second)
+// inline String* concat(const String* first)
+// {
+//     return const_cast<String*>(first);
+// }
+
+// template <typename First, typename Second, typename ... Args> inline String* concat(First first, Second second, Args ... rest)
+// {
+//     return concat(concat(first, second), rest ...);
+// }
+
+inline String* concat(const String* first, const String* second)
 {
-    // if (!is_string(second))
-    //     second = client::JSON.stringify(second, cheerp::Callback(&stringify_replacer));
-    // return first->concat(static_cast<String*>(second));
-    return first->concat(to_String(second));
+    return const_cast<String*>(first)->concat(const_cast<String*>(second));
 }
 
-inline String* concat(String* first, String* second)
+inline String* concat(String* first, const String* second)
 {
-    return first->concat(second);
+    return first->concat(const_cast<String*>(second));
 }
 
-inline String* concat(String* first, const char* second)
+inline String* concat(const String* first, client::Object* second)
 {
-    return first->concat(second);
+    return const_cast<String*>(first)->concat(to_String(second));
 }
+
+inline String* concat(const String* first, const char* second)
+{
+    return const_cast<String*>(first)->concat(second);
+}
+
+inline String* concat(const String* first, const char* second, const String* third)
+{
+    return concat(concat(first, second), third);
+}
+
+inline String* concat(const String* s1, const char* s2, const String* s3, const char* s4, const String* s5)
+{
+    return concat(concat(concat(concat(s1, s2), s3), s4), s5);
+}
+
+// template <typename Arg, typename ... Args> inline String* concat(const String* s1, Arg s2, Args ... args)
+// {
+//     return concat(concat(s1, s2), args ...);
+// }
 
 inline String* concat(const char* first, client::Object* second)
 {
     return concat(new String{first}, second);
 }
 
-inline String* concat(const char* first, String* second)
-{
-    return concat(new String{first}, second);
-}
-
-template <typename First, typename Second, typename ... Args> inline String* concat(First first, Second second, Args ... rest)
-{
-    return concat(concat(first, second), rest ...);
-}
+// inline String* concat(const char* first, const String* second)
+// {
+//     return concat(new String{first}, second);
+// }
 
 //inline String operator "" _s(const char* src, size_t) { return {src}; }
 // inline String* operator + (String&& s1, String* s2) { return s1.concat(s2); }

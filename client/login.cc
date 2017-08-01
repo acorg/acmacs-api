@@ -82,9 +82,7 @@ void Login::widget()
 
     auto* form = document.createElement("form");
 
-    auto* username_label = document.createElement("div");
-    username_label->set_textContent("Username");
-    form->appendChild(username_label);
+    auto* username_label = toolkit::append_child(form, "div", toolkit::text{"Username"});
     auto* username_input = static_cast<HTMLInputElement*>(document.createElement("input"));
     username_input->setAttribute("autocomplete", "username");
     username_input->setAttribute("spellcheck", "false");
@@ -93,13 +91,12 @@ void Login::widget()
     username_input->setAttribute("type", "email");
     form->appendChild(username_input);
 
-    auto* username_separator = document.createElement("div");
-    username_separator->set_className("separator");
-    form->appendChild(username_separator);
+    // auto* username_separator = document.createElement("div");
+    // username_separator->set_className("separator");
+    // form->appendChild(username_separator);
+    auto* username_separator = toolkit::append_child(form, "div", toolkit::class_{"separator"});
 
-    auto* password_label = document.createElement("div");
-    password_label->set_textContent("Password");
-    form->appendChild(password_label);
+    auto* password_label = toolkit::append_child(form, "div", toolkit::text{"Password"});
     auto* password_input = static_cast<HTMLInputElement*>(document.createElement("input"));
     password_input->setAttribute("autocomplete", "password");
     password_input->setAttribute("spellcheck", "false");
