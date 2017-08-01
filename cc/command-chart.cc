@@ -33,7 +33,7 @@ void Command_root_charts::run()
                     MongodbAccess::include("name", "parent", "_m", "keywords", "search", "p.o")
                     .sort("_m", -1).skip(skip).limit(use_limit)
                     };
-        const auto results_json = results.json(false); // results.count() is available only after calling results.json()
+        const auto results_json = results.json(); // results.count() is available only after calling results.json()
         if (chunk_no != 0 && results.count() == 0)
             break; // no more data but at least one chunk alreay reported
         send(to_json::object("chart_count", results.count(), "charts", to_json::raw{results_json}));

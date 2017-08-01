@@ -1,23 +1,4 @@
 #include "mongo-access.hh"
-#include "bson-to-json.hh"
-
-// ----------------------------------------------------------------------
-
-template <typename Writer> static std::string json_w(DocumentFindResults& aResults, std::string key)
-{
-    Writer writer;
-    if (!key.empty())
-        writer << json_writer::start_object << json_writer::key(key);
-    writer << json_writer::start_array;
-    for (auto& record: aResults.cursor()) {
-        writer << record;
-        aResults.increment_count();
-    }
-    writer << json_writer::end_array;
-    if (!key.empty())
-        writer << json_writer::end_object;
-    return writer << json_writer::finalize;
-}
 
 // ----------------------------------------------------------------------
 
@@ -55,14 +36,6 @@ void DocumentFindResults::build(const char* aCollection)
     }
 
 } // DocumentFindResults::build
-
-// ----------------------------------------------------------------------
-
-std::string DocumentFindResults::json(bool pretty, std::string key)
-{
-    return pretty ? json_w<json_writer::pretty>(*this, key) : json_w<json_writer::compact>(*this, key);
-
-} // DocumentFindResults::json
 
 // ----------------------------------------------------------------------
 

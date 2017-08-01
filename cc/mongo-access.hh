@@ -197,7 +197,7 @@ class DocumentFindResults : public MongodbAccess
     inline DocumentFindResults(mongocxx::database aDb, const char* aCollection, const bson_value& aFilter, const mongo_find& aOptions = mongo_find{})
         : DocumentFindResults(aDb, aCollection, aFilter.view(), aOptions) {}
 
-    std::string json(bool pretty = true, std::string key = std::string{});
+    inline std::string json(std::string key = std::string{}) { return to_json::object(key, *this); }
 
     inline size_t count() const { return mCount; }
     inline void increment_count() { ++mCount; }
@@ -211,6 +211,20 @@ class DocumentFindResults : public MongodbAccess
     void build(const char* aCollection);
 
 }; // class DocumentFindResults
+
+namespace to_json
+{
+    template <> inline std::string value(DocumentFindResults& aResults)
+    {
+        std::string target;
+        for (auto& record: aResults.cursor()) {
+            target = internal::array_append(target, record);
+            aResults.increment_count();
+        }
+        return target;
+    }
+
+} // namespace to_json
 
 // ----------------------------------------------------------------------
 
