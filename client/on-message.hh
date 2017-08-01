@@ -31,7 +31,7 @@ class OnMessageBase
 
     inline void operator()(client::MessageEvent* aEvent)
         {
-            auto data = static_cast<client::String*>(aEvent->get_data());
+            auto data = static_cast<String*>(aEvent->get_data());
               //console.log("WaitingForHello::on_message", data);
             process_raw_message(client::JSON.parse(data));
         }
@@ -44,7 +44,7 @@ class OnMessageBase
     //         send(make_json(args...));
     //     }
 
-    inline void send(client::String* aData)
+    inline void send(String* aData)
         {
             console_log("Send: ", aData);
             mWS->send(aData);

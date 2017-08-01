@@ -7,48 +7,53 @@
 
 // ----------------------------------------------------------------------
 
-inline client::String* operator ""_S(const char* src, size_t) { return new client::String{src}; }
+using client::String;
+
+inline String* operator ""_S(const char* src, size_t) { return new String{src}; }
+
+inline bool eq(String* s1, const char* s2) { return s1 == new String{s2}; }
+inline bool eq(const char* s1, String* s2) { return s2 == new String{s1}; }
 
 // ----------------------------------------------------------------------
 
-inline client::Object* stringify_replacer(client::String* key, client::Object* value)
+inline client::Object* stringify_replacer(String* key, client::Object* value)
 {
     if (key == "i0"_S)
         value = client::make_undefined();
     return value;
 }
 
-inline client::String* stringify(client::Object* value, size_t indent = 0)
+inline String* stringify(client::Object* value, size_t indent = 0)
 {
     return client::JSON.stringify(value, cheerp::Callback(&stringify_replacer), client::make_number(indent));
 }
 
 // ----------------------------------------------------------------------
 
-inline client::String* to_String(client::Object* value)
+inline String* to_String(client::Object* value)
 {
-    return is_string(value) ? static_cast<client::String*>(value) : stringify(value);
+    return is_string(value) ? static_cast<String*>(value) : stringify(value);
 }
 
-inline client::String* to_String(client::String* value)
+inline String* to_String(String* value)
 {
     return value;
 }
 
-inline client::String* to_String(const char* value)
+inline String* to_String(const char* value)
 {
-    return new client::String{value};
+    return new String{value};
 }
 
-template <typename T, typename = std::enable_if_t<std::is_arithmetic<T>::value>> inline client::String* to_String(T value)
+template <typename T, typename = std::enable_if_t<std::is_arithmetic<T>::value>> inline String* to_String(T value)
 {
-    return new client::String{value};
+    return new String{value};
 }
 
 // ----------------------------------------------------------------------
 
       // (... && ) - c++17
-// template <typename ... Args> inline std::enable_if_t<(... && std::is_same<Args, client::String*>::value), client::Array*> to_Array_String(Args ... args)
+// template <typename ... Args> inline std::enable_if_t<(... && std::is_same<Args, String*>::value), client::Array*> to_Array_String(Args ... args)
 // {
 //     return new client::Array(args ...);
 // }
@@ -65,45 +70,45 @@ template <typename ... Args> inline client::Array* to_Array_String(Args ... args
 
 // ----------------------------------------------------------------------
 
-inline client::String* concat(client::String* first, client::Object* second)
+inline String* concat(String* first, client::Object* second)
 {
     // if (!is_string(second))
     //     second = client::JSON.stringify(second, cheerp::Callback(&stringify_replacer));
-    // return first->concat(static_cast<client::String*>(second));
+    // return first->concat(static_cast<String*>(second));
     return first->concat(to_String(second));
 }
 
-inline client::String* concat(client::String* first, client::String* second)
+inline String* concat(String* first, String* second)
 {
     return first->concat(second);
 }
 
-inline client::String* concat(client::String* first, const char* second)
+inline String* concat(String* first, const char* second)
 {
     return first->concat(second);
 }
 
-inline client::String* concat(const char* first, client::Object* second)
+inline String* concat(const char* first, client::Object* second)
 {
-    return concat(new client::String{first}, second);
+    return concat(new String{first}, second);
 }
 
-inline client::String* concat(const char* first, client::String* second)
+inline String* concat(const char* first, String* second)
 {
-    return concat(new client::String{first}, second);
+    return concat(new String{first}, second);
 }
 
-template <typename First, typename Second, typename ... Args> inline client::String* concat(First first, Second second, Args ... rest)
+template <typename First, typename Second, typename ... Args> inline String* concat(First first, Second second, Args ... rest)
 {
     return concat(concat(first, second), rest ...);
 }
 
-//inline client::String operator "" _s(const char* src, size_t) { return {src}; }
-// inline client::String* operator + (client::String&& s1, client::String* s2) { return s1.concat(s2); }
-// inline client::String* operator + (client::String& s1, client::String* s2) { return s1.concat(s2); }
-// inline client::String* operator + (const char* s1, client::String& s2) { return client::String{s1}.concat(s2); }
-// inline bool operator == (client::String&& s1, client::String* s2) { return &s1 == s2; }
-// inline bool operator == (client::String* s1, client::String&& s2) { return s1 == &s2; }
+//inline String operator "" _s(const char* src, size_t) { return {src}; }
+// inline String* operator + (String&& s1, String* s2) { return s1.concat(s2); }
+// inline String* operator + (String& s1, String* s2) { return s1.concat(s2); }
+// inline String* operator + (const char* s1, String& s2) { return String{s1}.concat(s2); }
+// inline bool operator == (String&& s1, String* s2) { return &s1 == s2; }
+// inline bool operator == (String* s1, String&& s2) { return s1 == &s2; }
 
 // ----------------------------------------------------------------------
 
@@ -131,12 +136,12 @@ template <typename ... Args> inline client::Object* make_object(Args ... args)
     return result;
 }
 
-inline client::String* make_json(client::Object* src)
+inline String* make_json(client::Object* src)
 {
     return stringify(src);
 }
 
-template <typename ... Args> inline client::String* make_json(Args ... args)
+template <typename ... Args> inline String* make_json(Args ... args)
 {
     return stringify(make_object(args ...));
 }

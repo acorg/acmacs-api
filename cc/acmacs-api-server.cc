@@ -96,7 +96,8 @@ class RootPage : public WsppHttpLocationHandler
             // std::cerr << "ARGV: " << to_json::object(aResource.argv()) << std::endl;
             bool handled = false;
             if (aResource.location() == "/") {
-                aResponse.body = R"(<html><head>
+                aResponse.body = R"(<!DOCTYPE html><html><head>
+                                    <meta charset="utf-8">
                                     <link rel="stylesheet" type="text/css" href="css/acmacs-api-client.css">
                                     <script src="/js/acmacs-api-client.js"></script>
                                     <script src="/js/lib/md5.js"></script>)";

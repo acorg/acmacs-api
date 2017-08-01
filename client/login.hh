@@ -46,7 +46,8 @@ template <typename MessageType> class LoginStep : public OnMessage<MessageType>
 
  private:
     OnMessageBase::TransferTo mTransferTo;
-};
+
+}; // class LoginStep<>
 
 // ----------------------------------------------------------------------
 
@@ -64,7 +65,8 @@ class LoggedIn : public LoginStep<client::LoggedInData>
         {
             LoginStep<client::LoggedInData>::transfer_to(this->pass_transfer_to());
         }
-};
+
+}; // class LoggedIn
 
 // ----------------------------------------------------------------------
 
@@ -74,9 +76,16 @@ class LoginNonce : public LoginStep<client::LoginNonceData>
     using Message = client::LoginNonceData;
     using LoginStep<Message>::LoginStep;
 
+    inline LoginNonce(client::WebSocket* aWS, String* aUser, String* aPassword, OnMessageBase::TransferTo aTransferTo) : LoginStep<Message>{aWS, aTransferTo}, mUser{aUser}, mPassword{aPassword} {}
+
  protected:
     virtual void process_message(Message* aMessage);
-};
+
+ private:
+    String* mUser;
+    String* mPassword;
+
+}; // class LoginNonce
 
 // ----------------------------------------------------------------------
 
@@ -88,7 +97,12 @@ class Login : public LoginStep<client::HelloFromServer>
 
  protected:
     virtual void process_message(Message* aMessage);
-};
+
+ private:
+    void initiate_login(String* aUser, String* aPassword);
+    void widget();
+
+}; // class Login
 
 // ----------------------------------------------------------------------
 

@@ -45,10 +45,11 @@ void Login::process_message(Message* aMessage)
             this->template transfer_send<LoggedIn>(new LoginSessionData{ARGV->session()}, this->pass_transfer_to());
         }
         else if (!is_undefined_or_null(ARGV->user())) {
-            this->template transfer_send<LoginNonce>(new GetNonceCommandData{ARGV->user()}, this->pass_transfer_to());
+            initiate_login(ARGV->user(), ARGV->password());
         }
         else {
-            window.alert("Cannot login: no cridentials");
+            widget();
+              // window.alert("Cannot login: no cridentials");
         }
     }
     else {
@@ -59,12 +60,95 @@ void Login::process_message(Message* aMessage)
 
 // ----------------------------------------------------------------------
 
+void Login::initiate_login(String* aUser, String* aPassword)
+{
+    this->template transfer_send<LoginNonce>(new GetNonceCommandData{aUser}, aUser, aPassword, this->pass_transfer_to());
+
+} // Login::initiate_login
+
+// ----------------------------------------------------------------------
+
+void Login::widget()
+{
+    auto* div1 = document.createElement("div");
+    div1->set_className("login material-design-box-shadow");
+    div1->setAttribute("id", "login");
+    auto* form = document.createElement("form");
+
+    auto* username_label = document.createElement("div");
+    username_label->set_textContent("Username");
+    form->appendChild(username_label);
+    auto* username_input = static_cast<HTMLInputElement*>(document.createElement("input"));
+    username_input->setAttribute("autocomplete", "username");
+    username_input->setAttribute("spellcheck", "false");
+    username_input->setAttribute("tabindex", "0");
+    username_input->setAttribute("name", "username");
+    username_input->setAttribute("type", "email");
+    form->appendChild(username_input);
+
+    auto* password_label = document.createElement("div");
+    password_label->set_textContent("Password");
+    form->appendChild(password_label);
+    auto* password_input = static_cast<HTMLInputElement*>(document.createElement("input"));
+    password_input->setAttribute("autocomplete", "password");
+    password_input->setAttribute("spellcheck", "false");
+    password_input->setAttribute("tabindex", "1");
+    password_input->setAttribute("name", "password");
+    password_input->setAttribute("type", "password");
+    form->appendChild(password_input);
+
+    auto* login_button = document.createElement("div");
+    login_button->set_textContent("Log in");
+    form->appendChild(login_button);
+
+    auto submit = [username_input, password_input, this]() -> void {
+                      if (username_input->get_value()->get_length()) {
+                          initiate_login(username_input->get_value(), password_input->get_value());
+                      }
+                      else {
+                          username_input->focus();
+                      }
+                  };
+
+    auto focused = [](FocusEvent* aEvent) {
+                       static_cast<HTMLInputElement*>(aEvent->get_target())->select();
+                   };
+
+    username_input->addEventListener("focus", cheerp::Callback(focused));
+    password_input->addEventListener("focus", cheerp::Callback(focused));
+
+    username_input->addEventListener("keydown", cheerp::Callback([password_input](KeyboardEvent* aEvent) -> void {
+        if (eq(aEvent->get_key(), "Enter")) {
+            password_input->focus();
+        }
+    }));
+
+    password_input->addEventListener("keydown", cheerp::Callback([submit](KeyboardEvent* aEvent) -> void {
+        if (eq(aEvent->get_key(), "Enter")) {
+            submit();
+        }
+    }));
+
+    login_button->addEventListener("click", cheerp::Callback([submit](MouseEvent* aEvent) -> void {
+        if (static_cast<int>(aEvent->get_button()) == 0)
+            submit();
+    }));
+
+    div1->appendChild(form);
+    document.get_body()->appendChild(div1);
+
+    username_input->focus();
+
+} // Login::widget
+
+// ----------------------------------------------------------------------
+
 void LoginNonce::process_message(Message* aMessage)
 {
     if (is_undefined(aMessage->get_E())) {
         auto* snonce = aMessage->get_login_nonce();
         auto* cnonce = make_cnonce();
-        auto* digest_password = md5(concat(ARGV->user(), ";acmacs-web;", ARGV->password()));
+        auto* digest_password = md5(concat(mUser, ";acmacs-web;", mPassword));
         auto* digest = md5(concat(snonce, ";", cnonce, ";", digest_password));
         this->template transfer_send<LoggedIn>(new LoginPasswordCommandData{cnonce, digest}, this->pass_transfer_to());
     }
@@ -91,9 +175,6 @@ void LoggedIn::process_message(Message* aMessage)
     transfer_to();
 
 } // LoggedIn::process_message
-
-// ----------------------------------------------------------------------
-
 
 // ----------------------------------------------------------------------
 /// Local Variables:
