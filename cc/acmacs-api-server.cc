@@ -92,6 +92,8 @@ class RootPage : public WsppHttpLocationHandler
  public:
     virtual inline bool handle(const HttpResource& aResource, WsppHttpResponseData& aResponse)
         {
+            // std::cerr << "ARGV: " << aResource.argv() << std::endl;
+            // std::cerr << "ARGV: " << to_json::object(aResource.argv()) << std::endl;
             bool handled = false;
             if (aResource.location() == "/") {
                 aResponse.body = R"(<html><head>

@@ -23,7 +23,7 @@ namespace client
             }
 
         inline String* session() { return to_String(*get_S(), static_cast<String*>(make_undefined())); }
-        inline String* user() { return to_String(*get_U(), ""_S); }
+        inline String* user() { return to_String(*get_U(), static_cast<String*>(make_undefined())); }
         inline String* password() { return to_String(*get_P(), ""_S); }
     };
 

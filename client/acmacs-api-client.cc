@@ -174,7 +174,6 @@ void on_load()
       // var ws = new WebSocket("wss://" + host_port + "/myws", "protocolOne");
     auto* ws = new WebSocket("wss://localhost:1169/api");
     login(ws, [](client::WebSocket* aWS) { return new JsonPrinter{aWS}; });
-
     static_cast<EventTarget&>(window).set_("session", new Session{});
 }
 

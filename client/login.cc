@@ -41,10 +41,10 @@ void Login::process_message(Message* aMessage)
 {
     auto server_version = aMessage->get_hello();
     if ("acmacs-api-server-v1"_S == server_version) {
-        if (!is_undefined(ARGV->session())) {
+        if (!is_undefined_or_null(ARGV->session())) {
             this->template transfer_send<LoggedIn>(new LoginSessionData{ARGV->session()}, this->pass_transfer_to());
         }
-        else if (!is_undefined(ARGV->user())) {
+        else if (!is_undefined_or_null(ARGV->user())) {
             this->template transfer_send<LoginNonce>(new GetNonceCommandData{ARGV->user()}, this->pass_transfer_to());
         }
         else {
