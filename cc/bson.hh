@@ -3,7 +3,9 @@
 #pragma GCC diagnostic push
 #include "mongo-diagnostics.hh"
 #include <bsoncxx/builder/basic/document.hpp>
-// #include <bsoncxx/json.hpp>
+#include <bsoncxx/builder/basic/array.hpp>
+#include <bsoncxx/types.hpp>
+#include <bsoncxx/types/value.hpp>
 #pragma GCC diagnostic pop
 
 #include "acmacs-base/from-json.hh"
@@ -86,12 +88,6 @@ namespace to_bson
 
 // ======================================================================
 
-namespace from_bson
-{
-} // namespace from_bson
-
-// ======================================================================
-
 namespace to_json
 {
     inline std::string symbol_(const char* tag) { return value(std::string{"*"} + tag + "*"); }
@@ -99,6 +95,11 @@ namespace to_json
     template <> inline std::string value(const bsoncxx::document::view& aView)
     {
         return object(std::begin(aView), std::end(aView), [](const auto& element) { return std::make_tuple(element.key().to_string(), element.get_value()); });
+    }
+
+    template <> inline std::string value(bsoncxx::document::view&& aView)
+    {
+        return value(const_cast<const bsoncxx::document::view&>(aView));
     }
 
     template <> inline std::string value(const bsoncxx::types::value& aV);

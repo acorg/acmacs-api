@@ -1,6 +1,5 @@
 #include <limits>
 #include "acmacs-webserver/print.hh"
-#include "bson-to-json.hh"
 #include "command-chart.hh"
 #include "session.hh"
 #include "acmacs-api-server.hh"
@@ -64,8 +63,8 @@ void Command_chart_keywords::run()
     auto acmacs_web_db = db();
     auto cursor = MongodbAccess{acmacs_web_db}.distinct("charts", "keywords", session().read_permissions());
     if (auto values = (*cursor.begin())["values"]; values) {
-        const std::string result = json_writer::compact_json(values.get_array().value);
-        send(to_json::object("keywords", to_json::raw{result}));
+        const auto& val = values.get_array().value;
+        send(to_json::object("keywords", to_json::raw{to_json::value(val)}));
     }
     else {
         send_error("No data from server");
@@ -88,8 +87,8 @@ void Command_chart_owners::run()
     auto acmacs_web_db = db();
     auto cursor = MongodbAccess{acmacs_web_db}.distinct("charts", "p.o", session().read_permissions());
     if (auto values = (*cursor.begin())["values"]; values) {
-        const std::string result = json_writer::compact_json(values.get_array().value);
-        send(to_json::object("owners", to_json::raw{result}));
+        const auto& val = values.get_array().value;
+        send(to_json::object("owners", to_json::raw{to_json::value(val)}));
     }
     else {
         send_error("No data from server");
@@ -118,14 +117,15 @@ Command_chart::Command_chart(from_json::object&& aSrc, MongoAcmacsC2Access& aMon
 void Command_chart::run()
 {
     auto acmacs_web_db = db();
-    auto chart = MongodbAccess{acmacs_web_db}.find_one(
+    const auto chart = MongodbAccess{acmacs_web_db}.find_one(
         "charts",
         to_bson::object("_id", get_id(), session().read_permissions()),
         MongodbAccess::exclude("_id", "projections", "conformance"));
     if (!chart)
         throw Error{"not found"};
     const auto ace = mAcmacsC2.ace_uncompressed(session().id(), get_string("id"), 5);
-    send(to_json::object("chart", to_json::raw{to_json::value(std::move(*chart))}, "chart_ace", to_json::raw{ace}));
+      // send(to_json::object("chart", to_json::raw{to_json::value(chart->view())}, "chart_ace", to_json::raw{ace}));
+    send(to_json::object("chart", chart->view(), "chart_ace", to_json::raw{ace}));
 
 } // Command_chart::run
 
