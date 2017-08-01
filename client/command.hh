@@ -11,6 +11,7 @@ namespace client
         inline CommandData(String* aCmd) { set_C(aCmd) ; }
 
         void set_C(String*);
+        void set_D(String*);    // command id
     };
 
       // --------------------------------------------------

@@ -26,6 +26,7 @@ class Command : public from_json::object
     Command(from_json::object&& aSrc, MongoAcmacsC2Access& aMongoAccess, ClientConnection& aClientConnection, size_t aCommandNumber);
 
     inline std::string command_name() const { return get_string("C"); }
+    inline std::string command_id() const { return get_string("D"); }
     inline size_t command_number() const { return mCommandNumber; }
 
     virtual void run() = 0;

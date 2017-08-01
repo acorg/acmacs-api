@@ -40,6 +40,11 @@ inline client::String* to_String(const char* value)
     return new client::String{value};
 }
 
+template <typename T, typename = std::enable_if_t<std::is_arithmetic<T>::value>> inline client::String* to_String(T value)
+{
+    return new client::String{value};
+}
+
 // ----------------------------------------------------------------------
 
       // (... && ) - c++17

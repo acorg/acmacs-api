@@ -19,7 +19,7 @@ class OnMessageBase
  public:
     using TransferTo = std::function<OnMessageBase* (client::WebSocket*)>;
 
-    inline OnMessageBase(client::WebSocket* aWS) : mWS{aWS} {}
+    inline OnMessageBase(client::WebSocket* aWS) : mWS{aWS}, mCommandId{0} {}
     OnMessageBase(const OnMessageBase&) = default;
     inline virtual ~OnMessageBase() {}
 
@@ -52,13 +52,14 @@ class OnMessageBase
 
     inline void send(client::CommandData* aCommand)
         {
+            aCommand->set_D(to_String(++mCommandId));
             send(to_String(aCommand));
         }
 
-    inline void send(const char* aData)
-        {
-            send(to_String(aData));
-        }
+    // inline void send(const char* aData)
+    //     {
+    //         send(to_String(aData));
+    //     }
 
     template <typename NewHandler> inline void transfer(NewHandler&& aHandler)
         {
@@ -86,6 +87,7 @@ class OnMessageBase
 
  private:
     client::WebSocket* mWS;
+    size_t mCommandId;
 
 }; // class OnMessageBase
 
