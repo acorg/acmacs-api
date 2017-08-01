@@ -11,7 +11,6 @@
 #include "acmacs-c2.hh"
 #include "command.hh"
 #include "command-factory.hh"
-#include "bson-to-json.hh"
 
 // ----------------------------------------------------------------------
 
@@ -99,7 +98,7 @@ class RootPage : public WsppHttpLocationHandler
                                     <link rel="stylesheet" type="text/css" href="css/acmacs-api-client.css">
                                     <script src="/js/acmacs-api-client.js"></script>
                                     <script src="/js/lib/md5.js"></script>)";
-                aResponse.body += "<script>ARGV = " + json_writer::compact_json(aResource.argv()) + "</script>";
+                aResponse.body += "<script>ARGV = " + to_json::object(aResource.argv()) + "</script>";
                 aResponse.body += "</head><body><h1>acmacs-api-server</h1></body></html>";
                 handled = true;
             }

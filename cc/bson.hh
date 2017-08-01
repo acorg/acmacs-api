@@ -96,58 +96,95 @@ namespace to_json
 {
     inline std::string symbol_(const char* tag) { return value(std::string{"*"} + tag + "*"); }
 
-    // template <> inline std::string value(bsoncxx::document::view&& aView)
+    template <> inline std::string value(const bsoncxx::document::view& aView)
+    {
+        return object(std::begin(aView), std::end(aView), [](const auto& element) { return std::make_tuple(element.key().to_string(), element.get_value()); });
+    }
+
+    template <> inline std::string value(const bsoncxx::types::value& aV);
+
+    // template <> inline std::string value(const bsoncxx::document::element& aElement)
     // {
-    //     return object(std::begin(aView), std::end(aView), [](const auto& element) { return std::make_tuple(element.key().to_string(), element.get_value()); });
+    //     if (aElement) {
+    //         const auto val = aElement.get_value();
+    //         return value(val);
+    //     }
+    //     else
+    //         return symbol_("invalid");
     // }
 
-    // template <> inline std::string value(bsoncxx::types::value&& aV)
-    // {
-    //     switch (aV.type()) {
-    //       case bsoncxx::type::k_double:
-    //           return value(aV.get_double().value);
-    //       case bsoncxx::type::k_utf8:
-    //           return value(aV.get_utf8().value.to_string());
-    //       case bsoncxx::type::k_document:
-    //           return value(aV.get_document().value);
-    //       case bsoncxx::type::k_array:
-    //           return value(aV.get_array().value);
-    //       case bsoncxx::type::k_binary:
-    //           return value(aV.get_binary());
-    //       case bsoncxx::type::k_undefined:
-    //           return value(to_json::undefined);
-    //       case bsoncxx::type::k_oid:
-    //           return value(aV.get_oid());
-    //       case bsoncxx::type::k_bool:
-    //           return value(aV.get_bool().value);
-    //       case bsoncxx::type::k_date:
-    //           return symbol_("date");
-    //       case bsoncxx::type::k_null:
-    //           return value(to_json::null);
-    //       case bsoncxx::type::k_regex:
-    //           return symbol_("regex");
-    //       case bsoncxx::type::k_dbpointer:
-    //           return symbol_("dbpointer");
-    //       case bsoncxx::type::k_code:
-    //           return symbol_("code");
-    //       case bsoncxx::type::k_symbol:
-    //           return symbol_("symbol");
-    //       case bsoncxx::type::k_codewscope:
-    //           return symbol_("codewscope");
-    //       case bsoncxx::type::k_int32:
-    //           return value(aV.get_int32().value);
-    //       case bsoncxx::type::k_timestamp:
-    //           return symbol_("timestamp");
-    //       case bsoncxx::type::k_int64:
-    //           return value(aV.get_int64().value);
-    //       case bsoncxx::type::k_decimal128:
-    //           return symbol_("decimal128"); // aV.get_decimal128().value;
-    //       case bsoncxx::type::k_maxkey:
-    //           return symbol_("maxkey");
-    //       case bsoncxx::type::k_minkey:
-    //           return symbol_("minkey");
-    //     }
-    // }
+    template <> inline std::string value(const bsoncxx::array::element& aElement)
+    {
+        if (aElement) {
+            const auto val = aElement.get_value();
+            return value(val);
+        }
+        else
+            return symbol_("invalid");
+    }
+
+    template <> inline std::string value(const bsoncxx::array::view& aView)
+    {
+        return array(std::begin(aView), std::end(aView));
+    }
+
+    template <> inline std::string value(const bsoncxx::types::b_binary& aBinary)
+    {
+        return value(std::string{"*binary(size: "} + std::to_string(aBinary.size) + ")*");
+    }
+
+    template <> inline std::string value(const bsoncxx::types::b_oid& aOid)
+    {
+        return value(aOid.value.to_string());
+    }
+
+    template <> inline std::string value(const bsoncxx::types::value& aV)
+    {
+        switch (aV.type()) {
+          case bsoncxx::type::k_double:
+              return value(aV.get_double().value);
+          case bsoncxx::type::k_utf8:
+              return value(aV.get_utf8().value.to_string());
+          case bsoncxx::type::k_document:
+              return value(aV.get_document().value);
+          case bsoncxx::type::k_array:
+              return value(aV.get_array().value);
+          case bsoncxx::type::k_binary:
+              return value(aV.get_binary());
+          case bsoncxx::type::k_undefined:
+              return value(to_json::undefined);
+          case bsoncxx::type::k_oid:
+              return value(aV.get_oid());
+          case bsoncxx::type::k_bool:
+              return value(aV.get_bool().value);
+          case bsoncxx::type::k_date:
+              return symbol_("date");
+          case bsoncxx::type::k_null:
+              return value(to_json::null);
+          case bsoncxx::type::k_regex:
+              return symbol_("regex");
+          case bsoncxx::type::k_dbpointer:
+              return symbol_("dbpointer");
+          case bsoncxx::type::k_code:
+              return symbol_("code");
+          case bsoncxx::type::k_symbol:
+              return symbol_("symbol");
+          case bsoncxx::type::k_codewscope:
+              return symbol_("codewscope");
+          case bsoncxx::type::k_int32:
+              return value(aV.get_int32().value);
+          case bsoncxx::type::k_timestamp:
+              return symbol_("timestamp");
+          case bsoncxx::type::k_int64:
+              return value(aV.get_int64().value);
+          case bsoncxx::type::k_decimal128:
+              return symbol_("decimal128"); // aV.get_decimal128().value;
+          case bsoncxx::type::k_maxkey:
+              return symbol_("maxkey");
+          case bsoncxx::type::k_minkey:
+              return symbol_("minkey");
+        }
+    }
 
 } // namespace to_json
 
