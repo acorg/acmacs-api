@@ -86,6 +86,10 @@ void Login::widget()
     username_input->setAttribute("type", "email");
     form->appendChild(username_input);
 
+    auto* username_separator = document.createElement("div");
+    username_separator->set_className("separator");
+    form->appendChild(username_separator);
+
     auto* password_label = document.createElement("div");
     password_label->set_textContent("Password");
     form->appendChild(password_label);
@@ -96,6 +100,10 @@ void Login::widget()
     password_input->setAttribute("name", "password");
     password_input->setAttribute("type", "password");
     form->appendChild(password_input);
+
+    auto* password_separator = document.createElement("div");
+    password_separator->set_className("separator");
+    form->appendChild(password_separator);
 
     auto* login_button = document.createElement("div");
     login_button->set_textContent("Log in");
