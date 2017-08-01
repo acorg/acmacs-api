@@ -4,7 +4,6 @@
 
 #include "command-chain.hh"
 #include "session.hh"
-#include "bson-to-json.hh"
 
 // ----------------------------------------------------------------------
 
@@ -76,7 +75,7 @@ void Command_chain_keywords::run()
         std::string result;
         const auto& array = values.get_array().value;
         if (include_rd_keywords()) {
-            result = json_writer::compact_json(array);
+            result = to_json::array(std::begin(array), std::end(array));
         }
         else {
             for (const auto& element: array) {
@@ -108,8 +107,8 @@ void Command_chain_owners::run()
     auto acmacs_web_db = db();
     auto cursor = MongodbAccess{acmacs_web_db}.distinct("inspectors", "p.o", session().read_permissions());
     if (auto values = (*cursor.begin())["values"]; values) {
-        const std::string result = json_writer::compact_json(values.get_array().value);
-        send(to_json::object("owners", to_json::raw{result}));
+        const auto& val = values.get_array().value;
+        send(to_json::object("owners", to_json::raw{to_json::value(val)}));
     }
     else {
         send_error("No data from server");
@@ -132,8 +131,8 @@ void Command_chain_types::run()
     auto acmacs_web_db = db();
     auto cursor = MongodbAccess{acmacs_web_db}.distinct("inspectors", "_t", session().read_permissions());
     if (auto values = (*cursor.begin())["values"]; values) {
-        const std::string result = json_writer::compact_json(values.get_array().value);
-        send(to_json::object("types", to_json::raw{result}));
+        const auto& val = values.get_array().value;
+        send(to_json::object("types", to_json::raw{to_json::value(val)}));
     }
     else {
         send_error("No data from server");
