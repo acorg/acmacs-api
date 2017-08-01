@@ -102,7 +102,7 @@ class RootPage : public WsppHttpLocationHandler
                                     <script src="/js/acmacs-api-client.js"></script>
                                     <script src="/js/lib/md5.js"></script>)";
                 aResponse.body += "<script>ARGV = " + to_json::object(aResource.argv()) + "</script>";
-                aResponse.body += "</head><body><h1>acmacs-api-server</h1></body></html>";
+                aResponse.body += "</head><body></body></html>";
                 handled = true;
             }
             return handled;

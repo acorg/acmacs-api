@@ -71,8 +71,14 @@ void Login::initiate_login(String* aUser, String* aPassword)
 void Login::widget()
 {
     auto* div1 = document.createElement("div");
-    div1->set_className("login material-design-box-shadow");
+    div1->set_className("login box-shadow-popup");
     div1->setAttribute("id", "login");
+
+    auto* title = document.createElement("div");
+    title->set_textContent("Acmacs-Web");
+    title->set_className("title");
+    div1->appendChild(title);
+
     auto* form = document.createElement("form");
 
     auto* username_label = document.createElement("div");
@@ -102,11 +108,12 @@ void Login::widget()
     form->appendChild(password_input);
 
     auto* password_separator = document.createElement("div");
-    password_separator->set_className("separator");
+    password_separator->set_className("separator separator-focused");
     form->appendChild(password_separator);
 
     auto* login_button = document.createElement("div");
-    login_button->set_textContent("Log in");
+    login_button->set_textContent("Log In");
+    login_button->set_className("button box-shadow-button");
     form->appendChild(login_button);
 
     auto submit = [username_input, password_input, this]() -> void {
