@@ -1,3 +1,5 @@
+$login-focused-color: #4285f4
+
 #login
 
   width: 20em;
@@ -32,16 +34,18 @@
     margin-bottom: 2em
 
   div.separator-focused
-    background-color: rgba(100,100,255,1)
+    background-color: $login-focused-color
     height: 2px
+    transition: 0.5s
 
   div.label-focused
-    color: rgba(100,100,255,1)
+    color: $login-focused-color
+    transition: 0.5s
 
   .button
     margin-left: auto
     width: 4em;
-    background-color: #4285f4
+    background-color: $login-focused-color
     color: white
     font-size: 1.2em;
     padding: 0.2em 0.2em;
