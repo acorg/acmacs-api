@@ -8,6 +8,7 @@ void make_asm_definitions()
       // https://stackoverflow.com/questions/4059147/check-if-a-variable-is-a-string
     __asm__("window.is_string = function(obj) { return Object.prototype.toString.call(obj) === '[object String]'; };");
     __asm__("window.typeof = function(obj) { return typeof(obj); };");
+    __asm__("window.debug = function() { debugger; };");
     __asm__("window.make_undefined = function() { return undefined; };");
     __asm__("window.is_undefined = function(obj) { return obj === undefined; };");
     __asm__("window.is_undefined_or_null = function(obj) { return obj === undefined || obj === null; };");

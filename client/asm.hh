@@ -8,6 +8,7 @@ namespace client
 {
     bool is_string(client::Object*);
     String* typeof(client::Object*);
+    void debug();
 
     client::Object* make_undefined(); // don't know how to make undefined in cheerp 1.3 otherwise
     bool is_undefined(client::Object*);

@@ -58,6 +58,7 @@ void Login::process_message(Message* aMessage)
         send(new LoginPasswordCommandData{cnonce, digest});
     }
     else if (eq(aMessage->get_C(), "login_digest") || eq(aMessage->get_C(), "login_session")) {
+        debug();
         mWidget->hide();
         mPassword = nullptr;
         mUser = nullptr;
