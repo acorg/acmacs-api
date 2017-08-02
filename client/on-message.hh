@@ -14,7 +14,7 @@
 
 template <typename MessageType> class OnMessage;
 
-class OnMessageBase
+class OnMessageBase : public client::Object
 {
  public:
     using TransferTo = std::function<OnMessageBase* (client::WebSocket*)>;
@@ -25,7 +25,7 @@ class OnMessageBase
 
       // called upon transferring to this handler.
       // Could be used to send message.
-    virtual void upon_transfer()
+    virtual inline void upon_transfer()
         {
         }
 
@@ -34,6 +34,11 @@ class OnMessageBase
             auto data = static_cast<String*>(aEvent->get_data());
               //console.log("WaitingForHello::on_message", data);
             process_raw_message(client::JSON.parse(data));
+        }
+
+    inline void set_onmessage()
+        {
+            mWS->set_onmessage(cheerp::Callback([this](client::MessageEvent* aEvent) { (*this)(aEvent); }));
         }
 
  protected:
@@ -61,28 +66,26 @@ class OnMessageBase
     //         send(to_String(aData));
     //     }
 
-    template <typename NewHandler> inline void transfer(NewHandler&& aHandler)
+    template <typename NewHandler> inline void transfer(NewHandler* aHandler)
         {
-            mWS->set_onmessage(cheerp::Callback(aHandler));
-            aHandler.upon_transfer();
+            aHandler->set_onmessage();
+            aHandler->upon_transfer();
         }
 
-    template <typename NewHandler, typename ... Args> inline void transfer(Args ... args)
+    template <typename NewHandler, typename ... Args> inline void transfer(Args&& ... args)
         {
-            transfer(NewHandler{mWS, args ...});
+            transfer(new NewHandler{mWS, std::forward<Args>(args) ...});
         }
 
-    template <typename NewHandler, typename ... Args> inline void transfer_send(client::CommandData* aCommand, Args ... args)
+    template <typename NewHandler, typename ... Args> inline void transfer_send(client::CommandData* aCommand, Args&& ... args)
         {
-            transfer<NewHandler>(args ...);
+            transfer<NewHandler>(std::forward<Args>(args) ...);
             send(aCommand);
         }
 
     inline void transfer_to(TransferTo aHandlerMaker)
         {
-            OnMessageBase& handler = *aHandlerMaker(mWS);
-            mWS->set_onmessage(cheerp::Callback([&handler](client::MessageEvent* aEvent) { handler(aEvent); }));
-            handler.upon_transfer();
+            transfer(aHandlerMaker(mWS));
         }
 
  private:
@@ -101,26 +104,25 @@ template <typename MessageType> class OnMessage : public OnMessageBase
     using OnMessageBase::OnMessageBase;
 
  protected:
-    inline bool no_error(MessageType* aMessage)
-        {
-            auto* err = aMessage->get_E();
-            if (is_not_null(err)) {
-                console_error("ERROR:", err);
-                return false;
-            }
-            return true;
-        }
-
     virtual inline void process_raw_message(client::Object* aMessage)
         {
             console_log("raw-message", aMessage);
             auto msg = static_cast<MessageType*>(aMessage);
-            if (no_error(msg)) {
+            auto* err = msg->get_E();
+            if (is_undefined_or_null(err)) {
                 process_message(msg);
+            }
+            else {
+                process_error(err);
             }
         }
 
     virtual void process_message(MessageType* aMessage) = 0;
+
+    virtual inline void process_error(String* aError)
+        {
+            console_error("ERROR:", aError);
+        }
 
 }; // OnMessage<>
 

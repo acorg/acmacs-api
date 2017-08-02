@@ -13,9 +13,8 @@ ClientConnection::~ClientConnection()
 
 void ClientConnection::make_session(mongocxx::database& aDb)
 {
-    if (mSession)
-        throw Error{"session already made"};
-    mSession = std::make_shared<Session>(aDb);
+    if (!mSession)
+        mSession = std::make_shared<Session>(aDb);
 
 } // ClientConnection::make_session
 

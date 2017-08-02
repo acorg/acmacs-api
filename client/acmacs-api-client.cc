@@ -5,7 +5,6 @@
 #include <vector>
 
 #include "string.hh"
-#include "argv.hh"
 #include "session.hh"
 #include "login.hh"
 
@@ -17,6 +16,11 @@ namespace client
     // inline String* to_String(const char* src) { return new String{src}; }
 
     struct EchoMessage : public Object {};
+
+    struct HelloFromServer : public ResponseData
+    {
+        String* get_hello();
+    };
 
     struct Command_users : public CommandData
     {
@@ -92,6 +96,7 @@ using namespace client;
 
 void webMain();
 static void on_load();
+static void start(client::WebSocket* aWS);
 
 // ----------------------------------------------------------------------
 
@@ -174,10 +179,56 @@ void on_load()
       // var host_port = window.location.href.match(/https?:\/\/([^\/]+)/i)[1];
       // var ws = new WebSocket("wss://" + host_port + "/myws", "protocolOne");
     auto* ws = new WebSocket("wss://localhost:1169/api");
-    login(ws, [](client::WebSocket* aWS) { return new JsonPrinter{aWS}; });
+      // login(ws, [](client::WebSocket* aWS) { return new JsonPrinter{aWS}; });
+    start(ws);
     static_cast<EventTarget&>(window).set_("session", new Session{});
 }
 
+// ----------------------------------------------------------------------
+
+class GetHello : public OnMessage<client::HelloFromServer>
+{
+ public:
+    inline GetHello(client::WebSocket* aWS, TransferTo aTransferTo)
+        : OnMessage<Message>{aWS}, mTransferTo{aTransferTo} {}
+      // using Message = client::LoginData;
+
+ protected:
+    virtual void process_message(Message* aMessage);
+
+ private:
+    TransferTo mTransferTo;
+
+    // inline void transfer_to()
+    //     {
+    //         LoginStep<client::LoggedInData>::transfer_to(this->pass_transfer_to());
+    //     }
+
+}; // class LoggedIn
+
+// ----------------------------------------------------------------------
+
+void GetHello::process_message(Message* aMessage)
+{
+    auto server_version = aMessage->get_hello();
+    if (eq("acmacs-api-server-v1", server_version)) {
+        transfer<Login>(mTransferTo);
+
+    }
+    else {
+        window.alert(concat("Unsupported server version: ", server_version));
+    }
+
+} // GetHello::process_message
+
+// ----------------------------------------------------------------------
+
+void start(client::WebSocket* aWS)
+{
+    auto* get_hello = new GetHello(aWS, [](client::WebSocket* ws) { return new JsonPrinter{ws}; });
+    get_hello->set_onmessage();
+
+} // start
 
 // ----------------------------------------------------------------------
 /// Local Variables:
