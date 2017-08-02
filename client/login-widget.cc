@@ -6,6 +6,34 @@
 LoginWidget::LoginWidget(Login* aLogin)
     : mLogin(aLogin)
 {
+    create();
+    attach();
+
+} // LoginWidget::LoginWidget
+
+// ----------------------------------------------------------------------
+
+void LoginWidget::show()
+{
+    // attach();
+    toolkit::remove_class(div, "hidden");
+    username_input->focus();
+
+} // LoginWidget::show
+
+// ----------------------------------------------------------------------
+
+void LoginWidget::hide()
+{
+    // dettach();
+    toolkit::add_class(div, "hidden");
+
+} // LoginWidget::hide
+
+// ----------------------------------------------------------------------
+
+void LoginWidget::create()
+{
     using namespace toolkit;
 
     div = append_child(document.get_body(), "div", class_{"login box-shadow-popup hidden"}, attr{"id", "login"});
@@ -23,27 +51,9 @@ LoginWidget::LoginWidget(Login* aLogin)
     password_input = static_cast<HTMLInputElement*>(append_child(form, "input", attr{"autocomplete", "password"}, attr{"spellcheck", "false"}, attr{"tabIndex", "2"}, attr{"name", "password"}, attr{"type", "password"}));
     password_separator = append_child(form, "div", class_{"separator"});
     login_button = append_child(form, "div", text{"Log In"}, class_{"button box-shadow-button"});
+    error_message = append_child(form, "div", class_{"error-message"});
 
-} // LoginWidget::LoginWidget
-
-// ----------------------------------------------------------------------
-
-void LoginWidget::show()
-{
-    attach();
-    toolkit::remove_class(div, "hidden");
-    username_input->focus();
-
-} // LoginWidget::show
-
-// ----------------------------------------------------------------------
-
-void LoginWidget::hide()
-{
-    dettach();
-    toolkit::add_class(div, "hidden");
-
-} // LoginWidget::hide
+} // LoginWidget::create
 
 // ----------------------------------------------------------------------
 
@@ -51,15 +61,6 @@ void LoginWidget::attach()
 {
     using namespace client;
     using namespace toolkit;
-
-    auto submit = [this]() -> void {
-                      if (username_input->get_value()->get_length()) {
-                          mLogin->initiate_login(username_input->get_value(), password_input->get_value());
-                      }
-                      else {
-                          username_input->focus();
-                      }
-                  };
 
     username_input->addEventListener("focus", cheerp::Callback([this](FocusEvent*) {
         username_input->select();
@@ -84,18 +85,20 @@ void LoginWidget::attach()
     }));
 
     username_input->addEventListener("keydown", cheerp::Callback([this](KeyboardEvent* aEvent) -> void {
+        error_message->set_textContent("");
         if (eq(aEvent->get_key(), "Enter")) {
             password_input->focus();
         }
     }));
 
-    password_input->addEventListener("keydown", cheerp::Callback([submit](KeyboardEvent* aEvent) -> void {
+    password_input->addEventListener("keydown", cheerp::Callback([this](KeyboardEvent* aEvent) -> void {
+        error_message->set_textContent("");
         if (eq(aEvent->get_key(), "Enter")) {
             submit();
         }
     }));
 
-    login_button->addEventListener("click", cheerp::Callback([submit](MouseEvent* aEvent) -> void {
+    login_button->addEventListener("click", cheerp::Callback([this](MouseEvent* aEvent) -> void {
         if (static_cast<int>(aEvent->get_button()) == 0)
             submit();
     }));
@@ -104,10 +107,24 @@ void LoginWidget::attach()
 
 // ----------------------------------------------------------------------
 
-void LoginWidget::dettach()
+void LoginWidget::submit()
 {
+    if (username_input->get_value()->get_length()) {
+        mLogin->initiate_login(username_input->get_value(), password_input->get_value());
+    }
+    else {
+        error_message->set_textContent("Username cannot be empty");
+        username_input->focus();
+    }
 
-} // LoginWidget::dettach
+} // LoginWidget::submit
+
+// ----------------------------------------------------------------------
+
+// void LoginWidget::dettach()
+// {
+
+// } // LoginWidget::dettach
 
 // ----------------------------------------------------------------------
 /// Local Variables:

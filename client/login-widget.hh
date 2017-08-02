@@ -11,8 +11,8 @@ class LoginWidget : public Widget
  public:
     LoginWidget(Login* aLogin);
 
-    void show();
-    void hide();
+    virtual void show();
+    virtual void hide();
 
  private:
     using HTMLElement = client::HTMLElement;
@@ -27,9 +27,12 @@ class LoginWidget : public Widget
     HTMLInputElement* password_input;
     HTMLElement* password_separator;
     HTMLElement* login_button;
+    HTMLElement* error_message;
 
-    void attach();
-    void dettach();
+    void create();
+    virtual void attach();
+    // virtual void dettach();
+    void submit();
 
 }; // class LoginWidget
 

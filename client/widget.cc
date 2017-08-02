@@ -1,15 +1,14 @@
-#pragma once
-
-#include "toolkit-basic.hh"
+#include "widget.hh"
 
 // ----------------------------------------------------------------------
 
-class Widget
+Widget::~Widget()
 {
- public:
-    virtual ~Widget();
 
-}; // class Widget
+} // Widget::~Widget
+
+// ----------------------------------------------------------------------
+
 
 // ----------------------------------------------------------------------
 /// Local Variables:

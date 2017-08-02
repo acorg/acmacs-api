@@ -1,6 +1,9 @@
 # -*- Makefile -*-
 # Eugene Skepner 2017
 
+# to generate compile_commands.json use
+# intercept-build --override-compiler --use-c++ /usr/local/opt/llvm/bin/clang++ make -j6
+
 # ----------------------------------------------------------------------
 
 MAKEFLAGS = -w
@@ -12,7 +15,7 @@ ACMACS_API_SERVER_SOURCES = acmacs-api-server.cc mongo-access.cc session.cc acma
 
 ACMACS_API_CLIENT_JS = $(DIST)/acmacs-api-client.js.gz
 ACMACS_API_CLIENT_CSS = $(DIST)/acmacs-api-client.css.gz
-ACMACS_API_CLIENT_SOURCES = acmacs-api-client.cc asm.cc login.cc login-widget.cc
+ACMACS_API_CLIENT_SOURCES = acmacs-api-client.cc asm.cc login.cc widget.cc login-widget.cc
 
 API_DIRECT = $(DIST)/api-direct
 API_DIRECT_SOURCES = api-direct.cc mongo-access.cc session.cc acmacs-c2.cc client-connection.cc $(COMMANDS_SOURCES)
@@ -85,6 +88,9 @@ test: install
 
 checks: check-acmacsd-root check-cheerp check-sassc check-libcurl
 
+rtags:
+	make -nk | /usr/local/bin/rc --compile - || true
+
 # ----------------------------------------------------------------------
 
 -include $(BUILD)/*.d
@@ -93,15 +99,15 @@ checks: check-acmacsd-root check-cheerp check-sassc check-libcurl
 
 $(API_DIRECT): $(patsubst %.cc,$(BUILD)/%.o,$(API_DIRECT_SOURCES)) | $(DIST)
 	@echo $@ '<--' $^
-	@$(GXX) $(LDFLAGS) -o $@ $^ $(MONGO_LDLIBS) $(LDLIBS)
+	@$(CXX) $(LDFLAGS) -o $@ $^ $(MONGO_LDLIBS) $(LDLIBS)
 
 $(ACMACS_API_SERVER): $(patsubst %.cc,$(BUILD)/%.o,$(ACMACS_API_SERVER_SOURCES)) | $(DIST)
 	@echo $@ '<--' $^
-	@$(GXX) $(LDFLAGS) -o $@ $^ $(ACMACS_API_SERVER_LIBS) $(LDLIBS)
+	@$(CXX) $(LDFLAGS) -o $@ $^ $(ACMACS_API_SERVER_LIBS) $(LDLIBS)
 
 $(ACMACS_C2): $(patsubst %.cc,$(BUILD)/%.o,$(ACMACS_C2_SOURCES)) | $(DIST)
 	@echo $@ '<--' $^
-	@$(GXX) $(LDFLAGS) -o $@ $^ $(LDLIBS)
+	@$(CXX) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
 acmacs-api-client: $(ACMACS_API_CLIENT_JS) $(ACMACS_API_CLIENT_CSS)
 
@@ -123,7 +129,7 @@ distclean: clean
 
 $(BUILD)/%.o: $(CC)/%.cc | $(BUILD)
 	@echo $<
-	@$(GXX) $(CXXFLAGS) -c -o $@ $<
+	@$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 $(BUILD)/%.bc: $(CLIENT)/%.cc | $(BUILD)
 	@echo cheerp $<
