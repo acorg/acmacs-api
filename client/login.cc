@@ -33,7 +33,7 @@ using namespace client;
 void Login::upon_transfer()
 {
     if (!is_undefined_or_null(ARGV->session())) {
-        // this->template transfer_send<LoggedIn>(new LoginSessionData{ARGV->session()}, this->pass_transfer_to());
+        send(new LoginSessionData{ARGV->session()});
     }
     else if (!is_undefined_or_null(ARGV->user())) {
         initiate_login(ARGV->user(), ARGV->password());
@@ -59,6 +59,8 @@ void Login::process_message(Message* aMessage)
     }
     else if (eq(aMessage->get_C(), "login_digest") || eq(aMessage->get_C(), "login_session")) {
         mWidget->hide();
+        mPassword = nullptr;
+        mUser = nullptr;
         session->set_id(aMessage->get_S());
         session->set_user(aMessage->get_user());
         session->set_display_name(aMessage->get_display_name());
@@ -89,41 +91,6 @@ void Login::initiate_login(String* aUser, String* aPassword)
     send(new GetNonceCommandData{aUser});
 
 } // Login::initiate_login
-
-// ----------------------------------------------------------------------
-
-// void LoginNonce::process_message(Message* aMessage)
-// {
-//     if (is_undefined(aMessage->get_E())) {
-//         auto* snonce = aMessage->get_login_nonce();
-//         auto* cnonce = make_cnonce();
-//         auto* digest_password = md5(concat(mUser, ";acmacs-web;", mPassword));
-//         auto* digest = md5(concat(snonce, ";", cnonce, ";", digest_password));
-//         this->template transfer_send<LoggedIn>(new LoginPasswordCommandData{cnonce, digest}, this->pass_transfer_to());
-//     }
-//     else {
-//         window.alert(concat("Login failed: ", aMessage->get_E()));
-//     }
-
-// } // LoginNonce::process_message
-
-// ----------------------------------------------------------------------
-
-// void LoggedIn::process_message(Message* aMessage)
-// {
-//     if (!is_undefined(aMessage->get_E()) || (aMessage->get_C() != "login_digest"_S && aMessage->get_C() != "login_session"_S)) {
-//         window.alert(concat("Login failed: ", aMessage->get_E()));
-//     }
-//     else {
-//         session->set_id(aMessage->get_S());
-//         session->set_user(aMessage->get_user());
-//         session->set_display_name(aMessage->get_display_name());
-//         console_log("Logged in: ", aMessage);
-//           // console_log("Logged in: ", session->get_user(), session->get_display_name());
-//     }
-//     transfer_to();
-
-// } // LoggedIn::process_message
 
 // ----------------------------------------------------------------------
 /// Local Variables:

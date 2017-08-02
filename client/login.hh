@@ -37,61 +37,6 @@ namespace client
 
 // ----------------------------------------------------------------------
 
-// template <typename MessageType> class LoginStep : public OnMessage<MessageType>
-// {
-//  public:
-//     using Message = MessageType;
-
-//     inline LoginStep(client::WebSocket* aWS, OnMessageBase::TransferTo aTransferTo) : OnMessage<MessageType>{aWS}, mTransferTo{aTransferTo} {}
-
-//  protected:
-//     inline OnMessageBase::TransferTo pass_transfer_to() { return mTransferTo; }
-
-//  private:
-//     OnMessageBase::TransferTo mTransferTo;
-
-// }; // class LoginStep<>
-
-// ----------------------------------------------------------------------
-
-// class LoggedIn : public LoginStep<client::LoginData>
-// {
-//  public:
-//     using Message = client::LoginData;
-//     using LoginStep<Message>::LoginStep;
-
-//  protected:
-//     virtual void process_message(Message* aMessage);
-
-//  private:
-//     inline void transfer_to()
-//         {
-//             LoginStep<client::LoginData>::transfer_to(this->pass_transfer_to());
-//         }
-
-// }; // class LoggedIn
-
-// // ----------------------------------------------------------------------
-
-// class LoginNonce : public LoginStep<client::LoginData>
-// {
-//  public:
-//     using Message = client::LoginData;
-//     using LoginStep<Message>::LoginStep;
-
-//     inline LoginNonce(client::WebSocket* aWS, String* aUser, String* aPassword, OnMessageBase::TransferTo aTransferTo) : LoginStep<Message>{aWS, aTransferTo}, mUser{aUser}, mPassword{aPassword} {}
-
-//  protected:
-//     virtual void process_message(Message* aMessage);
-
-//  private:
-//     String* mUser;
-//     String* mPassword;
-
-// }; // class LoginNonce
-
-// ----------------------------------------------------------------------
-
 class LoginWidget;
 
 class Login : public OnMessage<client::LoginData>
@@ -100,10 +45,10 @@ class Login : public OnMessage<client::LoginData>
     inline Login(client::WebSocket* aWS, OnMessageBase::TransferTo aTransferTo)
         : OnMessage<Message>{aWS}, mTransferTo{aTransferTo}, mWidget{nullptr}
         {
-              // client::console_log("Login");
+            client::console_log("Login");
         }
       //inline Login(const Login&) = default;
-      // inline ~Login() { client::console_log("~Login", mNo); }
+    inline ~Login() { client::console_log("~Login"); }
 
     virtual void upon_transfer();
 
