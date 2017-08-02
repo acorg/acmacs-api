@@ -170,6 +170,7 @@ inline Object* get_value(Object* obj, String&& key)
 void on_load()
 {
     console.log("acmacs-api-client");
+
       // var host_port = window.location.href.match(/https?:\/\/([^\/]+)/i)[1];
       // var ws = new WebSocket("wss://" + host_port + "/myws", "protocolOne");
     auto* ws = new WebSocket("wss://localhost:1169/api");

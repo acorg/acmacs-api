@@ -159,7 +159,9 @@ ifeq ($(MAKE_CLIENT),1)
 endif
 
 kill-server:
+ifneq ($(KILL_SERVER),NO)
 	if [ "`uname`" = "Darwin" ]; then killall acmacs-api-server 2>/dev/null || true; fi
+endif
 
 $(DIST):
 	mkdir -p $(DIST)
