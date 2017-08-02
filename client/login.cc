@@ -71,48 +71,25 @@ void Login::initiate_login(String* aUser, String* aPassword)
 
 void Login::widget()
 {
+    using namespace toolkit;
+
     auto* div1 = document.createElement("div");
     div1->set_className("login box-shadow-popup");
     div1->setAttribute("id", "login");
 
-    auto* title = document.createElement("div");
-    title->set_textContent("Acmacs-Web");
-    title->set_className("title");
-    div1->appendChild(title);
+      // auto* title =
+    append_child(div1, "div", text{"Acmacs-Web"}, class_{"title"});
 
     auto* form = document.createElement("form");
 
-    auto* username_label = toolkit::append_child(form, "div", toolkit::text{"Username"});
-    auto* username_input = static_cast<HTMLInputElement*>(document.createElement("input"));
-    username_input->setAttribute("autocomplete", "username");
-    username_input->setAttribute("spellcheck", "false");
-    username_input->setAttribute("tabIndex", "1");
-    username_input->setAttribute("name", "username");
-    username_input->setAttribute("type", "email");
-    form->appendChild(username_input);
+    auto* username_label = append_child(form, "div", text{"Username"});
+    auto* username_input = static_cast<HTMLInputElement*>(append_child(form, "input", attr{"autocomplete", "username"}, attr{"spellcheck", "false"}, attr{"tabIndex", "1"}, attr{"name", "username"}, attr{"type", "email"}));
+    auto* username_separator = append_child(form, "div", class_{"separator"});
 
-    // auto* username_separator = document.createElement("div");
-    // username_separator->set_className("separator");
-    // form->appendChild(username_separator);
-    auto* username_separator = toolkit::append_child(form, "div", toolkit::class_{"separator"});
-
-    auto* password_label = toolkit::append_child(form, "div", toolkit::text{"Password"});
-    auto* password_input = static_cast<HTMLInputElement*>(document.createElement("input"));
-    password_input->setAttribute("autocomplete", "password");
-    password_input->setAttribute("spellcheck", "false");
-    password_input->setAttribute("tabIndex", "2");
-    password_input->setAttribute("name", "password");
-    password_input->setAttribute("type", "password");
-    form->appendChild(password_input);
-
-    auto* password_separator = document.createElement("div");
-    password_separator->set_className("separator");
-    form->appendChild(password_separator);
-
-    auto* login_button = document.createElement("div");
-    login_button->set_textContent("Log In");
-    login_button->set_className("button box-shadow-button");
-    form->appendChild(login_button);
+    auto* password_label = append_child(form, "div", text{"Password"});
+    auto* password_input = static_cast<HTMLInputElement*>(append_child(form, "input", attr{"autocomplete", "password"}, attr{"spellcheck", "false"}, attr{"tabIndex", "2"}, attr{"name", "password"}, attr{"type", "password"}));
+    auto* password_separator = append_child(form, "div", class_{"separator"});
+    auto* login_button = append_child(form, "div", text{"Log In"}, class_{"button box-shadow-button"});
 
     auto submit = [username_input, password_input, this]() -> void {
                       if (username_input->get_value()->get_length()) {
@@ -125,24 +102,24 @@ void Login::widget()
 
     username_input->addEventListener("focus", cheerp::Callback([username_input,username_separator,username_label](FocusEvent*) {
         username_input->select();
-        toolkit::add_class(username_separator, "separator-focused");
-        toolkit::add_class(username_label, "label-focused");
+        add_class(username_separator, "separator-focused");
+        add_class(username_label, "label-focused");
     }));
 
     username_input->addEventListener("blur", cheerp::Callback([username_label,username_separator](FocusEvent*) {
-        toolkit::remove_class(username_separator, "separator-focused");
-        toolkit::remove_class(username_label, "label-focused");
+        remove_class(username_separator, "separator-focused");
+        remove_class(username_label, "label-focused");
     }));
 
     password_input->addEventListener("focus", cheerp::Callback([password_input,password_separator,password_label](FocusEvent*) {
         password_input->select();
-        toolkit::add_class(password_separator, "separator-focused");
-        toolkit::add_class(password_label, "label-focused");
+        add_class(password_separator, "separator-focused");
+        add_class(password_label, "label-focused");
     }));
 
     password_input->addEventListener("blur", cheerp::Callback([password_label,password_separator](FocusEvent*) {
-        toolkit::remove_class(password_separator, "separator-focused");
-        toolkit::remove_class(password_label, "label-focused");
+        remove_class(password_separator, "separator-focused");
+        remove_class(password_label, "label-focused");
     }));
 
     username_input->addEventListener("keydown", cheerp::Callback([password_input](KeyboardEvent* aEvent) -> void {
