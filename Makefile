@@ -12,7 +12,7 @@ ACMACS_API_SERVER_SOURCES = acmacs-api-server.cc mongo-access.cc session.cc acma
 
 ACMACS_API_CLIENT_JS = $(DIST)/acmacs-api-client.js.gz
 ACMACS_API_CLIENT_CSS = $(DIST)/acmacs-api-client.css.gz
-ACMACS_API_CLIENT_SOURCES = acmacs-api-client.cc asm.cc login.cc
+ACMACS_API_CLIENT_SOURCES = acmacs-api-client.cc asm.cc login.cc login-widget.cc
 
 API_DIRECT = $(DIST)/api-direct
 API_DIRECT_SOURCES = api-direct.cc mongo-access.cc session.cc acmacs-c2.cc client-connection.cc $(COMMANDS_SOURCES)

@@ -89,11 +89,17 @@ class LoginNonce : public LoginStep<client::LoginNonceData>
 
 // ----------------------------------------------------------------------
 
+class LoginWidget;
+
 class Login : public LoginStep<client::HelloFromServer>
 {
  public:
-    // inline Login(client::WebSocket* aWS, OnMessageBase::TransferTo aTransferTo) : LoginStep<client::HelloFromServer>{aWS, aTransferTo} { client::console_log("Login"); }
-    // inline Login(const Login&) = default;
+    inline Login(client::WebSocket* aWS, OnMessageBase::TransferTo aTransferTo)
+        : LoginStep<client::HelloFromServer>{aWS, aTransferTo}, mWidget{nullptr}
+        {
+              // client::console_log("Login");
+        }
+      // inline Login(const Login&) = default;
     // inline ~Login() { client::console_log("~Login", mNo); }
     using Message = client::HelloFromServer;
     using LoginStep<Message>::LoginStep;
@@ -102,8 +108,11 @@ class Login : public LoginStep<client::HelloFromServer>
     virtual void process_message(Message* aMessage);
 
  private:
+    LoginWidget* mWidget;
+
+    friend class LoginWidget;
+
     void initiate_login(String* aUser, String* aPassword);
-    void widget();
 
 }; // class Login
 
