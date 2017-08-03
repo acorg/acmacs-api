@@ -30,13 +30,14 @@ using namespace client;
 
 // ----------------------------------------------------------------------
 
-void Login::upon_transfer()
+void Login::run()
 {
     if (!is_undefined_or_null(ARGV->session())) {
         send(new LoginSessionData{ARGV->session()});
     }
     else if (!is_undefined_or_null(ARGV->user())) {
-        initiate_login(ARGV->user(), ARGV->password());
+        // send(new GetNonceCommandData{aUser});
+        // initiate_login(ARGV->user(), ARGV->password());
     }
     else {
         if (!mWidget)
@@ -44,54 +45,72 @@ void Login::upon_transfer()
         mWidget->show();
     }
 
-} // Login::upon_transfer
+} // Login::run
 
 // ----------------------------------------------------------------------
 
-void Login::process_message(Message* aMessage)
-{
-    if (eq(aMessage->get_C(), "login_nonce")) {
-        auto* snonce = aMessage->get_login_nonce();
-        auto* cnonce = make_cnonce();
-        auto* digest_password = md5(concat(mUser, ";acmacs-web;", mPassword));
-        auto* digest = md5(concat(snonce, ";", cnonce, ";", digest_password));
-        send(new LoginPasswordCommandData{cnonce, digest});
-    }
-    else if (eq(aMessage->get_C(), "login_digest") || eq(aMessage->get_C(), "login_session")) {
-        debug();
-        mWidget->hide();
-        mPassword = nullptr;
-        mUser = nullptr;
-        session->set_id(aMessage->get_S());
-        session->set_user(aMessage->get_user());
-        session->set_display_name(aMessage->get_display_name());
-          // console_log("Logged in: ", aMessage);
-        transfer_to(mTransferTo);
-    }
-    else {
-        process_error(concat("Unrecognized message from server: ", stringify(aMessage)));
-    }
+// void Login::upon_transfer()
+// {
+//     if (!is_undefined_or_null(ARGV->session())) {
+//         send(new LoginSessionData{ARGV->session()});
+//     }
+//     else if (!is_undefined_or_null(ARGV->user())) {
+//         initiate_login(ARGV->user(), ARGV->password());
+//     }
+//     else {
+//         if (!mWidget)
+//             mWidget = new LoginWidget{this};
+//         mWidget->show();
+//     }
 
-} // Login::process_message
+// } // Login::upon_transfer
 
-// ----------------------------------------------------------------------
+// // ----------------------------------------------------------------------
 
-void Login::process_error(String* aError)
-{
-    console_error("ERROR:", aError);
-    window.alert(aError);
+// void Login::process_message(Message* aMessage)
+// {
+//     if (eq(aMessage->get_C(), "login_nonce")) {
+//         auto* snonce = aMessage->get_login_nonce();
+//         auto* cnonce = make_cnonce();
+//         auto* digest_password = md5(concat(mUser, ";acmacs-web;", mPassword));
+//         auto* digest = md5(concat(snonce, ";", cnonce, ";", digest_password));
+//         send(new LoginPasswordCommandData{cnonce, digest});
+//     }
+//     else if (eq(aMessage->get_C(), "login_digest") || eq(aMessage->get_C(), "login_session")) {
+//         debug();
+//         mWidget->hide();
+//         mPassword = nullptr;
+//         mUser = nullptr;
+//         session->set_id(aMessage->get_S());
+//         session->set_user(aMessage->get_user());
+//         session->set_display_name(aMessage->get_display_name());
+//           // console_log("Logged in: ", aMessage);
+//         transfer_to(mTransferTo);
+//     }
+//     else {
+//         process_error(concat("Unrecognized message from server: ", stringify(aMessage)));
+//     }
 
-} // Login::process_error
+// } // Login::process_message
 
-// ----------------------------------------------------------------------
+// // ----------------------------------------------------------------------
 
-void Login::initiate_login(String* aUser, String* aPassword)
-{
-    mUser = aUser;
-    mPassword = aPassword;
-    send(new GetNonceCommandData{aUser});
+// void Login::process_error(String* aError)
+// {
+//     console_error("ERROR:", aError);
+//     window.alert(aError);
 
-} // Login::initiate_login
+// } // Login::process_error
+
+// // ----------------------------------------------------------------------
+
+// void Login::initiate_login(String* aUser, String* aPassword)
+// {
+//     mUser = aUser;
+//     mPassword = aPassword;
+//     send(new GetNonceCommandData{aUser});
+
+// } // Login::initiate_login
 
 // ----------------------------------------------------------------------
 /// Local Variables:

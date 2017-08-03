@@ -1,26 +1,42 @@
 #pragma once
 
-#include <cheerp/clientlib.h>
-
-#include "command.hh"
+#include "string.hh"
+#include "asm.hh"
 
 // ----------------------------------------------------------------------
 
-namespace client
+// namespace client
+// {
+//     struct Session : public Object
+//     {
+//         String* get_id();
+//         void set_id(String*);
+//         String* get_user();
+//         void set_user(String*);
+//         String* get_display_name();
+//         void set_display_name(String*);
+//     };
+
+//     extern Session* session;
+
+// } // namespace client
+
+// ----------------------------------------------------------------------
+
+class Session
 {
-    struct Session : public Object
-    {
-        String* get_id();
-        void set_id(String*);
-        String* get_user();
-        void set_user(String*);
-        String* get_display_name();
-        void set_display_name(String*);
-    };
+ public:
+    inline Session() : mId{nullptr}, mUser{nullptr}, mDisplayName{nullptr} {}
 
-    extern Session* session;
+    inline bool valid() const { return is_not_null(mId); }
+    inline void expired() { mId = nullptr; }
 
-} // namespace client
+ private:
+    String* mId;
+    String* mUser;
+    String* mDisplayName;
+
+}; // class Session
 
 // ----------------------------------------------------------------------
 /// Local Variables:

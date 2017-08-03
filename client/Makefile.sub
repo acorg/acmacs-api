@@ -10,7 +10,7 @@ MAKEFLAGS = -w
 APP_ONE = $(DIST)/app-one.js.gz $(DIST)/app-one.css.gz
 APP_ONE_SRC = app-one.cc $(COMMON_SRC) sass/app-one.sass
 
-COMMON_SRC = asm.cc
+COMMON_SRC = asm.cc application.cc handler.cc login.cc login-widget.cc
 
 TARGETS = $(APP_ONE)
 

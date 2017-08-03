@@ -1,7 +1,6 @@
 #pragma once
 
-#include "command.hh"
-#include "on-message.hh"
+#include "handler.hh"
 
 // ----------------------------------------------------------------------
 
@@ -39,32 +38,25 @@ namespace client
 
 class LoginWidget;
 
-class Login : public OnMessage<client::LoginData>
+class Login : public Handler
 {
  public:
-    inline Login(client::WebSocket* aWS, OnMessageBase::TransferTo aTransferTo)
-        : OnMessage<Message>{aWS}, mTransferTo{aTransferTo}, mWidget{nullptr}
+    inline Login(Application* aApp)
+        : Handler{aApp}, mWidget{nullptr}
         {
             client::console_log("Login");
         }
       //inline Login(const Login&) = default;
-    inline ~Login() { client::console_log("~Login"); }
+    inline ~Login() override { client::console_log("~Login"); }
 
-    virtual void upon_transfer();
-
- protected:
-    virtual void process_message(Message* aMessage);
-    virtual void process_error(String* aError);
+    void run();
 
  private:
-    TransferTo mTransferTo;
     LoginWidget* mWidget;
-    String* mUser;
-    String* mPassword;
 
     friend class LoginWidget;
 
-    void initiate_login(String* aUser, String* aPassword);
+    // void initiate_login(String* aUser, String* aPassword);
 
 }; // class Login
 

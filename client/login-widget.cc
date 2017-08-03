@@ -110,7 +110,7 @@ void LoginWidget::attach()
 void LoginWidget::submit()
 {
     if (username_input->get_value()->get_length()) {
-        mLogin->initiate_login(username_input->get_value(), password_input->get_value());
+        // mLogin->initiate_login(username_input->get_value(), password_input->get_value());
     }
     else {
         error_message->set_textContent("Username cannot be empty");
