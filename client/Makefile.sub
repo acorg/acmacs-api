@@ -1,0 +1,86 @@
+# -*- Makefile -*-
+# Eugene Skepner 2017
+
+# ----------------------------------------------------------------------
+
+MAKEFLAGS = -w
+
+# ----------------------------------------------------------------------
+
+ACMACS_API_CLIENT_JS = $(DIST)/acmacs-api-client.js.gz
+ACMACS_API_CLIENT_CSS = $(DIST)/acmacs-api-client.css.gz
+ACMACS_API_CLIENT_SOURCES = acmacs-api-client.cc asm.cc login.cc widget.cc login-widget.cc
+
+PROGS = acmacs-api-client
+
+# ----------------------------------------------------------------------
+
+CHEERP = /opt/cheerp/bin/clang++ -target cheerp
+CHEERP_COMPILE_FLAGS = -std=c++1z -MMD -I. -Iinclude -g $(OPTIMIZATION) $(WEVERYTHING) -Wno-unknown-pragmas
+# --cheerp-preexecute
+CHEERP_LINK_FLAGS = $(OPTIMIZATION)
+
+SASSC = sassc
+
+# ----------------------------------------------------------------------
+
+all: checks $(PROGS)
+
+install: checks $(PROGS)
+
+test: install
+	test/test
+
+checks: check-cheerp check-sassc
+
+rtags:
+	#make -nk | /usr/local/bin/rc --compile - || true
+
+# ----------------------------------------------------------------------
+
+-include $(BUILD)/*.d
+
+# ----------------------------------------------------------------------
+
+acmacs-api-client: $(ACMACS_API_CLIENT_JS) $(ACMACS_API_CLIENT_CSS)
+	@#echo DEPS $^
+	@#echo MAKEFLAGS $(MAKEFLAGS)
+
+$(ACMACS_API_CLIENT_JS): $(patsubst %.cc,$(BUILD)/%.bc,$(ACMACS_API_CLIENT_SOURCES)) | $(DIST)
+	@echo CHEERP-link $(notdir $@) $^
+	@$(CHEERP) $(CHEERP_LINK_FLAGS) -cheerp-sourcemap=$(basename $@).map -o $(basename $@) $^
+	@gzip -9f $(basename $@) $(basename $@).map
+
+# ----------------------------------------------------------------------
+
+$(BUILD)/%.bc: %.cc | $(BUILD)
+	@echo "CHEERP     " $<
+	@$(CHEERP) $(CHEERP_COMPILE_FLAGS) -c -o $@ $(abspath $<)
+
+$(DIST)/%.css.gz: sass/%.sass $(wildcard sass/*.sass) | $(DIST)
+	@echo "SASS       " $(notdir $@)
+	@$(SASSC) --style compressed -I sass $(abspath $<) $(basename $@)
+	@gzip -9f $(basename $@)
+
+# ----------------------------------------------------------------------
+
+check-cheerp:
+ifeq ($(MAKE_CLIENT),1)
+	@$(CHEERP) -v >/dev/null 2>&1 || ( echo "ERROR: Please install cheerp (http://leaningtech.com/cheerp/download/)" >&2 && false )
+endif
+
+check-sassc:
+ifeq ($(MAKE_CLIENT),1)
+	@$(SASSC) -v >/dev/null 2>&1 || ( echo "ERROR: Please install SASSC:" $(SASSC_INSTALL) >&2 && false )
+endif
+
+$(DIST):
+	mkdir -p $(DIST)
+
+$(BUILD):
+	mkdir -p $(BUILD)
+
+# ======================================================================
+### Local Variables:
+### eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
+### End:
