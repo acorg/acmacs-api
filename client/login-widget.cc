@@ -85,14 +85,14 @@ void LoginWidget::attach()
     }));
 
     username_input->addEventListener("keydown", cheerp::Callback([this](KeyboardEvent* aEvent) -> void {
-        error_message->set_textContent("");
+        hide_error_message();
         if (eq(aEvent->get_key(), "Enter")) {
             password_input->focus();
         }
     }));
 
     password_input->addEventListener("keydown", cheerp::Callback([this](KeyboardEvent* aEvent) -> void {
-        error_message->set_textContent("");
+        hide_error_message();
         if (eq(aEvent->get_key(), "Enter")) {
             submit();
         }
@@ -110,14 +110,30 @@ void LoginWidget::attach()
 void LoginWidget::submit()
 {
     if (username_input->get_value()->get_length()) {
-        // mLogin->initiate_login(username_input->get_value(), password_input->get_value());
+        mLogin->initiate_login(username_input->get_value(), password_input->get_value());
     }
     else {
-        error_message->set_textContent("Username cannot be empty");
+        show_error_message("Username cannot be empty"_S);
         username_input->focus();
     }
 
 } // LoginWidget::submit
+
+// ----------------------------------------------------------------------
+
+void LoginWidget::show_error_message(String* aMessage)
+{
+    error_message->set_textContent(aMessage);
+
+} // LoginWidget::show_error_message
+
+// ----------------------------------------------------------------------
+
+void LoginWidget::hide_error_message()
+{
+    error_message->set_textContent("");
+
+} // LoginWidget::hide_error_message
 
 // ----------------------------------------------------------------------
 

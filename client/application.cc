@@ -1,10 +1,30 @@
+#include <algorithm>
+
 #include "application.hh"
 #include "login.hh"
 
 // ----------------------------------------------------------------------
 
+Handler* Responders::find(String* aCommand, String* aCommandId)
+{
+    auto found = std::find_if(begin(), end(), [&](auto& responder) { return responder.equals(aCommand, aCommandId); });
+    return found != end() ? found->handler : nullptr;
+
+} // Responders::find
+
+// ----------------------------------------------------------------------
+
+void Responders::remove(String* aCommand, String* aCommandId)
+{
+    erase(std::remove_if(begin(), end(), [&](auto& responder) { return responder.equals(aCommand, aCommandId); }));
+
+} // Responders::remove
+
+// ----------------------------------------------------------------------
+
 Application::~Application()
 {
+    client::console_error("~Application");
 
 } // Application::~Application
 
@@ -12,6 +32,10 @@ Application::~Application()
 
 void Application::send(client::CommandData* aCommand, Handler* aHandler)
 {
+    aCommand->set_D(to_String(++mCommandId));
+    mResponders.add(aCommand, aHandler);
+    mWS->send(to_String(aCommand));
+    console_log("Application::send", aCommand);
 
 } // Application::send
 
@@ -48,12 +72,24 @@ void Application::on_message(client::RawMessage* aMessage)
 {
     console_log("MSG: ", aMessage);
     if (!is_undefined_or_null(aMessage->get_C())) {
+        auto* handler = mResponders.find(aMessage->get_C(), aMessage->get_D());
+        if (handler) {
+            mResponders.remove(aMessage->get_C(), aMessage->get_D());
+            auto* err = aMessage->get_E();
+            if (is_undefined_or_null(err))
+                handler->on_message(aMessage);
+            else
+                handler->on_error(aMessage->get_E());
+        }
+        else {
+            on_error(concat("Application: no handler: ", stringify(aMessage)));
+        }
     }
-    else if (!is_undefined_or_null(aMessage->get_hello())) {
+    else if (!client::is_undefined_or_null(aMessage->get_hello())) {
         on_hello(aMessage);
     }
     else {
-        on_error(concat("unrecognized message: ", stringify(aMessage)));
+        on_error(concat("Application: unrecognized message: ", stringify(aMessage)));
     }
 
 } // Application::on_message
@@ -98,11 +134,7 @@ void Application::on_raw_message_event(client::MessageEvent* aEvent)
     if (!is_undefined_or_null(data)) {
         auto* parsed = static_cast<client::RawMessage*>(client::JSON.parse(data));
         if (!is_undefined_or_null(parsed)) {
-            auto* err = parsed->get_E();
-            if (is_undefined_or_null(err))
-                on_message(parsed);
-            else
-                on_error(err);
+            on_message(parsed);
         }
         else {
             on_error("Internal: cannot parse json message from server"_S);

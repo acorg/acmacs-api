@@ -12,18 +12,6 @@ namespace client
         void set_S(String*);
     };
 
-    // struct LoginNonceData : public ResponseData
-    // {
-    //     String* get_login_nonce();
-    // };
-
-    // struct LoggedInData : public ResponseData
-    // {
-    //     String* get_S();
-    //     String* get_user();
-    //     String* get_display_name();
-    // };
-
     struct LoginData : public ResponseData
     {
         String* get_login_nonce();
@@ -50,13 +38,18 @@ class Login : public Handler
     inline ~Login() override { client::console_log("~Login"); }
 
     void run();
+    void on_message(client::RawMessage* aMessage) override;
+    void on_error(String* aMessage) override;
 
  private:
     LoginWidget* mWidget;
+    String* mPassword;
 
     friend class LoginWidget;
 
-    // void initiate_login(String* aUser, String* aPassword);
+    void initiate_login(String* aUser, String* aPassword);
+    void show_widget();
+    void hide_widget();
 
 }; // class Login
 

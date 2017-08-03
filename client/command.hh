@@ -12,17 +12,28 @@ namespace client
 
         void set_C(String*);
         void set_D(String*);    // command id
+        String* get_C();
+        String* get_D();
     };
 
       // --------------------------------------------------
 
-    struct ResponseData : public Object
+    struct RawMessage : public Object
     {
-        String* get_C();        // response for command
+        String* get_hello();
+        String* get_C();
+        String* get_D();
+        String* get_E();
+
+    }; // struct RawMessage
+
+      // --------------------------------------------------
+
+    struct ResponseData : public RawMessage
+    {
         String* get_CN();       // number of commands processed
         String* get_CT();       // time of the command processing
         String* get_CI();       // index of the command part (if there are multiple responses for the command)
-        String* get_E();
     };
 
 } // namespace client

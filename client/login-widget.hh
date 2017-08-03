@@ -11,8 +11,11 @@ class LoginWidget : public Widget
  public:
     LoginWidget(Login* aLogin);
 
-    virtual void show();
-    virtual void hide();
+    void show() override;
+    void hide() override;
+
+    void show_error_message(String* aMessage);
+    void hide_error_message();
 
  private:
     using HTMLElement = client::HTMLElement;

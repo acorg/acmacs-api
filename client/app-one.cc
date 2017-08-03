@@ -1,10 +1,3 @@
-#include <cheerp/client.h>
-
-// #include <map>
-// #include <vector>
-
-// #include "login.hh"
-
 #include "app-one.hh"
 
 #include "toolkit-basic.hh"

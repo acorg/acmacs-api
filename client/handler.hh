@@ -10,6 +10,9 @@ class Handler
     inline Handler(Application* aApp) : mApp{aApp} {}
     virtual ~Handler();
 
+    virtual void on_message(client::RawMessage* aMessage) = 0;
+    virtual void on_error(String* aMessage);
+
  protected:
     inline Application* app() { return mApp; }
     inline void send(client::CommandData* aCommand) { mApp->send(aCommand, this); }
