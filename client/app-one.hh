@@ -7,13 +7,13 @@
 class ApplicationOne : public Application
 {
  public:
-    inline ApplicationOne() : Application{} {}
+    inline ApplicationOne() : Application{}, mHandler{nullptr} {}
 
     void run();
     void logged_in() override;
 
  private:
-
+    Handler* mHandler;
 
 }; // class ApplicationOne
 

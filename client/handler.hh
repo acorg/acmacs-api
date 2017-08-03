@@ -15,6 +15,7 @@ class Handler
 
  protected:
     inline Application* app() { return mApp; }
+    inline Session* session() { return mApp->session(); }
     inline void send(client::CommandData* aCommand) { mApp->send(aCommand, this); }
 
  private:

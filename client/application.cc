@@ -43,11 +43,9 @@ void Application::send(client::CommandData* aCommand, Handler* aHandler)
 
 void Application::make_session()
 {
-    if (!mSession->valid()) {
-        client::console_log("make_session");
+    if (!mLogin)
         mLogin = new Login(this);
-        mLogin->run();
-    }
+    mLogin->use_session();
 
 } // Application::make_session
 

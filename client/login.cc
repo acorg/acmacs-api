@@ -65,9 +65,23 @@ void Login::run()
 
 // ----------------------------------------------------------------------
 
+void Login::use_session()
+{
+    auto* sess = session();
+    if (sess->valid()) {
+        send(new LoginSessionData{sess->id()});
+    }
+    else {
+        run();
+    }
+
+} // Login::use_session
+
+// ----------------------------------------------------------------------
+
 void Login::initiate_login(String* aUser, String* aPassword)
 {
-    app()->session()->user(aUser);
+    session()->user(aUser);
     mPassword = aPassword;
     send(new GetNonceCommandData{aUser});
 
@@ -77,21 +91,21 @@ void Login::initiate_login(String* aUser, String* aPassword)
 
 void Login::on_message(client::RawMessage* aMessage)
 {
-    auto* session = app()->session();
+    auto* sess = session();
     auto* msg = static_cast<client::LoginData*>(aMessage);
     if (eq("login_nonce", msg->get_C())) {
         auto* snonce = msg->get_login_nonce();
         auto* cnonce = make_cnonce();
-        auto* digest_password = md5(concat(session->user(), ";acmacs-web;", mPassword));
+        auto* digest_password = md5(concat(sess->user(), ";acmacs-web;", mPassword));
         mPassword = nullptr;
         auto* digest = md5(concat(snonce, ";", cnonce, ";", digest_password));
         send(new LoginPasswordCommandData{cnonce, digest});
     }
     else if (eq(msg->get_C(), "login_digest") || eq(msg->get_C(), "login_session")) {
         hide_widget();
-        session->id(msg->get_S());
-        session->user(msg->get_user());
-        session->display_name(msg->get_display_name());
+        sess->id(msg->get_S());
+        sess->user(msg->get_user());
+        sess->display_name(msg->get_display_name());
         app()->logged_in();
     }
     else {

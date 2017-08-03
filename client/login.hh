@@ -38,6 +38,7 @@ class Login : public Handler
     inline ~Login() override { client::console_log("~Login"); }
 
     void run();
+    void use_session();
     void on_message(client::RawMessage* aMessage) override;
     void on_error(String* aMessage) override;
 

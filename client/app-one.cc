@@ -73,8 +73,11 @@ void ApplicationOne::run()
 
 void ApplicationOne::logged_in()
 {
-    auto* handler = new JsonPrinter{this};
-    handler->run();
+    if (!mHandler) {
+        auto* handler = new JsonPrinter{this};
+        mHandler = handler;
+        handler->run();
+    }
 
 } // ApplicationOne::logged_in
 
