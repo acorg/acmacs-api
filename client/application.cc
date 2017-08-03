@@ -128,6 +128,14 @@ void Application::on_error(String* aData)
 
 // ----------------------------------------------------------------------
 
+void Application::logged_in()
+{
+    client::console_log("Logged in: ", session());
+
+} // Application::logged_in
+
+// ----------------------------------------------------------------------
+
 void Application::on_raw_message_event(client::MessageEvent* aEvent)
 {
     auto* data = static_cast<String*>(aEvent->get_data());

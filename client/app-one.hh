@@ -10,6 +10,7 @@ class ApplicationOne : public Application
     inline ApplicationOne() : Application{} {}
 
     void run();
+    void logged_in() override;
 
  private:
 

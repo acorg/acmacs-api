@@ -45,7 +45,8 @@ class Application
     inline Application() : mSession{new Session{}}, mLogin{nullptr}, mCommandId{0} {}
     virtual ~Application();
 
-    void send(client::CommandData* aCommand, Handler* aHandler);
+    virtual void send(client::CommandData* aCommand, Handler* aHandler);
+    virtual void logged_in();
 
     Session* session() { return mSession; }
 

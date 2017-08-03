@@ -92,7 +92,7 @@ void Login::on_message(client::RawMessage* aMessage)
         session->id(msg->get_S());
         session->user(msg->get_user());
         session->display_name(msg->get_display_name());
-        console_log("Logged in: ", session);
+        app()->logged_in();
     }
     else {
         on_error(concat("Unsupported message forwarded to Login: ", stringify(aMessage)));
@@ -104,7 +104,7 @@ void Login::on_message(client::RawMessage* aMessage)
 
 void Login::on_error(String* aMessage)
 {
-    if (eq(aMessage, "invalid user or password")) {
+    if (eq(aMessage, "invalid user or password") || eq(aMessage, "invalid session")) {
         show_widget();
         mWidget->show_error_message(aMessage);
     }
