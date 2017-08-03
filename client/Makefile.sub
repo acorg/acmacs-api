@@ -7,11 +7,12 @@ MAKEFLAGS = -w
 
 # ----------------------------------------------------------------------
 
-ACMACS_API_CLIENT_JS = $(DIST)/acmacs-api-client.js.gz
-ACMACS_API_CLIENT_CSS = $(DIST)/acmacs-api-client.css.gz
-ACMACS_API_CLIENT_SOURCES = acmacs-api-client.cc asm.cc login.cc widget.cc login-widget.cc
+APP_ONE = $(DIST)/app-one.js.gz $(DIST)/app-one.css.gz
+APP_ONE_SRC = app-one.cc $(COMMON_SRC) sass/app-one.sass
 
-PROGS = acmacs-api-client
+COMMON_SRC = asm.cc
+
+TARGETS = $(APP_ONE)
 
 # ----------------------------------------------------------------------
 
@@ -24,9 +25,9 @@ SASSC = sassc
 
 # ----------------------------------------------------------------------
 
-all: checks $(PROGS)
+all: checks $(TARGETS)
 
-install: checks $(PROGS)
+install: checks $(TARGETS)
 
 test: install
 	test/test
@@ -42,25 +43,15 @@ rtags:
 
 # ----------------------------------------------------------------------
 
-acmacs-api-client: $(ACMACS_API_CLIENT_JS) $(ACMACS_API_CLIENT_CSS)
-	@#echo DEPS $^
-	@#echo MAKEFLAGS $(MAKEFLAGS)
+$(DIST)/app-one.js.gz: $(patsubst %.cc,$(BUILD)/%.bc,$(filter %.cc,$(APP_ONE_SRC)))
+	$(call cheerp_link,$@,$^)
 
-$(ACMACS_API_CLIENT_JS): $(patsubst %.cc,$(BUILD)/%.bc,$(ACMACS_API_CLIENT_SOURCES)) | $(DIST)
-	@echo CHEERP-link $(notdir $@) $^
-	@$(CHEERP) $(CHEERP_LINK_FLAGS) -cheerp-sourcemap=$(basename $@).map -o $(basename $@) $^
-	@gzip -9f $(basename $@) $(basename $@).map
-
-# ----------------------------------------------------------------------
+$(DIST)/app-one.css.gz: $(abspath $(filter %.sass,$(APP_ONE_SRC)))
+	$(call sass,$@,$^)
 
 $(BUILD)/%.bc: %.cc | $(BUILD)
 	@echo "CHEERP     " $<
 	@$(CHEERP) $(CHEERP_COMPILE_FLAGS) -c -o $@ $(abspath $<)
-
-$(DIST)/%.css.gz: sass/%.sass $(wildcard sass/*.sass) | $(DIST)
-	@echo "SASS       " $(notdir $@)
-	@$(SASSC) --style compressed -I sass $(abspath $<) $(basename $@)
-	@gzip -9f $(basename $@)
 
 # ----------------------------------------------------------------------
 
@@ -79,6 +70,24 @@ $(DIST):
 
 $(BUILD):
 	mkdir -p $(BUILD)
+
+# ----------------------------------------------------------------------
+
+# $(1) - target
+# $(2) - sources
+define cheerp_link
+	@echo CHEERP-link $(notdir $(1)) $(2)
+	@$(CHEERP) $(CHEERP_LINK_FLAGS) -cheerp-sourcemap=$(basename $(1)).map -o $(basename $(1)) $^
+	@gzip -9f $(basename $(1)) $(basename $(1)).map
+endef
+
+# $(1) - target
+# $(2) - source
+define sass
+	@echo "SASS       " $(notdir $@)
+	@$(SASSC) --style compressed -I sass $(abspath $<) $(basename $@)
+	@gzip -9f $(basename $@)
+endef
 
 # ======================================================================
 ### Local Variables:

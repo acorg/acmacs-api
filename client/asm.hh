@@ -24,6 +24,9 @@ namespace client
     client::Object* make_number(unsigned long);
 
     client::String* make_cnonce();
+
+    client::String* ws_host_port();
+
     client::String* json_syntax_highlight(client::String*);
 
     template <typename ... Args> void console_log(Args ...);
