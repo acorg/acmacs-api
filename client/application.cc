@@ -62,7 +62,7 @@ void Application::make_connection()
     mWS->set_onclose(cheerp::Callback([this](CloseEvent* aEvent) { on_close(aEvent); }));
 
     // mWS->set_onopen(cheerp::Callback([]() { console_log("ws onopen"); }));
-    mWS->set_onerror(cheerp::Callback([]() { console_error("ws onerror"); }));
+    mWS->set_onerror(cheerp::Callback([](Event* aEvent) { console_error("ws onerror", aEvent); }));
 
 } // Application::make_connection
 
@@ -114,6 +114,12 @@ void Application::on_hello(client::RawMessage* aMessage) // ws connection establ
 void Application::on_close(client::CloseEvent* aEvent)
 {
     console_log("WS CLOSED: ", aEvent);
+    mWS = nullptr;
+    constexpr const double minimum_delay_between_connections = 1000;
+    const auto closed_time_stamp = aEvent->get_timeStamp();
+    const auto diff = closed_time_stamp - mConnectionClosedTimeStamp - minimum_delay_between_connections;
+    mConnectionClosedTimeStamp = closed_time_stamp;
+    client::setTimeout(cheerp::Callback([this]() { make_connection(); }), diff < 0 ? 0 : minimum_delay_between_connections);
 
 } // Application::on_close
 

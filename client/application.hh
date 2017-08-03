@@ -42,7 +42,7 @@ class Responders : public std::vector<Responder>
 class Application
 {
  public:
-    inline Application() : mSession{new Session{}}, mLogin{nullptr}, mCommandId{0} {}
+    inline Application() : mSession{new Session{}}, mLogin{nullptr}, mCommandId{0}, mConnectionClosedTimeStamp{0} {}
     virtual ~Application();
 
     virtual void send(client::CommandData* aCommand, Handler* aHandler);
@@ -60,6 +60,7 @@ class Application
     Login* mLogin;
     size_t mCommandId;
     Responders mResponders;
+    double mConnectionClosedTimeStamp; // to avoid reconnecting too often
 
     void on_message(client::RawMessage* aMessage); // parsed json from the server, may contain "E"
     void on_error(String* aData); // cannot parse response from the server
