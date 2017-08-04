@@ -7,13 +7,19 @@
 class ApplicationOne : public Application
 {
  public:
-    inline ApplicationOne() : Application{}, mHandler{nullptr} {}
+    ApplicationOne();
 
     void run();
     void logged_in() override;
 
+ protected:
+    void reset() override;
+
  private:
     Handler* mHandler;
+    client::HTMLElement* h_display_name;
+
+    void ask_logout();
 
 }; // class ApplicationOne
 

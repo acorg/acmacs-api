@@ -156,6 +156,11 @@ class MongodbAccess
             return collection(aCollection).update_one(aFilter, aDoc);
         }
 
+    inline auto remove(const char* aCollection, bson_view aFilter)
+        {
+            return collection(aCollection).delete_one(aFilter);
+        }
+
       // ----------------------------------------------------------------------
 
     inline std::string time_now() const
@@ -243,6 +248,7 @@ class StoredInMongodb : public MongodbAccess
     inline auto find_one(bson_view aFilter, const mongo_find& aOptions = mongo_find{}) { return find_one(mCollection, aFilter, aOptions); }
     inline auto insert_one(bson_view aDoc) { return MongodbAccess::insert_one(mCollection, aDoc); }
     inline auto update_one(bson_view aFilter, bson_view aDoc) { return MongodbAccess::update_one(mCollection, aFilter, aDoc); }
+    inline auto remove(bson_view aFilter) { return MongodbAccess::remove(mCollection, aFilter); }
 
     class Error : public std::runtime_error { public: using std::runtime_error::runtime_error; };
 
@@ -252,6 +258,7 @@ class StoredInMongodb : public MongodbAccess
 
       // throws Error
     void update(std::string aId);
+    void remove(std::string aId);
 
     virtual inline void add_fields_for_creation(bld_doc& aDoc)
         {

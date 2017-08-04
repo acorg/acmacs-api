@@ -55,6 +55,23 @@ const char* Command_login_digest::description()
 } // Command_login_digest::description
 
 // ----------------------------------------------------------------------
+
+void Command_logout::run()
+{
+    session().logout();
+      // no reply to the client
+
+} // Command_logout::run
+
+// ----------------------------------------------------------------------
+
+const char* Command_logout::description()
+{
+    return "removes session";
+
+} // Command_logout::description
+
+// ----------------------------------------------------------------------
 /// Local Variables:
 /// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
 /// End:

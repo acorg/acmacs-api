@@ -30,6 +30,7 @@ CommandFactory::CommandFactory()
     {"login_session",  data<Command_login_session>()},
     {"login_nonce",    data<Command_login_nonce>()},
     {"login_digest",   data<Command_login_digest>()},
+    {"logout",         data<Command_logout>()},
             },
       mCommandNumber{0}
 {

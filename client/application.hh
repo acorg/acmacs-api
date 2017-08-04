@@ -34,6 +34,7 @@ class Responders : public std::vector<Responder>
     inline void add(client::CommandData* aCommand, Handler* aHandler) { emplace_back(aCommand->get_C(), aCommand->get_D(), aHandler); }
     Handler* find(String* aCommand, String* aCommandId);
     void remove(String* aCommand, String* aCommandId);
+    inline void reset() { clear(); }
 
 }; // class Responders
 
@@ -51,8 +52,10 @@ class Application
     Session* session() { return mSession; }
 
  protected:
-    void make_session();
-    void make_connection();
+    virtual void make_session(bool cancel_existing_session);
+    virtual void make_connection();
+    virtual void logout();
+    virtual void reset();
 
  private:
     client::WebSocket* mWS;

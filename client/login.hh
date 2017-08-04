@@ -37,8 +37,9 @@ class Login : public Handler
       //inline Login(const Login&) = default;
     inline ~Login() override { client::console_log("~Login"); }
 
-    void run();
-    void use_session();
+    void reset() override;
+    void run(bool use_argv);
+    void use_session(bool cancel_existing_session);
     void on_message(client::RawMessage* aMessage) override;
     void on_error(String* aMessage) override;
 

@@ -13,6 +13,15 @@ LoginWidget::LoginWidget(Login* aLogin)
 
 // ----------------------------------------------------------------------
 
+void LoginWidget::reset()
+{
+    username_input->set_value(""_S);
+    password_input->set_value(""_S);
+
+} // LoginWidget::reset
+
+// ----------------------------------------------------------------------
+
 void LoginWidget::show()
 {
     // attach();
@@ -116,6 +125,7 @@ void LoginWidget::submit()
         show_error_message("Username cannot be empty"_S);
         username_input->focus();
     }
+    password_input->set_value(""_S);
 
 } // LoginWidget::submit
 

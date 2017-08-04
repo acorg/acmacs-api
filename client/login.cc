@@ -30,6 +30,16 @@ using namespace client;
 
 // ----------------------------------------------------------------------
 
+void Login::reset()
+{
+    if (mWidget)
+        mWidget->reset();
+    mPassword = nullptr;
+
+} // Login::reset
+
+// ----------------------------------------------------------------------
+
 inline void Login::show_widget()
 {
     if (!mWidget)
@@ -49,12 +59,12 @@ inline void Login::hide_widget()
 
 // ----------------------------------------------------------------------
 
-void Login::run()
+void Login::run(bool use_argv)
 {
-    if (!is_undefined_or_null(ARGV->session())) {
+    if (use_argv && !is_undefined_or_null(ARGV->session())) {
         send(new LoginSessionData{ARGV->session()});
     }
-    else if (!is_undefined_or_null(ARGV->user())) {
+    else if (use_argv && !is_undefined_or_null(ARGV->user())) {
         initiate_login(ARGV->user(), ARGV->password());
     }
     else {
@@ -65,14 +75,16 @@ void Login::run()
 
 // ----------------------------------------------------------------------
 
-void Login::use_session()
+void Login::use_session(bool cancel_existing_session)
 {
     auto* sess = session();
+    if (cancel_existing_session)
+        sess->expired();
     if (sess->valid()) {
         send(new LoginSessionData{sess->id()});
     }
     else {
-        run();
+        run(!cancel_existing_session);
     }
 
 } // Login::use_session

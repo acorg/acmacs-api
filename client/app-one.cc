@@ -23,10 +23,17 @@ class JsonPrinter : public Handler
  public:
     using Handler::Handler;
 
+    virtual inline ~JsonPrinter()
+        {
+            div->get_parentNode()->removeChild(div);
+            div = nullptr;
+            pre = nullptr;
+        }
+
     inline void run()
         {
             using namespace toolkit;
-            auto* div = append_child(document.get_body(), "div", class_{"material-design-box-shadow"});
+            div = append_child(document.get_body(), "div", class_{"material-design-box-shadow"});
             auto* button  = append_child(div, "button", text{"get chart"});
             pre = append_child(div, "pre", class_{"json-highlight"});
             send_command();
@@ -41,7 +48,7 @@ class JsonPrinter : public Handler
             send(new client::Command_chart{"593a87ee48618fc1e72da4fe"});
         }
 
-    void on_message(client::RawMessage* aMessage) override
+    inline void on_message(client::RawMessage* aMessage) override
         {
             client::console_log("JsonPrinter::on_message", aMessage);
             pre->set_innerHTML(json_syntax_highlight(stringify(aMessage, 2)));
@@ -49,6 +56,7 @@ class JsonPrinter : public Handler
 
  private:
     using HTMLElement = client::HTMLElement;
+    HTMLElement* div;
     HTMLElement* pre;
 
 }; // class JsonPrinter
@@ -63,6 +71,25 @@ void webMain()
 
 // ----------------------------------------------------------------------
 
+ApplicationOne::ApplicationOne()
+    : Application{}, mHandler{nullptr}
+{
+    using namespace toolkit;
+
+    auto* header = append_child(document.get_body(), "table", attr{"id", "page-header"});
+    auto* tbody = append_child(header, "tbody");
+    auto* tr = append_child(tbody, "tr");
+    append_child(tr, "td", text{"Acmacs-Web"}, attr{"id", "acmacs-web-logo"});
+    h_display_name = append_child(tr, "td", attr{"id", "display-name"});
+    h_display_name->addEventListener("click", cheerp::Callback([this](MouseEvent* aEvent) -> void {
+        if (static_cast<int>(aEvent->get_button()) == 0)
+            ask_logout();
+    }));
+
+} // ApplicationOne::ApplicationOne
+
+// ----------------------------------------------------------------------
+
 void ApplicationOne::run()
 {
     make_connection();
@@ -73,6 +100,7 @@ void ApplicationOne::run()
 
 void ApplicationOne::logged_in()
 {
+    h_display_name->set_textContent(session()->display_name());
     if (!mHandler) {
         auto* handler = new JsonPrinter{this};
         mHandler = handler;
@@ -83,14 +111,33 @@ void ApplicationOne::logged_in()
 
 // ----------------------------------------------------------------------
 
+void ApplicationOne::ask_logout()
+{
+    auto result = client::window.confirm("Really want to logout?");
+    if (result)
+        logout();
+
+} // ApplicationOne::ask_logout
+
+// ----------------------------------------------------------------------
+
+void ApplicationOne::reset()
+{
+    Application::reset();
+    delete mHandler;
+    mHandler = nullptr;
+    h_display_name->set_textContent(""_S);
+
+} // ApplicationOne::reset
+
+// ----------------------------------------------------------------------
+
 void on_load()
 {
     using namespace client;
-    using namespace toolkit;
 
     console_log("app-one");
 
-    append_child(document.get_body(), "div", text{"APP ONE"});
     auto* app = new ApplicationOne{};
     app->run();
 

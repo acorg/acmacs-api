@@ -4,6 +4,7 @@
 
 Handler::~Handler()
 {
+    // client::console_log("~Handler");
 
 } // Handler::~Handler
 
@@ -11,7 +12,7 @@ Handler::~Handler()
 
 void Handler::on_error(String* aMessage)
 {
-    console_error("Handler::on_error: ", aMessage);
+    client::console_error("Handler::on_error: ", aMessage);
 
 } // Handler::on_error
 

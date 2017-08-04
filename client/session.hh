@@ -18,7 +18,7 @@ class Session
     inline void user(String* aUser) { mUser = aUser; }
     inline String* user() const { return mUser; }
     inline void display_name(String* aDisplayName) { mDisplayName = aDisplayName; }
-    inline String* display_name() const { return mDisplayName; }
+    inline String* display_name() const { return mDisplayName->get_length() ? mDisplayName : mUser; }
 
  private:
     String* mId;

@@ -10,6 +10,7 @@ class Handler
     inline Handler(Application* aApp) : mApp{aApp} {}
     virtual ~Handler();
 
+    virtual inline void reset() {}
     virtual void on_message(client::RawMessage* aMessage) = 0;
     virtual void on_error(String* aMessage);
 

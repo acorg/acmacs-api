@@ -13,6 +13,7 @@ class LoginWidget : public Widget
 
     void show() override;
     void hide() override;
+    void reset() override;
 
     void show_error_message(String* aMessage);
     void hide_error_message();

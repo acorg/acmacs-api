@@ -24,6 +24,7 @@ class Session : public StoredInMongodb
     void use_session(std::string aSessionId); // throws Error
     std::string login_nonce(std::string aUser);
     void login_with_password_digest(std::string aCNonce, std::string aPasswordDigest);
+    void logout();
 
     void login(std::string aUser, std::string aPassword);
 

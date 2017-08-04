@@ -101,6 +101,15 @@ void Session::login(std::string aUser, std::string aPassword)
 
 // ----------------------------------------------------------------------
 
+void Session::logout()
+{
+    remove(mId.id());
+    reset();
+
+} // Session::logout
+
+// ----------------------------------------------------------------------
+
 std::string Session::get_nonce()
 {
     std::random_device rd;
@@ -139,6 +148,7 @@ void Session::create_session()
     const auto id = create();
     std::unique_lock<decltype(mAccess)> lock{mAccess};
     mId = id;
+    std::cout << "Session: " << mId << std::endl;
 
         // history.SessionLog(session=session, user_agent=user_agent, changed_user=changed_user).save(session=None)
 

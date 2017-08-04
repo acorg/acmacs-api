@@ -5,6 +5,16 @@
 
 // ----------------------------------------------------------------------
 
+namespace client
+{
+    struct Command_logout : public CommandData
+    {
+        inline Command_logout() : CommandData{"logout"_S} {}
+    }; // struct Command_logout
+} // namespace client
+
+// ----------------------------------------------------------------------
+
 Handler* Responders::find(String* aCommand, String* aCommandId)
 {
     auto found = std::find_if(begin(), end(), [&](auto& responder) { return responder.equals(aCommand, aCommandId); });
@@ -33,7 +43,8 @@ Application::~Application()
 void Application::send(client::CommandData* aCommand, Handler* aHandler)
 {
     aCommand->set_D(to_String(++mCommandId));
-    mResponders.add(aCommand, aHandler);
+    if (aHandler)
+        mResponders.add(aCommand, aHandler);
     mWS->send(to_String(aCommand));
     console_log("Application::send", aCommand);
 
@@ -41,13 +52,34 @@ void Application::send(client::CommandData* aCommand, Handler* aHandler)
 
 // ----------------------------------------------------------------------
 
-void Application::make_session()
+void Application::make_session(bool cancel_existing_session)
 {
     if (!mLogin)
         mLogin = new Login(this);
-    mLogin->use_session();
+    mLogin->use_session(cancel_existing_session);
 
 } // Application::make_session
+
+// ----------------------------------------------------------------------
+
+void Application::logout()
+{
+    send(new client::Command_logout{}, nullptr);
+    make_session(true);
+    session()->expired();
+    reset();
+
+} // Application::logout
+
+// ----------------------------------------------------------------------
+
+void Application::reset()
+{
+    mResponders.reset();
+    if (mLogin)
+        mLogin->reset();
+
+} // Application::reset
 
 // ----------------------------------------------------------------------
 
@@ -98,7 +130,7 @@ void Application::on_hello(client::RawMessage* aMessage) // ws connection establ
 {
     auto* server_version = aMessage->get_hello();
     if (eq("acmacs-api-server-v1", server_version)) {
-        make_session();
+        make_session(false);
     }
     else {
         client::window.alert(concat("Unsupported server version: ", server_version));

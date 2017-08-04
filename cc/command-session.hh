@@ -15,7 +15,7 @@ class Command_login_session : public Command
 
     static const char* description();
 
-}; // class Command_users
+}; // class Command_login_session
 
 // ----------------------------------------------------------------------
 
@@ -30,7 +30,7 @@ class Command_login_nonce : public Command
 
     static const char* description();
 
-}; // class Command_users
+}; // class Command_login_nonce
 
 // ----------------------------------------------------------------------
 
@@ -46,7 +46,20 @@ class Command_login_digest : public Command
 
     static const char* description();
 
-}; // class Command_users
+}; // class Command_login_digest
+
+// ----------------------------------------------------------------------
+
+class Command_logout : public Command
+{
+ public:
+    using Command::Command;
+
+    virtual void run();
+
+    static const char* description();
+
+}; // class Command_logout
 
 // ----------------------------------------------------------------------
 /// Local Variables:

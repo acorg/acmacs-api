@@ -70,6 +70,16 @@ void StoredInMongodb::update(std::string aId)
 } // StoredInMongodb::update
 
 // ----------------------------------------------------------------------
+
+void StoredInMongodb::remove(std::string aId)
+{
+    auto result = remove(to_bson::object("_id", bsoncxx::oid{aId}));
+    if (!result)
+        throw Error{"unacknowledged write during doc removing"};
+
+} // StoredInMongodb::remove
+
+// ----------------------------------------------------------------------
 /// Local Variables:
 /// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
 /// End:
