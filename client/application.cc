@@ -2,6 +2,7 @@
 
 #include "application.hh"
 #include "login.hh"
+#include "argv.hh"
 
 // ----------------------------------------------------------------------
 
@@ -78,6 +79,9 @@ void Application::reset()
     mResponders.reset();
     if (mLogin)
         mLogin->reset();
+    auto* local_storage = client::app_local_storage();
+    if (is_not_null(local_storage))
+        local_storage->removeItem(LocalStorageKeySession);
 
 } // Application::reset
 
@@ -166,6 +170,9 @@ void Application::on_error(String* aData)
 
 void Application::logged_in()
 {
+    auto* local_storage = client::app_local_storage();
+    if (is_not_null(local_storage))
+        local_storage->setItem(LocalStorageKeySession, session()->id());
     client::console_log("Logged in: ", session());
 
 } // Application::logged_in

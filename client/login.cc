@@ -61,15 +61,29 @@ inline void Login::hide_widget()
 
 void Login::run(bool use_argv)
 {
-    if (use_argv && !is_undefined_or_null(ARGV->session())) {
-        send(new LoginSessionData{ARGV->session()});
+    bool use_widget = true;
+    if (use_argv) {
+        if (!is_undefined_or_null(ARGV->session())) {
+            send(new LoginSessionData{ARGV->session()});
+            use_widget = false;
+        }
+        else if (!is_undefined_or_null(ARGV->user())) {
+            initiate_login(ARGV->user(), ARGV->password());
+            use_widget = false;
+        }
+        else {
+            auto* local_storage = client::app_local_storage();
+            if (is_not_null(local_storage)) {
+                auto* session_id_from_local_storage = static_cast<String*>(local_storage->getItem(LocalStorageKeySession));
+                if (is_not_null(session_id_from_local_storage)) {
+                    send(new LoginSessionData{session_id_from_local_storage});
+                    use_widget = false;
+                }
+            }
+        }
     }
-    else if (use_argv && !is_undefined_or_null(ARGV->user())) {
-        initiate_login(ARGV->user(), ARGV->password());
-    }
-    else {
+    if (use_widget)
         show_widget();
-    }
 
 } // Login::run
 

@@ -100,6 +100,7 @@ void ApplicationOne::run()
 
 void ApplicationOne::logged_in()
 {
+    Application::logged_in();
     h_display_name->set_textContent(session()->display_name());
     if (!mHandler) {
         auto* handler = new JsonPrinter{this};

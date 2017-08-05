@@ -37,6 +37,9 @@ namespace client
     Array* object_keys(Object*);
     Array* object_keys(Object&);
 
+      // localStorage if available
+    Storage* app_local_storage();
+
 } // namespace client
 
 // ----------------------------------------------------------------------

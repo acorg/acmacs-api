@@ -32,6 +32,10 @@ namespace client
 } // namespace client
 
 // ----------------------------------------------------------------------
+
+constexpr const char* LocalStorageKeySession = "acmacs-d-session-id";
+
+// ----------------------------------------------------------------------
 /// Local Variables:
 /// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
 /// End:

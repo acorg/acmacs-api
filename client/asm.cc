@@ -21,6 +21,22 @@ void make_asm_definitions()
 
     __asm__("window.make_cnonce = function() { return Math.floor(Math.random() * 0xFFFFFFFF).toString(16); };");
 
+      // localStorage if available
+    __asm__(R"(
+window.app_local_storage = function()
+{
+    try {
+        var storage = window.localStorage, x = '__storage_test__';
+        storage.setItem(x, x);
+        storage.removeItem(x);
+        return storage;
+    }
+    catch(e) {
+        return null;
+    }
+}
+)");
+    
       // https://stackoverflow.com/questions/4810841/how-can-i-pretty-print-json-using-javascript
     __asm__(R"(window.json_syntax_highlight = function(data) {
     data = data.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
