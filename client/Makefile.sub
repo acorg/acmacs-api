@@ -36,7 +36,7 @@ test: install
 checks: check-cheerp check-sassc
 
 rtags:
-	#make -nk | /usr/local/bin/rc --compile - || true
+	#make -nkB | /usr/local/bin/rc --compile - || true
 
 # ----------------------------------------------------------------------
 

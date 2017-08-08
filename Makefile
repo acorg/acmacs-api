@@ -72,7 +72,7 @@ test: install
 checks: check-acmacsd-root check-libcurl
 
 rtags:
-	make -nk | /usr/local/bin/rc --compile - || true
+	make -nkB $(PROGS) | /usr/local/bin/rc --compile - || true
 
 # ----------------------------------------------------------------------
 
