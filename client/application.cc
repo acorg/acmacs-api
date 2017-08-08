@@ -11,7 +11,9 @@ namespace client
     struct Command_logout : public CommandData
     {
         inline Command_logout() : CommandData{"logout"_S} {}
+
     }; // struct Command_logout
+
 } // namespace client
 
 // ----------------------------------------------------------------------
@@ -35,7 +37,7 @@ void Responders::remove(String* aCommand, String* aCommandId)
 
 Application::~Application()
 {
-    client::console_error("~Application");
+    log_error("~Application");
 
 } // Application::~Application
 
@@ -47,7 +49,7 @@ void Application::send(client::CommandData* aCommand, Handler* aHandler)
     if (aHandler)
         mResponders.add(aCommand, aHandler);
     mWS->send(to_String(aCommand));
-    console_log("Application::send", aCommand);
+    log("Application::send", aCommand);
 
 } // Application::send
 
@@ -95,8 +97,8 @@ void Application::make_connection()
     mWS->set_onmessage(cheerp::Callback([this](MessageEvent* aEvent) { on_raw_message_event(aEvent); }));
     mWS->set_onclose(cheerp::Callback([this](CloseEvent* aEvent) { on_close(aEvent); }));
 
-    // mWS->set_onopen(cheerp::Callback([]() { console_log("ws onopen"); }));
-    mWS->set_onerror(cheerp::Callback([](Event* aEvent) { console_error("ws onerror", aEvent); }));
+    // mWS->set_onopen(cheerp::Callback([]() { log("ws onopen"); }));
+    mWS->set_onerror(cheerp::Callback([](Event* aEvent) { log_error("ws onerror", aEvent); }));
 
 } // Application::make_connection
 
@@ -104,7 +106,7 @@ void Application::make_connection()
 
 void Application::on_message(client::RawMessage* aMessage)
 {
-    console_log("MSG: ", aMessage);
+    log("MSG: ", aMessage);
     if (!is_undefined_or_null(aMessage->get_C())) {
         auto* handler = mResponders.find(aMessage->get_C(), aMessage->get_D());
         if (handler) {
@@ -147,7 +149,7 @@ void Application::on_hello(client::RawMessage* aMessage) // ws connection establ
 
 void Application::on_close(client::CloseEvent* aEvent)
 {
-    console_log("WS CLOSED: ", aEvent);
+    log("WS CLOSED: ", aEvent);
     mWS = nullptr;
     constexpr const double minimum_delay_between_connections = 1000;
     const auto closed_time_stamp = aEvent->get_timeStamp();
@@ -162,7 +164,7 @@ void Application::on_close(client::CloseEvent* aEvent)
   // cannot parse response from the server or json contains "E"
 void Application::on_error(String* aData)
 {
-    console_error("ERROR: ", aData);
+    log_error("ERROR: ", aData);
 
 } // Application::on_error
 
@@ -173,7 +175,7 @@ void Application::logged_in()
     auto* local_storage = client::app_local_storage();
     if (is_not_null(local_storage))
         local_storage->setItem(LocalStorageKeySession, session()->id());
-    client::console_log("Logged in: ", session());
+    log("Logged in: ", session());
 
 } // Application::logged_in
 

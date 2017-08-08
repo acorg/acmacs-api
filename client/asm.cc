@@ -16,6 +16,7 @@ void make_asm_definitions()
 
     __asm__("window.console_log = console.log;");
     __asm__("window.console_error = console.error;");
+    __asm__("window.console_warning = console.warn;");
 
     __asm__("window.ws_host_port = function() { return window.location.href.match(new RegExp('https?://([^/]+)'), 'i')[1]; };");
 
@@ -36,7 +37,7 @@ window.app_local_storage = function()
     }
 }
 )");
-    
+
       // https://stackoverflow.com/questions/4810841/how-can-i-pretty-print-json-using-javascript
     __asm__(R"(window.json_syntax_highlight = function(data) {
     data = data.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');

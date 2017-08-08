@@ -185,6 +185,7 @@ namespace to_json
           case bsoncxx::type::k_minkey:
               return symbol_("minkey");
         }
+        return value(to_json::null); // to avoid gcc warning
     }
 
 } // namespace to_json

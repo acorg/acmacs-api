@@ -32,10 +32,10 @@ class Login : public Handler
     inline Login(Application* aApp)
         : Handler{aApp}, mWidget{nullptr}
         {
-            client::console_log("Login");
+            log("Login");
         }
       //inline Login(const Login&) = default;
-    inline ~Login() override { client::console_log("~Login"); }
+    inline ~Login() override { log("~Login"); }
 
     void reset() override;
     void run(bool use_argv);

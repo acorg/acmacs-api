@@ -30,9 +30,11 @@ namespace client
     client::String* json_syntax_highlight(client::String*);
 
     template <typename ... Args> void console_log(Args ...);
-    template <typename ... Args> inline void console_log(const char* first, Args ... rest) { console_log(new client::String{first}, rest ...); }
+      //template <typename ... Args> inline void console_log(const char* first, Args ... rest) { console_log(new client::String{first}, rest ...); }
     template <typename ... Args> void console_error(Args ...);
-    template <typename ... Args> inline void console_error(const char* first, Args ... rest) { console_error(new client::String{first}, rest ...); }
+      //template <typename ... Args> inline void console_error(const char* first, Args ... rest) { console_error(new client::String{first}, rest ...); }
+    template <typename ... Args> void console_warning(Args ...);
+      //template <typename ... Args> inline void console_warning(const char* first, Args ... rest) { console_warning(new client::String{first}, rest ...); }
 
     Array* object_keys(Object*);
     Array* object_keys(Object&);
@@ -43,6 +45,13 @@ namespace client
 } // namespace client
 
 // ----------------------------------------------------------------------
+
+template <typename ... Args> inline void log(const char* first, Args ... rest) { client::console_log(new client::String{first}, rest ...); }
+template <typename ... Args> inline void log_error(const char* first, Args ... rest) { client::console_error(new client::String{first}, rest ...); }
+template <typename ... Args> inline void log_warning(const char* first, Args ... rest) { client::console_warning(new client::String{first}, rest ...); }
+
+// ----------------------------------------------------------------------
+
 
 void make_asm_definitions();
 

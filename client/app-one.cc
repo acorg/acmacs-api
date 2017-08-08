@@ -50,7 +50,7 @@ class JsonPrinter : public Handler
 
     inline void on_message(client::RawMessage* aMessage) override
         {
-            client::console_log("JsonPrinter::on_message", aMessage);
+            log("JsonPrinter::on_message", aMessage);
             pre->set_innerHTML(json_syntax_highlight(stringify(aMessage, 2)));
         }
 
@@ -135,9 +135,7 @@ void ApplicationOne::reset()
 
 void on_load()
 {
-    using namespace client;
-
-    console_log("app-one");
+    log("app-one");
 
     auto* app = new ApplicationOne{};
     app->run();
