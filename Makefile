@@ -71,8 +71,8 @@ test: install
 
 checks: check-acmacsd-root check-libcurl
 
-rtags:
-	make -nkB $(PROGS) | /usr/local/bin/rc --compile - || true
+RTAGS_TARGET = $(PROGS)
+include $(ACMACSD_ROOT)/share/Makefile.rtags
 
 # ----------------------------------------------------------------------
 
@@ -131,54 +131,6 @@ $(BUILD):
 	mkdir -p $(BUILD)
 
 .PHONY: check-acmacsd-root
-
-# ----------------------------------------------------------------------
-
-# ACMACS_API_CLIENT_JS = $(DIST)/acmacs-api-client.js.gz
-# ACMACS_API_CLIENT_CSS = $(DIST)/acmacs-api-client.css.gz
-# ACMACS_API_CLIENT_SOURCES = acmacs-api-client.cc asm.cc login.cc widget.cc login-widget.cc
-
-# ifeq ($(shell uname -s),Darwin)
-#   MAKE_CLIENT = 1
-# else
-#   MAKE_CLIENT = 0
-# endif
-
-# ifeq ($(MAKE_CLIENT),1)
-#   PROGS += acmacs-api-client
-# endif
-
-# CHEERP = /opt/cheerp/bin/clang++ -target cheerp
-# CHEERP_COMPILE_FLAGS = -std=c++1z -MMD -I. -Iinclude -g $(OPTIMIZATION) $(WEVERYTHING) -Wno-unknown-pragmas
-# # --cheerp-preexecute
-# CHEERP_LINK_FLAGS = $(OPTIMIZATION)
-
-# SASSC = sassc
-
-# acmacs-api-client: $(ACMACS_API_CLIENT_JS) $(ACMACS_API_CLIENT_CSS)
-
-# $(ACMACS_API_CLIENT_JS): $(patsubst %.cc,$(BUILD)/%.bc,$(ACMACS_API_CLIENT_SOURCES)) | $(DIST)
-#	@echo cheerp-link $(notdir $@)
-#	@$(CHEERP) $(CHEERP_LINK_FLAGS) -cheerp-sourcemap=$(basename $@).map -o $(basename $@) $^
-#	@gzip -9f $(basename $@) $(basename $@).map
-
-# $(BUILD)/%.bc: $(CLIENT)/%.cc | $(BUILD)
-#	@echo cheerp $<
-#	@$(CHEERP) $(CHEERP_COMPILE_FLAGS) -c -o $@ $<
-
-# $(DIST)/%.css.gz: $(CLIENT)/%.sass $(wildcard $(CLIENT)/*.sass) | $(DIST)
-#	@echo $(notdir $@)
-#	@$(SASSC) --style compressed -I $(CLIENT) $< | gzip -9 >$@
-
-# check-cheerp:
-# ifeq ($(MAKE_CLIENT),1)
-#	@$(CHEERP) -v >/dev/null 2>&1 || ( echo "ERROR: Please install cheerp (http://leaningtech.com/cheerp/download/)" >&2 && false )
-# endif
-
-# check-sassc:
-# ifeq ($(MAKE_CLIENT),1)
-#	@$(SASSC) -v >/dev/null 2>&1 || ( echo "ERROR: Please install SASSC:" $(SASSC_INSTALL) >&2 && false )
-# endif
 
 # ======================================================================
 ### Local Variables:
