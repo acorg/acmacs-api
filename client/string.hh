@@ -32,7 +32,12 @@ inline String* stringify(client::Object* value, size_t indent = 0)
 
 inline String* to_String(client::Object* value)
 {
-    return is_string(value) ? static_cast<String*>(value) : stringify(value);
+    if (is_undefined_or_null(value))
+        return new String{};
+    else if (is_string(value))
+        return static_cast<String*>(value);
+    else
+        return stringify(value);
 }
 
 inline String* to_String(String* value)
@@ -120,6 +125,16 @@ inline String* make_json(client::Object* src)
 template <typename ... Args> inline String* make_json(Args ... args)
 {
     return stringify(make_object(args ...));
+}
+
+// ----------------------------------------------------------------------
+
+inline std::string from_String(String* aSrc)
+{
+    if (!is_undefined_or_null(aSrc))
+        return (std::string)*aSrc;
+    else
+        return std::string{};
 }
 
 // ----------------------------------------------------------------------
