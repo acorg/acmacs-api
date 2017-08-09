@@ -88,7 +88,25 @@ template <typename ... Args> inline String* concat(const char* s1, Args&& ... ar
 inline String* concat_space(String* s1) { return s1; }
 template <typename S1, typename S2, typename ... Args> inline String* concat_space(S1 s1, S2 s2, Args&& ... args)
 {
-    return concat_space(concat(s1, " ", s2), std::forward<Args>(args) ...);
+    if (client::is_not_empty(s1)) {
+        if (client::is_not_empty(s2))
+            return concat_space(concat(s1, " ", s2), std::forward<Args>(args) ...);
+        else
+            return concat_space(s1, std::forward<Args>(args) ...);
+    }
+    else {
+        return concat_space(s2, std::forward<Args>(args) ...);
+    }
+}
+
+inline String* join_array(client::Array* aSrc)
+{
+    auto* result = new client::String{};
+    if (client::is_not_empty(aSrc)) {
+        for (int index = 0; index < aSrc->get_length(); ++index)
+            result = concat_space(result, to_String((*aSrc)[index]));
+    }
+    return result;
 }
 
 // ----------------------------------------------------------------------

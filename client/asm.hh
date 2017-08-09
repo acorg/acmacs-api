@@ -7,6 +7,8 @@
 namespace client
 {
     bool is_string(client::Object*);
+    bool is_array(client::Object*);
+    bool is_array_of_strings(client::Object*);
     String* typeof(client::Object*);
     void debug();
 
@@ -17,6 +19,8 @@ namespace client
     bool is_undefined_or_null(client::Object&);
     bool is_not_null(client::Object*); // and not undefined
     bool is_not_null(client::Object&); // and not undefined
+    bool is_defined(client::Object*);  // not null, not undefined
+    bool is_not_empty(client::Object*);  // not null, not undefined, length > 0
 
     client::Object* make_number(int);
     client::Object* make_number(unsigned);
