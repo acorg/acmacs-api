@@ -19,9 +19,6 @@ class LoginWidget : public Widget
     void hide_error_message();
 
  private:
-    using HTMLElement = client::HTMLElement;
-    using HTMLInputElement = client::HTMLInputElement;
-
     Login* mLogin;
     HTMLElement* div;
     HTMLElement* username_label;

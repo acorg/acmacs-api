@@ -1,22 +1,13 @@
 #include "toolkit-basic.hh"
 #include "app-one.hh"
 #include "handler.hh"
+#include "map-widget.hh"
 
 // ----------------------------------------------------------------------
 
 static void on_load();
 
 // ----------------------------------------------------------------------
-
-namespace client
-{
-    struct Command_chart : public CommandData
-    {
-        template <typename IdType> inline Command_chart(IdType id) : CommandData{"chart"_S} { set_id(id); }
-        inline void set_id(const char* id) { set_id(to_String(id)); }
-        void set_id(String*);
-    };
-}
 
 class JsonPrinter : public Handler
 {
@@ -103,7 +94,8 @@ void ApplicationOne::logged_in()
     Application::logged_in();
     h_display_name->set_textContent(session()->display_name());
     if (!mHandler) {
-        auto* handler = new JsonPrinter{this};
+          // auto* handler = new JsonPrinter{this};
+        auto* handler = new MapHandler{this, "593a87ee48618fc1e72da4fe"_S};
         mHandler = handler;
         handler->run();
     }

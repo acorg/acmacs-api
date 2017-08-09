@@ -2,6 +2,8 @@
 
 #include <cheerp/clientlib.h>
 
+#include "string.hh"
+
 // ----------------------------------------------------------------------
 
 namespace client
@@ -35,6 +37,23 @@ namespace client
         String* get_CT();       // time of the command processing
         String* get_CI();       // index of the command part (if there are multiple responses for the command)
     };
+
+      // --------------------------------------------------
+
+    struct Command_chart : public CommandData
+    {
+        template <typename IdType> inline Command_chart(IdType id) : CommandData{"chart"_S} { set_id(id); }
+        inline void set_id(const char* id) { set_id(to_String(id)); }
+        void set_id(String*);
+
+    }; // Command_chart
+
+    struct Response_chart : public ResponseData
+    {
+        Object* get_chart_ace();
+    };
+
+      // --------------------------------------------------
 
 } // namespace client
 

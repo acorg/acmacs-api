@@ -13,6 +13,11 @@ class Widget
     virtual void hide() = 0;
     virtual void reset() = 0;
 
+ protected:
+    using HTMLElement = client::HTMLElement;
+    using HTMLInputElement = client::HTMLInputElement;
+    using HTMLCanvasElement = client::HTMLCanvasElement;
+
 }; // class Widget
 
 // ----------------------------------------------------------------------
