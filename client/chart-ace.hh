@@ -206,6 +206,23 @@ class ChartAce : public ChartBase
 
     }; // class Layout
 
+      // ----------------------------------------------------------------------
+
+    class MinimumColumnBasis : public MinimumColumnBasisBase
+    {
+     public:
+        inline MinimumColumnBasis(const String* aData) : mData(aData) {}
+
+        inline operator size_t() const override { if (eq(mData, "none") || eq(mData, "auto")) return 0; return std::stoul(from_String(mData)); }
+        inline operator std::string() const override { return from_String(mData); }
+
+     private:
+        const String* mData;
+
+    }; // class MinimumColumnBasis
+
+      // ----------------------------------------------------------------------
+
     class Projection : public ProjectionBase
     {
      public:
@@ -214,7 +231,7 @@ class ChartAce : public ChartBase
         inline std::string comment() const override { return from_String(mData->get_c()); }
         inline const LayoutBase& layout() const override { return * new Layout{mData->get_l()}; }
         inline double stress() const override { return mData->get_s(); }
-        inline const MinimumColumnBasisBase& minimum_column_basis() const override {}
+        inline const MinimumColumnBasisBase& minimum_column_basis() const override { return * new MinimumColumnBasis{mData->get_m()}; }
         inline const ColumnBasesBase& column_bases() const override {}
         inline bool dodgy_titer_is_regular() const override { return mData->get_d(); }
         inline const Transformation& transformation() const override {}

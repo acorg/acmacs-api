@@ -15,8 +15,8 @@ namespace client
     client::Object* make_undefined(); // don't know how to make undefined in cheerp 1.3 otherwise
     bool is_undefined(client::Object*);
     bool is_undefined(client::Object&);
-    bool is_undefined_or_null(client::Object*);
-    bool is_undefined_or_null(client::Object&);
+    bool is_undefined_or_null(const client::Object*);
+    bool is_undefined_or_null(const client::Object&);
     bool is_not_null(client::Object*); // and not undefined
     bool is_not_null(client::Object&); // and not undefined
     bool is_defined(client::Object*);  // not null, not undefined

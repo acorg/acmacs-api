@@ -12,7 +12,9 @@ using client::String;
 inline String* operator ""_S(const char* src, size_t) { return new String{src}; }
 
 inline bool eq(String* s1, const char* s2) { return s1 == new String{s2}; }
+inline bool eq(const String* s1, const char* s2) { return s1 == new String{s2}; }
 inline bool eq(const char* s1, String* s2) { return s2 == new String{s1}; }
+inline bool eq(const char* s1, const String* s2) { return s2 == new String{s1}; }
 
 // ----------------------------------------------------------------------
 
@@ -147,7 +149,7 @@ template <typename ... Args> inline String* make_json(Args ... args)
 
 // ----------------------------------------------------------------------
 
-inline std::string from_String(String* aSrc)
+inline std::string from_String(const String* aSrc)
 {
     if (!is_undefined_or_null(aSrc))
         return (std::string)*aSrc;
