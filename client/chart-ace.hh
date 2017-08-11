@@ -230,7 +230,7 @@ class ChartAce : public ChartBase
 
         inline void operator = (const ColumnBasesBase& aSrc) override { log_error("ColumnBases.=: Not implemented"); }
         inline double operator[](size_t aIndex) const override { return at(aIndex); }
-        inline double at(size_t aIndex) const override { return (*mData)[aIndex]->valueOf<double>(); }
+        inline double at(size_t aIndex) const override { return *(*mData)[aIndex]; }
         inline void set(size_t aIndex, double aValue) override { log_error("ColumnBases.set: Not implemented"); }
         inline void clear() override { log_error("ColumnBases.clear: Not implemented"); }
         inline bool empty() const override { return mData->get_length() == 0; }
@@ -255,7 +255,7 @@ class ChartAce : public ChartBase
         inline const MinimumColumnBasisBase& minimum_column_basis() const override { return * new MinimumColumnBasis{mData->get_m()}; }
         inline const ColumnBasesBase& column_bases() const override { return * new ColumnBases{mData->get_C()}; }
         inline bool dodgy_titer_is_regular() const override { return mData->get_d(); }
-        inline const Transformation& transformation() const override {}
+        inline const Transformation& transformation() const override { const auto& tr = *mData->get_t(); return * new Transformation{*tr[0], *tr[1], *tr[2], *tr[3]};  }
         inline double stress_diff_to_stop() const override { return mData->get_e(); }
 
      private:
