@@ -2,6 +2,7 @@
 
 #include <cheerp/clientlib.h>
 
+#include "acmacs-base/passage.hh"
 #include "acmacs-chart/chart-base.hh"
 #include "string.hh"
 
@@ -127,7 +128,7 @@ class ChartAce : public ChartBase
         inline const std::string passage() const override { return from_String(mData->get_P()); }
         inline bool has_passage() const override { return client::is_not_empty(mData->get_P()); }
         inline std::string passage_without_date() const override { log_error("Antigen.passage_without_date: Not implemented"); return std::string{}; }
-        inline bool is_egg() const override {}
+        inline bool is_egg() const override { return passage::is_egg(passage()) || is_reassortant(); }
         inline const std::string reassortant() const override { return from_String(mData->get_R()); }
         inline bool is_reassortant() const override { return client::is_not_empty(mData->get_R()); }
         inline bool distinct() const override { return client::is_defined(mData->get_a()) && mData->get_a()->indexOf("DISTINCT"_S) >= 0; }
@@ -155,7 +156,7 @@ class ChartAce : public ChartBase
         inline const std::string lineage() const override { return from_String(mData->get_L()); }
         inline const std::string passage() const override { return from_String(mData->get_P()); }
         inline bool has_passage() const override { return client::is_not_empty(mData->get_P()); }
-        inline bool is_egg() const override {}
+        inline bool is_egg() const override { return passage::is_egg(passage()) || is_reassortant(); }
         inline std::string passage_without_date() const override { log_error("Serum.passage_without_date: Not implemented"); return std::string{}; }
         inline const std::string reassortant() const override { return from_String(mData->get_R()); }
         inline bool is_reassortant() const override { return client::is_not_empty(mData->get_R()); }
