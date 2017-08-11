@@ -52,6 +52,24 @@ namespace client
         String* get_s() const;
     };
 
+    struct ChartAceProjection : public Object
+    {
+        String* get_c() const;
+        Array*  get_l() const;
+        size_t  get_i() const;
+        double  get_s() const;
+        String* get_m() const;
+        Array*  get_C() const;
+        Array*  get_t() const;
+        Array*  get_g() const;
+        Array*  get_f() const;
+        bool    get_d() const;
+        double  get_e() const;
+        Array*  get_U() const;
+        Array*  get_D() const;
+        Array*  get_u() const;
+    };
+
     struct ChartAceChart : public Object
     {
         const ChartAceInfo* get_i() const;
@@ -171,11 +189,48 @@ class ChartAce : public ChartBase
 
       // ----------------------------------------------------------------------
 
+    class Layout : public LayoutBase
+    {
+     public:
+        inline Layout(const client::Array* aData) : mData(aData) {}
+
+        inline LayoutBase* clone() const override { return new Layout{mData}; }
+        inline const Coordinates& operator[](size_t aIndex) const override { const auto& coord = *(client::Array*)(*mData)[aIndex]; auto& result = * new Coordinates(coord.get_length()); for (size_t dim = 0; dim < coord.get_length(); ++dim) { result[dim] = coord[dim]->valueOf<double>(); } return result; }
+        inline void set(size_t /*aIndex*/, const Coordinates& /*aCoordinates*/) override { log_error("Layout>set: Not implemented"); }
+        inline size_t number_of_points() const override { return mData->get_length(); }
+        inline size_t number_of_dimensions() const override { for (size_t p = 0; p < mData->get_length(); ++p) { const auto row_size = static_cast<client::Array*>((*mData)[p])->get_length(); if (row_size > 0) return row_size; } log_warning("Layout.number_of_dimensions: no points have coordinates"); return 0; }
+        inline bool empty() const override { return mData->get_length() == 0; }
+
+     private:
+        const client::Array* mData;
+
+    }; // class Layout
+
+    class Projection : public ProjectionBase
+    {
+     public:
+        inline Projection(const client::ChartAceProjection* aData) : mData(aData) {}
+
+        inline std::string comment() const override { return from_String(mData->get_c()); }
+        inline const LayoutBase& layout() const override { return * new Layout{mData->get_l()}; }
+        inline double stress() const override { return mData->get_s(); }
+        inline const MinimumColumnBasisBase& minimum_column_basis() const override {}
+        inline const ColumnBasesBase& column_bases() const override {}
+        inline bool dodgy_titer_is_regular() const override { return mData->get_d(); }
+        inline const Transformation& transformation() const override {}
+        inline double stress_diff_to_stop() const override { return mData->get_e(); }
+
+     private:
+        const client::ChartAceProjection* mData;
+
+    }; //  class Projection
+
+      // ----------------------------------------------------------------------
+
     inline const ChartInfoBase& chart_info() const override { return * new Info{mData->get_c()->get_i()}; }
     inline const AntigenBase& antigen(size_t ag_no) const override { return * new Antigen{(client::ChartAceAntigen*)mData->get_c()->get_a()->operator[](ag_no)}; }
     inline const SerumBase& serum(size_t sr_no) const override { return * new Serum{(client::ChartAceSerum*)mData->get_c()->get_a()->operator[](sr_no)}; }
-    inline ProjectionBase& projection(size_t aProjectionNo) override {}
-    inline const ProjectionBase& projection(size_t aProjectionNo) const override {}
+    inline const ProjectionBase& projection(size_t aProjectionNo) const override { return * new Projection{(client::ChartAceProjection*)mData->get_c()->get_P()->operator[](aProjectionNo)}; }
 
     inline String* name() { return static_cast<const Info&>(chart_info()).make_name_S(); }
 
