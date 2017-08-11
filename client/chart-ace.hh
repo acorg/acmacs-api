@@ -196,7 +196,7 @@ class ChartAce : public ChartBase
 
         inline LayoutBase* clone() const override { return new Layout{mData}; }
         inline const Coordinates& operator[](size_t aIndex) const override { const auto& coord = *(client::Array*)(*mData)[aIndex]; auto& result = * new Coordinates(coord.get_length()); for (size_t dim = 0; dim < coord.get_length(); ++dim) { result[dim] = coord[dim]->valueOf<double>(); } return result; }
-        inline void set(size_t /*aIndex*/, const Coordinates& /*aCoordinates*/) override { log_error("Layout>set: Not implemented"); }
+        inline void set(size_t /*aIndex*/, const Coordinates& /*aCoordinates*/) override { log_error("Layout.set: Not implemented"); }
         inline size_t number_of_points() const override { return mData->get_length(); }
         inline size_t number_of_dimensions() const override { for (size_t p = 0; p < mData->get_length(); ++p) { const auto row_size = static_cast<client::Array*>((*mData)[p])->get_length(); if (row_size > 0) return row_size; } log_warning("Layout.number_of_dimensions: no points have coordinates"); return 0; }
         inline bool empty() const override { return mData->get_length() == 0; }
@@ -223,6 +223,27 @@ class ChartAce : public ChartBase
 
       // ----------------------------------------------------------------------
 
+    class ColumnBases : public ColumnBasesBase
+    {
+     public:
+        inline ColumnBases(const client::Array* aData) : mData(aData) {}
+
+        inline void operator = (const ColumnBasesBase& aSrc) override { log_error("ColumnBases.=: Not implemented"); }
+        inline double operator[](size_t aIndex) const override { return at(aIndex); }
+        inline double at(size_t aIndex) const override { return (*mData)[aIndex]->valueOf<double>(); }
+        inline void set(size_t aIndex, double aValue) override { log_error("ColumnBases.set: Not implemented"); }
+        inline void clear() override { log_error("ColumnBases.clear: Not implemented"); }
+        inline bool empty() const override { return mData->get_length() == 0; }
+        inline size_t size() const override { return mData->get_length(); }
+        inline void resize(size_t aNewSize) override { log_error("ColumnBases.resize: Not implemented"); }
+
+     private:
+        const client::Array* mData;
+
+    }; // class ColumnBases
+
+      // ----------------------------------------------------------------------
+
     class Projection : public ProjectionBase
     {
      public:
@@ -232,7 +253,7 @@ class ChartAce : public ChartBase
         inline const LayoutBase& layout() const override { return * new Layout{mData->get_l()}; }
         inline double stress() const override { return mData->get_s(); }
         inline const MinimumColumnBasisBase& minimum_column_basis() const override { return * new MinimumColumnBasis{mData->get_m()}; }
-        inline const ColumnBasesBase& column_bases() const override {}
+        inline const ColumnBasesBase& column_bases() const override { return * new ColumnBases{mData->get_C()}; }
         inline bool dodgy_titer_is_regular() const override { return mData->get_d(); }
         inline const Transformation& transformation() const override {}
         inline double stress_diff_to_stop() const override { return mData->get_e(); }

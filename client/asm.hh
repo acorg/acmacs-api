@@ -56,7 +56,6 @@ template <typename ... Args> inline void log_warning(const char* first, Args ...
 
 // ----------------------------------------------------------------------
 
-
 void make_asm_definitions();
 
 // ----------------------------------------------------------------------
