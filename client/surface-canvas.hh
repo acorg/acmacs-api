@@ -11,9 +11,6 @@ class SurfaceCanvas : public Surface
  public:
     inline SurfaceCanvas(client::HTMLCanvasElement* aCanvas) : mCanvas(aCanvas) {}
 
-    inline const Location& origin_in_parent() const override {}
-    inline double width_in_parent() const override {}
-
     inline void move(const Location& aOriginInParent) override {}
     inline void move_resize(const Location& aOriginInParent, double aWidthInParent) override {}
 
