@@ -8,6 +8,7 @@
 class MapWidget;
 class ChartAce;
 class ChartDraw;
+class SurfaceCanvas;
 
 class MapHandler : public Handler
 {
@@ -52,6 +53,7 @@ class MapWidget : public Widget
     MapHandler* mHandler;
     ChartAce* mChartAce;
     ChartDraw* mDraw;
+    SurfaceCanvas* mSurface;
 
     HTMLElement* div;
     HTMLElement* title;

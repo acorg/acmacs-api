@@ -1,6 +1,7 @@
 #include "acmacs-map-draw/draw.hh"
 #include "map-widget.hh"
 #include "chart-ace.hh"
+#include "surface-canvas.hh"
 
 // ----------------------------------------------------------------------
 
@@ -57,7 +58,7 @@ void MapHandler::on_error(String* aMessage)
 // ----------------------------------------------------------------------
 
 MapWidget::MapWidget(MapHandler* aHandler, ChartAce* aChartAce)
-    : mHandler{aHandler}, mChartAce{aChartAce}
+    : mHandler{aHandler}, mChartAce{aChartAce}, mSurface(nullptr)
 {
     log("ace", mChartAce);
     create();
@@ -74,6 +75,8 @@ MapWidget::~MapWidget()
       // dettach();
     delete mChartAce;
     mChartAce = nullptr;
+    delete mSurface;
+    mSurface = nullptr;
 
 } // MapWidget::~MapWidget
 
@@ -109,6 +112,8 @@ void MapWidget::create()
     div = append_child(document.get_body(), "div", class_{"antigenic-map box-shadow-popup hidden"});
     title = (HTMLCanvasElement*)append_child(div, "div", class_{"title"}, text{concat(mChartAce->name(), " ", mChartAce->number_of_antigens(), ":", mChartAce->number_of_sera())});
     canvas = (HTMLCanvasElement*)append_child(div, "canvas");
+
+    mSurface = new SurfaceCanvas(canvas);
 
 } // MapWidget::create
 
