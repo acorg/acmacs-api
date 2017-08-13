@@ -36,7 +36,7 @@ class SurfaceCanvas : public Surface
     inline void path_fill(const double* first, const double* last, Color aFillColor) override {}
 
     inline void double_arrow(const Location& a, const Location& b, Color aColor, Pixels aLineWidth, Pixels aArrowWidth) override {}
-    inline void grid(Scaled aStep, Color aLineColor, Pixels aLineWidth) override {}
+    // inline void grid(Scaled aStep, Color aLineColor, Pixels aLineWidth) override {}
     inline void border(Color aLineColor, Pixels aLineWidth) override {}
     inline void background(Color aColor) override {}
 
