@@ -14,10 +14,6 @@ class SurfaceCanvas : public Surface
     inline void move(const Location& aOriginInParent) override {}
     inline void move_resize(const Location& aOriginInParent, double aWidthInParent) override {}
 
-    inline Surface& subsurface(const Location& aOriginInParent, Scaled aWidthInParent, const Viewport& aViewport, bool aClip) override {}
-    inline Surface& subsurface(bool aClip) override {}
-    inline Surface& subsurface(const Location& aOriginInParent, Pixels aWidthInParent, const Viewport& aViewport, bool aClip) override {} // origin is in pixels
-
     inline void line(const Location& a, const Location& b, Color aColor, Pixels aWidth, LineCap aLineCap = LineCap::Butt) override {}
     inline void line(const Location& a, const Location& b, Color aColor, Scaled aWidth, LineCap aLineCap = LineCap::Butt) override {}
     inline void rectangle(const Location& a, const Size& s, Color aColor, Pixels aWidth, LineCap aLineCap = LineCap::Butt) override {}
@@ -51,18 +47,54 @@ class SurfaceCanvas : public Surface
     inline Size text_size(std::string aText, Pixels aSize, const TextStyle& aTextStyle = TextStyle(), double* x_bearing = nullptr) override {}
     inline Size text_size(std::string aText, Scaled aSize, const TextStyle& aTextStyle = TextStyle(), double* x_bearing = nullptr) override {}
 
-    inline double scale() const override {}
-    inline Location origin_offset() const override {}
-
-    inline void new_page() override {}
+    inline void new_page() override { log_warning("new_page is not supported in SurfaceCanvas"); }
 
  protected:
     inline Location arrow_head(const Location& a, double angle, double sign, Color aColor, Pixels aArrowWidth) override {}
+
+    Surface* make_child(const Location& aOriginInParent, Scaled aWidthInParent, const Viewport& aViewport, bool aClip) override;
 
  private:
     client::HTMLCanvasElement* mCanvas;
 
 }; // class SurfaceCanvas
+
+// ----------------------------------------------------------------------
+
+class SurfaceCanvasChild : public SurfaceCanvas
+{
+ public:
+    inline Surface& root() override { return mParent.root(); }
+    inline const Surface& root() const override { return mParent.root(); }
+
+    inline void move(const Location& aOriginInParent) override { change_origin(aOriginInParent); }
+    inline void move_resize(const Location& aOriginInParent, double aWidthInParent) override { change_origin(aOriginInParent); change_width_in_parent(aWidthInParent); }
+
+    inline double scale() const override { return mParent.scale() * (width_in_parent() / viewport().size.width); }
+    inline Location origin_offset() const override { return mParent.origin_offset() + origin_in_parent() * mParent.scale(); }
+
+ protected:
+    inline bool clip() const override { return mClip; }
+
+ private:
+    SurfaceCanvas& mParent;
+    bool mClip;                 // force surface area clipping
+
+    inline SurfaceCanvasChild(SurfaceCanvas& aParent, const Location& aOriginInParent, Scaled aWidthInParent, const Viewport& aViewport, bool aClip)
+        : SurfaceCanvas{aOriginInParent, aWidthInParent, aViewport}, mParent{aParent}, mClip{aClip} {}
+    // inline SurfaceCanvasChild(SurfaceCanvas& aParent, const Size& aOffset, const Size& aSize, double aScale, bool aClip)
+    //     : mParent(aParent), mOffset(aOffset), mSize(aSize), mScale(aScale), mClip(aClip) {}
+
+    friend class SurfaceCanvas;
+
+}; // class SurfaceCanvasChild
+
+// ----------------------------------------------------------------------
+
+Surface* SurfaceCanvas::make_child(const Location& aOriginInParent, Scaled aWidthInParent, const Viewport& aViewport, bool aClip)
+{
+    return new SurfaceCanvasChild(*this, aOriginInParent, aWidthInParent, aViewport, aClip);
+}
 
 // ----------------------------------------------------------------------
 /// Local Variables:
