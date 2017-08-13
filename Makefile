@@ -31,6 +31,7 @@ ACMACS_API_SERVER_LIBS = $(MONGO_LDLIBS) -lacmacswebserver
 # ----------------------------------------------------------------------
 
 include $(ACMACSD_ROOT)/share/Makefile.g++
+include $(ACMACSD_ROOT)/share/Makefile.dist-build.vars
 
 LIB_DIR = $(ACMACSD_ROOT)/lib
 
@@ -51,8 +52,6 @@ PROGS = $(API_DIRECT) $(ACMACS_API_SERVER) $(ACMACS_C2)
 
 # ----------------------------------------------------------------------
 
-BUILD = build
-DIST = $(abspath dist)
 CC = cc
 
 all: checks kill-server $(PROGS) client
@@ -94,11 +93,6 @@ $(ACMACS_C2): $(patsubst %.cc,$(BUILD)/%.o,$(ACMACS_C2_SOURCES)) | $(DIST)
 
 # ----------------------------------------------------------------------
 
-clean:
-	rm -rf $(DIST) $(BUILD)
-
-# ----------------------------------------------------------------------
-
 $(BUILD)/%.o: $(CC)/%.cc | $(BUILD)
 	@echo "C++        " $<
 	@$(CXX) $(CXXFLAGS) -c -o $@ $(abspath $<)
@@ -124,11 +118,7 @@ ifneq ($(KILL_SERVER),NO)
 	if [ "`uname`" = "Darwin" ]; then killall acmacs-api-server 2>/dev/null || true; fi
 endif
 
-$(DIST):
-	mkdir -p $(DIST)
-
-$(BUILD):
-	mkdir -p $(BUILD)
+include $(ACMACSD_ROOT)/share/Makefile.dist-build.rules
 
 .PHONY: check-acmacsd-root
 
