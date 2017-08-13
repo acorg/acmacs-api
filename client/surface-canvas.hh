@@ -50,6 +50,9 @@ class SurfaceCanvas : public Surface
     inline void new_page() override { log_warning("new_page is not supported in SurfaceCanvas"); }
 
  protected:
+    inline SurfaceCanvas(const Location& aOriginInParent, Scaled aWidthInParent, const Viewport& aViewport)
+        : Surface{aOriginInParent, aWidthInParent, aViewport}, mCanvas{nullptr} {}
+
     inline Location arrow_head(const Location& a, double angle, double sign, Color aColor, Pixels aArrowWidth) override {}
 
     Surface* make_child(const Location& aOriginInParent, Scaled aWidthInParent, const Viewport& aViewport, bool aClip) override;
@@ -61,29 +64,18 @@ class SurfaceCanvas : public Surface
 
 // ----------------------------------------------------------------------
 
-class SurfaceCanvasChild : public SurfaceCanvas
+class SurfaceCanvasChild : public SurfaceChild<SurfaceCanvas>
 {
  public:
-    inline Surface& root() override { return mParent.root(); }
-    inline const Surface& root() const override { return mParent.root(); }
-
-    inline void move(const Location& aOriginInParent) override { change_origin(aOriginInParent); }
-    inline void move_resize(const Location& aOriginInParent, double aWidthInParent) override { change_origin(aOriginInParent); change_width_in_parent(aWidthInParent); }
-
-    inline double scale() const override { return mParent.scale() * (width_in_parent() / viewport().size.width); }
-    inline Location origin_offset() const override { return mParent.origin_offset() + origin_in_parent() * mParent.scale(); }
+    inline SurfaceCanvas& parent() override { return mParent; }
+    inline const SurfaceCanvas& parent() const override { return mParent; }
 
  protected:
-    inline bool clip() const override { return mClip; }
+    inline SurfaceCanvasChild(SurfaceCanvas& aParent, const Location& aOriginInParent, Scaled aWidthInParent, const Viewport& aViewport, bool aClip)
+        : SurfaceChild{aOriginInParent, aWidthInParent, aViewport, aClip}, mParent{aParent} {}
 
  private:
     SurfaceCanvas& mParent;
-    bool mClip;                 // force surface area clipping
-
-    inline SurfaceCanvasChild(SurfaceCanvas& aParent, const Location& aOriginInParent, Scaled aWidthInParent, const Viewport& aViewport, bool aClip)
-        : SurfaceCanvas{aOriginInParent, aWidthInParent, aViewport}, mParent{aParent}, mClip{aClip} {}
-    // inline SurfaceCanvasChild(SurfaceCanvas& aParent, const Size& aOffset, const Size& aSize, double aScale, bool aClip)
-    //     : mParent(aParent), mOffset(aOffset), mSize(aSize), mScale(aScale), mClip(aClip) {}
 
     friend class SurfaceCanvas;
 
