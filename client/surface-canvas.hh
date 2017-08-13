@@ -35,10 +35,10 @@ class SurfaceCanvas : public Surface
     inline void path_fill(std::vector<Location>::const_iterator first, std::vector<Location>::const_iterator last, Color aFillColor) override {}
     inline void path_fill(const double* first, const double* last, Color aFillColor) override {}
 
-    inline void double_arrow(const Location& a, const Location& b, Color aColor, Pixels aLineWidth, Pixels aArrowWidth) override {}
+    // inline void double_arrow(const Location& a, const Location& b, Color aColor, Pixels aLineWidth, Pixels aArrowWidth) override {}
     // inline void grid(Scaled aStep, Color aLineColor, Pixels aLineWidth) override {}
-    inline void border(Color aLineColor, Pixels aLineWidth) override {}
-    inline void background(Color aColor) override {}
+    // inline void border(Color aLineColor, Pixels aLineWidth) override {}
+    // inline void background(Color aColor) override {}
 
     inline void text(const Location& a, std::string aText, Color aColor, Pixels aSize, const TextStyle& aTextStyle = TextStyle(), Rotation aRotation = Rotation{0}) override {}
     inline void text(const Location& a, std::string aText, Color aColor, Scaled aSize, const TextStyle& aTextStyle = TextStyle(), Rotation aRotation = Rotation{0}) override {}
