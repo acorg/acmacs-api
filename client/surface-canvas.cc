@@ -7,7 +7,7 @@ class context
 {
  public:
     context(SurfaceCanvas& aSurface)
-        : mSurface{aSurface}, mScale{aSurface.scale()}, mContext{static_cast<client::CanvasRenderingContext2D*>(aSurface.context())}
+        : mSurface{aSurface}, mScale{aSurface.scale()}, mContext{static_cast<client::CanvasRenderingContext2D*>(aSurface.get_context_2d())}
         {
               // std::cerr << "origin_offset: " << aSurface.origin_offset() << "  scale: " << mScale << std::endl;
             mContext->save();
@@ -278,7 +278,7 @@ void SurfaceCanvas::circle_filled(const Location& aCenter, Scaled aDiameter, Asp
 
 void SurfaceCanvas::sector_filled(const Location& aCenter, Scaled aDiameter, Rotation aStart, Rotation aEnd, Color aOutlineColor, Pixels aOutlineWidth, Color aRadiusColor, Pixels aRadiusWidth, Dash aRadiusDash, Color aFillColor)
 {
-    class context ctx{*this};
+    context ctx{*this};
     ctx.translate(aCenter);
 
       // arc
@@ -337,6 +337,57 @@ void SurfaceCanvas::square_filled(const Location& aCenter, Scaled aSide, Aspect 
     s_square_filled(*this, aCenter, aSide, aAspect, aAngle, aOutlineColor, aOutlineWidth, aFillColor, aLineCap);
 
 } // SurfaceCanvas::square_filled
+
+// ----------------------------------------------------------------------
+
+template <typename S> static inline void s_triangle_filled(SurfaceCanvas& aSurface, const Location& aCenter, S aSide, Aspect aAspect, Rotation aAngle, Color aOutlineColor, Pixels aOutlineWidth, Color aFillColor, Surface::LineCap aLineCap)
+{
+    constexpr const auto cos_pi_6 = 0.86602540378; // std::cos(M_PI / 6.0);
+    const auto radius = aSide * cos_pi_6;
+    context(aSurface)
+            .new_path()
+            .set_line_width(aOutlineWidth)
+            .set_line_cap(aLineCap)
+            .translate(aCenter)
+            .rotate(aAngle)
+            .move_to(S{0}, - radius)
+            .line_to(- radius * cos_pi_6 * aAspect.value(), radius * 0.5)
+            .line_to(radius * cos_pi_6 * aAspect.value(), radius * 0.5)
+            .close_path()
+            .set_fill_style(aFillColor)
+            .fill()
+            .set_stroke_style(aOutlineColor)
+            .stroke();
+}
+
+void SurfaceCanvas::triangle_filled(const Location& aCenter, Pixels aSide, Aspect aAspect, Rotation aAngle, Color aOutlineColor, Pixels aOutlineWidth, Color aFillColor, LineCap aLineCap)
+{
+    s_triangle_filled(*this, aCenter, aSide, aAspect, aAngle, aOutlineColor, aOutlineWidth, aFillColor, aLineCap);
+
+} // SurfaceCanvas::triangle_filled
+
+void SurfaceCanvas::triangle_filled(const Location& aCenter, Scaled aSide, Aspect aAspect, Rotation aAngle, Color aOutlineColor, Pixels aOutlineWidth, Color aFillColor, LineCap aLineCap)
+{
+    s_triangle_filled(*this, aCenter, aSide, aAspect, aAngle, aOutlineColor, aOutlineWidth, aFillColor, aLineCap);
+
+} // SurfaceCanvas::triangle_filled
+
+void SurfaceCanvas::triangle_filled(const Location& aCorner1, const Location& aCorner2, const Location& aCorner3, Color aOutlineColor, Pixels aOutlineWidth, Color aFillColor, LineCap aLineCap)
+{
+    context(*this)
+            .new_path()
+            .set_line_width(aOutlineWidth)
+            .set_line_cap(aLineCap)
+            .move_to(aCorner1)
+            .line_to(aCorner2)
+            .line_to(aCorner3)
+            .close_path()
+            .set_fill_style(aFillColor)
+            .fill()
+            .set_stroke_style(aOutlineColor)
+            .stroke();
+
+} // SurfaceCanvas::triangle_filled
 
 // ----------------------------------------------------------------------
 
