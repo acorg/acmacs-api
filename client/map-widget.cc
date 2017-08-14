@@ -134,6 +134,11 @@ void MapWidget::sample_drawings()
     mSurface->triangle_filled({7.9, 2.2}, Scaled{1}, AspectNormal, RotationDegrees(30), Color{0xFFA000}, Pixels{1}, Color{0xFFE0B0});
     mSurface->triangle_filled({7.9, 4.2}, {7.9, 5.2}, {8.3, 4.7}, Color{0xFFA000}, Pixels{1}, Color{0xFFE0B0});
 
+    std::vector<Location> path1{{0.5, 5.5}, {1.2, 5.5}, {1.2, 6.2}, {1.0, 6.4}};
+    mSurface->path_outline(path1.begin(), path1.end(), Color{0xFF00A0}, Pixels{2}, true);
+    std::vector<Location> path2{{1.5, 5.5}, {2.2, 5.5}, {2.2, 6.2}, {2.0, 6.4}};
+    mSurface->path_fill(path2.begin(), path2.end(), Color{0xFF00A0});
+
 } // MapWidget::sample_drawings
 
 // ----------------------------------------------------------------------

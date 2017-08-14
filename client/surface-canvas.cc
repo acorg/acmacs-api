@@ -391,6 +391,60 @@ void SurfaceCanvas::triangle_filled(const Location& aCorner1, const Location& aC
 
 // ----------------------------------------------------------------------
 
+void SurfaceCanvas::path_outline(std::vector<Location>::const_iterator first, std::vector<Location>::const_iterator last, Color aOutlineColor, Pixels aOutlineWidth, bool aClose, LineCap aLineCap)
+{
+    context(*this)
+            .new_path()
+            .set_line_cap(aLineCap)
+            .set_line_join(LineJoin::Miter)
+            .set_line_width(aOutlineWidth)
+            .set_stroke_style(aOutlineColor)
+            .move_to_line_to(first, last)
+            .close_path_if(aClose)
+            .stroke();
+
+} // SurfaceCanvas::path_outline
+
+void SurfaceCanvas::path_outline(const double* first, const double* last, Color aOutlineColor, Pixels aOutlineWidth, bool aClose, LineCap aLineCap)
+{
+    context(*this)
+            .new_path()
+            .set_line_cap(aLineCap)
+            .set_line_join(LineJoin::Miter)
+            .set_line_width(aOutlineWidth)
+            .set_stroke_style(aOutlineColor)
+            .move_to_line_to(first, last)
+            .close_path_if(aClose)
+            .stroke();
+
+} // SurfaceCanvas::path_outline
+
+// ----------------------------------------------------------------------
+
+void SurfaceCanvas::path_fill(std::vector<Location>::const_iterator first, std::vector<Location>::const_iterator last, Color aFillColor)
+{
+    context(*this)
+            .new_path()
+            .set_fill_style(aFillColor)
+            .move_to_line_to(first, last)
+              //.close_path()
+            .fill();
+
+} // SurfaceCanvas::path_fill
+
+void SurfaceCanvas::path_fill(const double* first, const double* last, Color aFillColor)
+{
+    context(*this)
+            .new_path()
+            .set_fill_style(aFillColor)
+            .close_move_to_line_to(first, last)
+              //.close_path()
+            .fill();
+
+} // SurfaceCanvas::path_fill
+
+// ----------------------------------------------------------------------
+
 
 // ----------------------------------------------------------------------
 /// Local Variables:
