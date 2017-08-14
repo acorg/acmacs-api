@@ -18,6 +18,7 @@ void make_asm_definitions()
     __asm__("window.is_not_empty = function(obj) { return obj !== undefined && obj !== null && Object.keys(obj).length > 0; };"); // Object.keys() works with arrays and strings
 
     __asm__("window.make_number = function(num) { return new Number(num); };");
+    __asm__("window.to_hex_string = function(num, fill_size) { var result = (new Number(num)).toString(16); while (result.length < fill_size) result = \"0\" + result; return result; };");
 
     __asm__("window.console_log = console.log;");
     __asm__("window.console_error = console.error;");

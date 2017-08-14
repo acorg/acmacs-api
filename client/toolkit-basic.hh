@@ -2,8 +2,8 @@
 
 #include <cheerp/clientlib.h>
 
-#include "string.hh"
 #include "asm.hh"
+#include "string-client.hh"
 
 // ----------------------------------------------------------------------
 

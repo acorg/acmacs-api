@@ -158,6 +158,19 @@ inline std::string from_String(const String* aSrc)
 }
 
 // ----------------------------------------------------------------------
+
+namespace string
+{
+    inline std::string lower(std::string source)
+    {
+        std::string result;
+        std::transform(source.begin(), source.end(), std::back_inserter(result), ::tolower);
+        return result;
+    }
+
+} // namespace string
+
+// ----------------------------------------------------------------------
 /// Local Variables:
 /// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
 /// End:

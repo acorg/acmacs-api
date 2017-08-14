@@ -3,7 +3,7 @@
 #include <cheerp/clientlib.h>
 
 #include "asm.hh"
-#include "string.hh"
+#include "string-client.hh"
 
 // ----------------------------------------------------------------------
 

@@ -4,7 +4,7 @@
 
 #include "acmacs-base/passage.hh"
 #include "acmacs-chart/chart-base.hh"
-#include "string.hh"
+#include "string-client.hh"
 
 // ----------------------------------------------------------------------
 

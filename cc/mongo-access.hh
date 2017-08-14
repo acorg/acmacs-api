@@ -22,7 +22,7 @@
 class MongodbAccess
 {
  public:
-    inline MongodbAccess(mongocxx::database aDb) : mDb(aDb) {}
+    inline MongodbAccess(mongocxx::database aDb) : mDb(aDb) { if (!mDb) throw std::runtime_error("MongodbAccess::MongodbAccess: invalid mDb"); }
     inline MongodbAccess(const MongodbAccess& aSrc) : mDb(aSrc.mDb) {}
     virtual inline ~MongodbAccess() {}
 

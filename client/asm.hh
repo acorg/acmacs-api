@@ -26,6 +26,7 @@ namespace client
     client::Object* make_number(unsigned);
     client::Object* make_number(long);
     client::Object* make_number(unsigned long);
+    client::String* to_hex_string(unsigned number, unsigned fill_size);
 
     client::String* make_cnonce();
 

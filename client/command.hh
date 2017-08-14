@@ -2,7 +2,7 @@
 
 #include <cheerp/clientlib.h>
 
-#include "string.hh"
+#include "string-client.hh"
 
 // ----------------------------------------------------------------------
 

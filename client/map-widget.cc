@@ -111,9 +111,13 @@ void MapWidget::create()
 
     div = append_child(document.get_body(), "div", class_{"antigenic-map box-shadow-popup hidden"});
     title = (HTMLCanvasElement*)append_child(div, "div", class_{"title"}, text{concat(mChartAce->name(), " ", mChartAce->number_of_antigens(), ":", mChartAce->number_of_sera())});
-    canvas = (HTMLCanvasElement*)append_child(div, "canvas");
+    canvas = (HTMLCanvasElement*)append_child(div, "canvas", text{"Antigenic map shown here in the browsers supporting html canvas"});
 
     mSurface = new SurfaceCanvas(canvas);
+      //mSurface->viewport({0, 0, 8.5});
+      //mSurface->grid(Scaled{1}, 0, Pixels{0.1});
+    mSurface->line({0, 0}, {2, 2}, 0xFF0000, Pixels{1});
+    mSurface->circle({2, 2}, Scaled{1}, AspectNormal, NoRotation, 0x00FF00, Pixels{1});
 
 } // MapWidget::create
 

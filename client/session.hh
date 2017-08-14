@@ -1,7 +1,7 @@
 #pragma once
 
-#include "string.hh"
 #include "asm.hh"
+#include "string-client.hh"
 
 // ----------------------------------------------------------------------
 

@@ -9,13 +9,10 @@
 class SurfaceCanvas : public Surface
 {
  public:
-    inline SurfaceCanvas(client::HTMLCanvasElement* aCanvas) : mCanvas(aCanvas) {}
+    inline SurfaceCanvas(client::HTMLCanvasElement* aCanvas) : Surface{{0, 0}, Scaled{aCanvas->get_width()}, {0, 0, 10}}, mCanvas(aCanvas) {}
 
-    inline void move(const Location& aOriginInParent) override {}
-    inline void move_resize(const Location& aOriginInParent, double aWidthInParent) override {}
-
-    inline void line(const Location& a, const Location& b, Color aColor, Pixels aWidth, LineCap aLineCap = LineCap::Butt) override {}
-    inline void line(const Location& a, const Location& b, Color aColor, Scaled aWidth, LineCap aLineCap = LineCap::Butt) override {}
+    void line(const Location& a, const Location& b, Color aColor, Pixels aWidth, LineCap aLineCap = LineCap::Butt) override;
+    void line(const Location& a, const Location& b, Color aColor, Scaled aWidth, LineCap aLineCap = LineCap::Butt) override;
     inline void rectangle(const Location& a, const Size& s, Color aColor, Pixels aWidth, LineCap aLineCap = LineCap::Butt) override {}
     inline void rectangle_filled(const Location& a, const Size& s, Color aOutlineColor, Pixels aWidth, Color aFillColor, LineCap aLineCap = LineCap::Butt) override {}
 
@@ -44,10 +41,11 @@ class SurfaceCanvas : public Surface
 
     inline void new_page() override { log_warning("new_page is not supported in SurfaceCanvas"); }
 
+    inline client::RenderingContext* context() { return mCanvas->getContext("2d"); }
+
  protected:
     inline SurfaceCanvas(const Location& aOriginInParent, Scaled aWidthInParent, const Viewport& aViewport)
         : Surface{aOriginInParent, aWidthInParent, aViewport}, mCanvas{nullptr} {}
-
 
     Surface* make_child(const Location& aOriginInParent, Scaled aWidthInParent, const Viewport& aViewport, bool aClip) override;
 
@@ -77,7 +75,7 @@ class SurfaceCanvasChild : public SurfaceChild<SurfaceCanvas>
 
 // ----------------------------------------------------------------------
 
-Surface* SurfaceCanvas::make_child(const Location& aOriginInParent, Scaled aWidthInParent, const Viewport& aViewport, bool aClip)
+inline Surface* SurfaceCanvas::make_child(const Location& aOriginInParent, Scaled aWidthInParent, const Viewport& aViewport, bool aClip)
 {
     return new SurfaceCanvasChild(*this, aOriginInParent, aWidthInParent, aViewport, aClip);
 }
