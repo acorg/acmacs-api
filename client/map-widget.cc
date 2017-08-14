@@ -116,14 +116,23 @@ void MapWidget::create()
     ((client::EventTarget&)client::window).set_("CCC", (client::Node*)canvas);
 
     mSurface = new SurfaceCanvas(canvas, {0, 0, 8.5});
-    mSurface->grid(Scaled{1}, Color{0}, Pixels{0.1});
 
+    sample_drawings();
+
+} // MapWidget::create
+
+// ----------------------------------------------------------------------
+
+void MapWidget::sample_drawings()
+{
+    mSurface->grid(Scaled{1}, Color{0xA0A0A0}, Pixels{1});
     mSurface->line({1.1, 1}, {1.1, 2}, 0xFF0000, Pixels{1});
     mSurface->circle({2, 2}, Scaled{1}, Aspect{1.0}, Rotation{0.0}, Color{0x00FF00}, Pixels{1});
     mSurface->circle_filled({2, 4}, Scaled{1}, Aspect{1.0}, Rotation{0.0}, Color{0x00FFA0}, Pixels{1}, Color{0xA0FFE0});
     mSurface->sector_filled({3.2, 2.2}, Scaled{3}, NoRotation, RotationDegrees(60), Color{0x00FFA0}, Pixels{1}, Color{0x008000}, Pixels{1}, Surface::Dash::Dash2, Color{0xC0FFF0});
+    mSurface->square_filled({5.9, 2.2}, Scaled{1}, AspectNormal, NoRotation, Color{0xFFA000}, Pixels{1}, Color{0xFFE0B0});
 
-} // MapWidget::create
+} // MapWidget::sample_drawings
 
 // ----------------------------------------------------------------------
 

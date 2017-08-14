@@ -311,6 +311,35 @@ void SurfaceCanvas::sector_filled(const Location& aCenter, Scaled aDiameter, Rot
 
 // ----------------------------------------------------------------------
 
+template <typename S> static inline void s_square_filled(SurfaceCanvas& aSurface, const Location& aCenter, S aSide, Aspect aAspect, Rotation aAngle, Color aOutlineColor, Pixels aOutlineWidth, Color aFillColor, Surface::LineCap aLineCap)
+{
+    context(aSurface)
+            .new_path()
+            .set_line_width(aOutlineWidth)
+            .set_line_cap(aLineCap)
+            .translate(aCenter)
+            .rotate(aAngle)
+            .rectangle(- aSide / 2 * aAspect.value(), - aSide / 2, aSide / 2 * aAspect.value(), aSide / 2)
+            .set_fill_style(aFillColor)
+            .fill()
+            .set_stroke_style(aOutlineColor)
+            .stroke();
+}
+
+void SurfaceCanvas::square_filled(const Location& aCenter, Pixels aSide, Aspect aAspect, Rotation aAngle, Color aOutlineColor, Pixels aOutlineWidth, Color aFillColor, LineCap aLineCap)
+{
+    s_square_filled(*this, aCenter, aSide, aAspect, aAngle, aOutlineColor, aOutlineWidth, aFillColor, aLineCap);
+
+} // SurfaceCanvas::square_filled
+
+void SurfaceCanvas::square_filled(const Location& aCenter, Scaled aSide, Aspect aAspect, Rotation aAngle, Color aOutlineColor, Pixels aOutlineWidth, Color aFillColor, LineCap aLineCap)
+{
+    s_square_filled(*this, aCenter, aSide, aAspect, aAngle, aOutlineColor, aOutlineWidth, aFillColor, aLineCap);
+
+} // SurfaceCanvas::square_filled
+
+// ----------------------------------------------------------------------
+
 
 // ----------------------------------------------------------------------
 /// Local Variables:

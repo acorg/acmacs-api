@@ -61,6 +61,7 @@ class MapWidget : public Widget
 
     void create();
     void attach();
+    void sample_drawings();
 
 }; // class MapWidget
 
