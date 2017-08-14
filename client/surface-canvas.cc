@@ -31,8 +31,8 @@ class context
         }
 
     template <typename S> inline context& set_line_width(S aWidth) { mContext->set_lineWidth(convert(aWidth)); return *this; }
-    inline context& set_stroke_style(Color aColor) { mContext->set_strokeStyle(aColor.to_hex_String()); return *this; }
-    inline context& set_fill_style(Color aColor) { mContext->set_fillStyle(aColor.to_hex_String()); return *this; }
+    inline context& set_stroke_style(Color aColor) { mContext->set_strokeStyle(aColor.to_String()); return *this; }
+    inline context& set_fill_style(Color aColor) { mContext->set_fillStyle(aColor.to_String()); return *this; }
 
     inline context& set_line_cap(Surface::LineCap aLineCap) { mContext->set_lineCap(canvas_line_cap(aLineCap)); return *this; }
     inline context& set_line_join(Surface::LineJoin aLineJoin) { mContext->set_lineJoin(canvas_line_join(aLineJoin)); return *this; }

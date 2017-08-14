@@ -88,6 +88,7 @@ template <typename ... Args> inline String* concat(const char* s1, Args&& ... ar
 }
 
 inline String* concat_space(String* s1) { return s1; }
+inline String* concat_space(const char* s1) { return new String{s1}; }
 template <typename S1, typename S2, typename ... Args> inline String* concat_space(S1 s1, S2 s2, Args&& ... args)
 {
     if (client::is_not_empty(s1)) {

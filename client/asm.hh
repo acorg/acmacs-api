@@ -21,6 +21,7 @@ namespace client
     bool is_not_null(client::Object&); // and not undefined
     bool is_defined(client::Object*);  // not null, not undefined
     bool is_not_empty(client::Object*);  // not null, not undefined, length > 0
+    inline bool is_not_empty(const char* s) { return s != nullptr && *s != 0; }
 
     client::Object* make_number(int);
     client::Object* make_number(unsigned);

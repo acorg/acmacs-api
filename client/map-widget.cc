@@ -131,13 +131,13 @@ void MapWidget::sample_drawings()
     mSurface->circle_filled({2, 4}, Scaled{1}, Aspect{1.0}, Rotation{0.0}, Color{0x00FFA0}, Pixels{1}, Color{0xA0FFE0});
     mSurface->sector_filled({3.2, 2.2}, Scaled{3}, NoRotation, RotationDegrees(60), Color{0x00FFA0}, Pixels{1}, Color{0x008000}, Pixels{1}, Surface::Dash::Dash2, Color{0xC0FFF0});
     mSurface->square_filled({5.9, 2.2}, Scaled{1}, AspectNormal, NoRotation, Color{0xFFA000}, Pixels{1}, Color{0xFFE0B0});
-    mSurface->triangle_filled({7.9, 2.2}, Scaled{1}, AspectNormal, RotationDegrees(30), Color{0xFFA000}, Pixels{1}, Color{0xFFE0B0});
-    mSurface->triangle_filled({7.9, 4.2}, {7.9, 5.2}, {8.3, 4.7}, Color{0xFFA000}, Pixels{1}, Color{0xFFE0B0});
+    mSurface->triangle_filled({7.9, 2.2}, Scaled{1}, AspectNormal, RotationDegrees(30), Color{0xFFA000}, Pixels{1}, Color{0x80FFE0B0});
+    mSurface->triangle_filled({7.9, 4.2}, {7.9, 5.2}, {8.3, 4.7}, Color{0xFFA000}, Pixels{1}, Color{0x80FFE0B0});
 
     std::vector<Location> path1{{0.5, 5.5}, {1.2, 5.5}, {1.2, 6.2}, {1.0, 6.4}};
     mSurface->path_outline(path1.begin(), path1.end(), Color{0xFF00A0}, Pixels{2}, true);
     std::vector<Location> path2{{1.5, 5.5}, {2.2, 5.5}, {2.2, 6.2}, {2.0, 6.4}};
-    mSurface->path_fill(path2.begin(), path2.end(), Color{0xFF00A0});
+    mSurface->path_fill(path2.begin(), path2.end(), Color{0x80FF00A0});
 
 } // MapWidget::sample_drawings
 
