@@ -121,6 +121,7 @@ void MapWidget::create()
     mSurface->line({1.1, 1}, {1.1, 2}, 0xFF0000, Pixels{1});
     mSurface->circle({2, 2}, Scaled{1}, Aspect{1.0}, Rotation{0.0}, Color{0x00FF00}, Pixels{1});
     mSurface->circle_filled({2, 4}, Scaled{1}, Aspect{1.0}, Rotation{0.0}, Color{0x00FFA0}, Pixels{1}, Color{0xA0FFE0});
+    mSurface->sector_filled({3.2, 2.2}, Scaled{3}, NoRotation, RotationDegrees(60), Color{0x00FFA0}, Pixels{1}, Color{0x008000}, Pixels{1}, Surface::Dash::Dash2, Color{0xC0FFF0});
 
 } // MapWidget::create
 

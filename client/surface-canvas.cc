@@ -276,6 +276,41 @@ void SurfaceCanvas::circle_filled(const Location& aCenter, Scaled aDiameter, Asp
 
 // ----------------------------------------------------------------------
 
+void SurfaceCanvas::sector_filled(const Location& aCenter, Scaled aDiameter, Rotation aStart, Rotation aEnd, Color aOutlineColor, Pixels aOutlineWidth, Color aRadiusColor, Pixels aRadiusWidth, Dash aRadiusDash, Color aFillColor)
+{
+    class context ctx{*this};
+    ctx.translate(aCenter);
+
+      // arc
+    ctx.new_path()
+            .arc(aDiameter / 2, aStart, aEnd)
+            .set_line_width(aOutlineWidth)
+            .set_stroke_style(aOutlineColor);
+    ctx.stroke();
+
+      // radius lines
+    ctx.new_path()
+            .rotate(aEnd)
+            .move_to(aDiameter / 2, Scaled(0))
+            .line_to(Scaled(0), Scaled(0))
+            .rotate(aStart - aEnd)
+            .line_to(aDiameter / 2, Scaled(0))
+            .set_line_width(aRadiusWidth)
+            .set_stroke_style(aRadiusColor)
+            .set_line_dash(aRadiusDash)
+              // .set_line_join(Surface::LineJoin::Miter)
+            .stroke()
+            .rotate(-aStart);
+
+      // fill area
+    ctx.arc(aDiameter / 2, aStart, aEnd)
+            .set_fill_style(aFillColor)
+            .fill();
+
+} // SurfaceCanvas::sector_filled
+
+// ----------------------------------------------------------------------
+
 
 // ----------------------------------------------------------------------
 /// Local Variables:
