@@ -31,8 +31,8 @@ class context
         }
 
     template <typename S> inline context& set_line_width(S aWidth) { mContext->set_lineWidth(convert(aWidth)); return *this; }
-      // inline context& set_source_rgba(Color aColor) { cairo_set_source_rgba(cairo_context(), aColor.red(), aColor.green(), aColor.blue(), aColor.alpha()); return *this; }
     inline context& set_stroke_style(Color aColor) { mContext->set_strokeStyle(aColor.to_hex_String()); return *this; }
+    inline context& set_fill_style(Color aColor) { mContext->set_fillStyle(aColor.to_hex_String()); return *this; }
 
     inline context& set_line_cap(Surface::LineCap aLineCap) { mContext->set_lineCap(canvas_line_cap(aLineCap)); return *this; }
     inline context& set_line_join(Surface::LineJoin aLineJoin) { mContext->set_lineJoin(canvas_line_join(aLineJoin)); return *this; }
@@ -68,9 +68,7 @@ class context
     template <typename S> inline context& arc(S radius, Rotation start, Rotation end) { mContext->arc(0.0, 0.0, convert(radius), start.value(), end.value()); return *this; }
     inline context& circle(const Location& a, double radius) { mContext->arc(a.x, a.y, radius, 0.0, 2.0 * M_PI); return *this; }
     inline context& stroke() { mContext->stroke(); return *this; }
-      // inline context& stroke_preserve() { mContext->stroke_preserve(); return *this; }
     inline context& fill() { mContext->fill(); return *this; }
-      // inline context& fill_preserve() { mContext->fill_preserve(); return *this; }
     inline context& translate(const Size& a) { mContext->translate(a.width, a.height); return *this; }
     inline context& translate(const Location& a) { mContext->translate(a.x, a.y); return *this; }
     inline context& rotate(Rotation aAngle) { mContext->rotate(aAngle.value()); return *this; }
@@ -246,6 +244,35 @@ void SurfaceCanvas::circle(const Location& aCenter, Scaled aDiameter, Aspect aAs
     s_circle(*this, aCenter, aDiameter, aAspect, aAngle, aOutlineColor, aOutlineWidth);
 
 } // SurfaceCanvas::circle
+
+// ----------------------------------------------------------------------
+
+template <typename S> static inline void s_circle_filled(SurfaceCanvas& aSurface, const Location& aCenter, S aDiameter, Aspect aAspect, Rotation aAngle, Color aOutlineColor, Pixels aOutlineWidth, Color aFillColor)
+{
+    context(aSurface)
+            .new_path()
+            .set_line_width(aOutlineWidth)
+            .translate(aCenter)
+            .rotate(aAngle)
+            .aspect(aAspect)
+            .circle(aDiameter / 2)
+            .set_fill_style(aFillColor)
+            .fill()
+            .set_stroke_style(aOutlineColor)
+            .stroke();
+}
+
+void SurfaceCanvas::circle_filled(const Location& aCenter, Pixels aDiameter, Aspect aAspect, Rotation aAngle, Color aOutlineColor, Pixels aOutlineWidth, Color aFillColor)
+{
+    s_circle_filled(*this, aCenter, aDiameter, aAspect, aAngle, aOutlineColor, aOutlineWidth, aFillColor);
+
+} // SurfaceCanvas::circle_filled
+
+void SurfaceCanvas::circle_filled(const Location& aCenter, Scaled aDiameter, Aspect aAspect, Rotation aAngle, Color aOutlineColor, Pixels aOutlineWidth, Color aFillColor)
+{
+    s_circle_filled(*this, aCenter, aDiameter, aAspect, aAngle, aOutlineColor, aOutlineWidth, aFillColor);
+
+} // SurfaceCanvas::circle_filled
 
 // ----------------------------------------------------------------------
 

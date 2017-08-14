@@ -117,8 +117,10 @@ void MapWidget::create()
 
     mSurface = new SurfaceCanvas(canvas, {0, 0, 8.5});
     mSurface->grid(Scaled{1}, Color{0}, Pixels{0.1});
-    mSurface->line({1, 1}, {1, 2}, 0xFF0000, Pixels{1});
+
+    mSurface->line({1.1, 1}, {1.1, 2}, 0xFF0000, Pixels{1});
     mSurface->circle({2, 2}, Scaled{1}, Aspect{1.0}, Rotation{0.0}, Color{0x00FF00}, Pixels{1});
+    mSurface->circle_filled({2, 4}, Scaled{1}, Aspect{1.0}, Rotation{0.0}, Color{0x00FFA0}, Pixels{1}, Color{0xA0FFE0});
 
 } // MapWidget::create
 
