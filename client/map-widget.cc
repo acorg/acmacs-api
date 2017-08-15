@@ -128,6 +128,8 @@ void MapWidget::sample_drawings()
     mSurface->grid(Scaled{1}, Color{0xA0A0A0}, Pixels{1});
     mSurface->line({1.1, 1}, {1.1, 2}, 0xFF0000, Pixels{1});
     mSurface->circle({2, 2}, Scaled{1}, Aspect{1.0}, Rotation{0.0}, Color{0x00FF00}, Pixels{1});
+    mSurface->circle({2.5, 1.5}, Pixels{5}, Aspect{0.75}, RotationDegrees(30.0), Color{0x00FF00}, Pixels{1});
+    mSurface->circle_filled({2.8, 1.8}, Pixels{10}, Aspect{0.75}, RotationDegrees(30.0), Color{0x000080}, Pixels{1}, Color{0x8080FF});
     mSurface->circle_filled({2, 4}, Scaled{1}, Aspect{1.0}, Rotation{0.0}, Color{0x00FFA0}, Pixels{1}, Color{0xA0FFE0});
     mSurface->sector_filled({3.2, 2.2}, Scaled{3}, NoRotation, RotationDegrees(60), Color{0x00FFA0}, Pixels{1}, Color{0x008000}, Pixels{1}, Surface::Dash::Dash2, Color{0xC0FFF0});
     mSurface->square_filled({5.9, 2.2}, Scaled{1}, AspectNormal, NoRotation, Color{0xFFA000}, Pixels{1}, Color{0xFFE0B0});
@@ -138,6 +140,9 @@ void MapWidget::sample_drawings()
     mSurface->path_outline(path1.begin(), path1.end(), Color{0xFF00A0}, Pixels{2}, true);
     std::vector<Location> path2{{1.5, 5.5}, {2.2, 5.5}, {2.2, 6.2}, {2.0, 6.4}};
     mSurface->path_fill(path2.begin(), path2.end(), Color{0x80FF00A0});
+
+    mSurface->text({0.5, 8}, "Scaled Left", Color{0x80000000}, Scaled{1}, TextStyle{"serif", TextStyle::Slant::Italic, TextStyle::Weight::Normal});
+    mSurface->text({3, 6}, "Pixels Left", Color{0x800000FF}, Pixels{59}, TextStyle{"Helvetica Neue", TextStyle::Slant::Italic, TextStyle::Weight::Bold});
 
 } // MapWidget::sample_drawings
 

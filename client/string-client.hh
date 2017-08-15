@@ -52,6 +52,11 @@ inline String* to_String(const char* value)
     return new String{value};
 }
 
+inline String* to_String(std::string value)
+{
+    return new String{value.c_str()};
+}
+
 template <typename T, typename = std::enable_if_t<std::is_arithmetic<T>::value>> inline String* to_String(T value)
 {
     return new String{value};
@@ -77,18 +82,15 @@ template <typename ... Args> inline client::Array* to_Array_String(Args ... args
 
 // ----------------------------------------------------------------------
 
-template <typename ... Args> inline String* concat(String* s1, Args&& ... args)
+inline String* concat(String* s1) { return s1; }
+
+template <typename S1, typename S2, typename ... Args> inline String* concat(S1&& s1, S2&& s2, Args&& ... args)
 {
-    return s1->concat(std::forward<Args>(args) ...);
+    return concat(to_String(std::forward<S1>(s1))->concat(to_String(std::forward<S2>(s2))), std::forward<Args>(args) ...);
 }
 
-template <typename ... Args> inline String* concat(const char* s1, Args&& ... args)
-{
-    return concat(new String{s1}, std::forward<Args>(args) ...);
-}
+template <typename S> inline String* concat_space(S s) { return to_String(s); }
 
-inline String* concat_space(String* s1) { return s1; }
-inline String* concat_space(const char* s1) { return new String{s1}; }
 template <typename S1, typename S2, typename ... Args> inline String* concat_space(S1 s1, S2 s2, Args&& ... args)
 {
     if (client::is_not_empty(s1)) {

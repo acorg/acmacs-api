@@ -93,6 +93,7 @@ void Application::make_connection()
 {
     using namespace client;
 
+    log("WS", concat("wss://", ws_host_port(), "/api"));
     mWS = new WebSocket(concat("wss://", ws_host_port(), "/api"));
     mWS->set_onmessage(cheerp::Callback([this](MessageEvent* aEvent) { on_raw_message_event(aEvent); }));
     mWS->set_onclose(cheerp::Callback([this](CloseEvent* aEvent) { on_close(aEvent); }));

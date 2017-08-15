@@ -82,8 +82,21 @@ class context
     // inline context& append_path(CairoPath& aPath) { mContext->append_path(aPath); return *this; }
     // inline CairoPath copy_path() { return std::move(mContext->copy_path()); }
 
-    // template <typename S> inline context& prepare_for_text(S aSize, const TextStyle& aTextStyle) { mContext->select_font_face(aTextStyle.font_family().c_str(), mContext->font_slant(aTextStyle.slant()), mContext->font_weight(aTextStyle.weight())); mContext->set_font_size(convert(aSize)); return *this; }
-    //inline context& show_text(std::string aText) { mContext->fillText(aText.c_str()); return *this; }
+    template <typename S> inline context& fill_text(std::string aText, const Location& aOrigin, S aSize, const TextStyle& aTextStyle)
+        {
+            mContext->save();
+            mContext->scale(1 / mScale, 1 / mScale);
+            auto* font_family = ::to_String(aTextStyle.font_family());
+            if (!is_not_empty(font_family))
+                font_family = "sans-serif"_S;
+            const auto font = concat_space(canvas_font_slant(aTextStyle.slant()), canvas_font_weight(aTextStyle.weight()), concat(convert_back(aSize), "px"), font_family);
+            log("font", font);
+            mContext->set_font(font);
+            mContext->fillText(aText.c_str(), aOrigin.x * mScale, aOrigin.y * mScale);
+            mContext->restore();
+            return *this;
+        }
+
     //inline context& text_extents(std::string aText, cairo_text_extents_t& extents) { mContext->text_extents(aText.c_str(), &extents); return *this; }
 
       // if Location::x is negative - move_to, else - path_to. It assumes origin is {0,0}!!!
@@ -131,6 +144,9 @@ class context
     inline double convert(double aValue) { return aValue; }
     inline double convert(Scaled aValue) { return aValue.value(); }
     inline double convert(Pixels aValue) { return aValue.value() / mScale; }
+
+    inline double convert_back(Scaled aValue) { return aValue.value() * mScale; }
+    inline double convert_back(Pixels aValue) { return aValue.value(); }
 
     inline String* canvas_line_cap(Surface::LineCap aLineCap) const
         {
@@ -442,6 +458,54 @@ void SurfaceCanvas::path_fill(const double* first, const double* last, Color aFi
             .fill();
 
 } // SurfaceCanvas::path_fill
+
+// ----------------------------------------------------------------------
+
+template <typename S> static inline void s_text(SurfaceCanvas& aSurface, const Location& a, std::string aText, Color aColor, S aSize, const TextStyle& aTextStyle, Rotation aRotation)
+{
+    context(aSurface)
+            .new_path()
+            .rotate(aRotation)
+            .set_fill_style(aColor)
+            .fill_text(aText, a, aSize, aTextStyle);
+}
+
+
+void SurfaceCanvas::text(const Location& a, std::string aText, Color aColor, Pixels aSize, const TextStyle& aTextStyle, Rotation aRotation)
+{
+    s_text(*this, a, aText, aColor, aSize, aTextStyle, aRotation);
+
+} // SurfaceCanvas::text
+
+void SurfaceCanvas::text(const Location& a, std::string aText, Color aColor, Scaled aSize, const TextStyle& aTextStyle, Rotation aRotation)
+{
+    s_text(*this, a, aText, aColor, aSize, aTextStyle, aRotation);
+
+} // SurfaceCanvas::text
+
+// ----------------------------------------------------------------------
+
+void SurfaceCanvas::text_right_aligned(const Location& aEnd, std::string aText, Color aColor, Pixels aSize, const TextStyle& aTextStyle, Rotation aRotation)
+{
+
+} // SurfaceCanvas::text_right_aligned
+
+void SurfaceCanvas::text_right_aligned(const Location& aEnd, std::string aText, Color aColor, Scaled aSize, const TextStyle& aTextStyle, Rotation aRotation)
+{
+
+} // SurfaceCanvas::text_right_aligned
+
+// ----------------------------------------------------------------------
+
+Size SurfaceCanvas::text_size(std::string aText, Pixels aSize, const TextStyle& aTextStyle, double* x_bearing)
+{
+
+} // SurfaceCanvas::text_size
+
+Size SurfaceCanvas::text_size(std::string aText, Scaled aSize, const TextStyle& aTextStyle, double* x_bearing)
+{
+
+} // SurfaceCanvas::text_size
 
 // ----------------------------------------------------------------------
 
