@@ -213,7 +213,7 @@ class context
 SurfaceCanvas::SurfaceCanvas(client::HTMLCanvasElement* aCanvas, const Viewport& aViewport)
     : Surface{{0, 0}, Scaled{aCanvas->get_width()}, aViewport}, mCanvas(aCanvas)
 {
-    log("SurfaceCanvas", viewport(), scale(), origin_offset());
+      // log("SurfaceCanvas", viewport(), scale(), origin_offset());
 
 } // SurfaceCanvas::SurfaceCanvas
 

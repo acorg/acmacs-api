@@ -58,9 +58,9 @@ void MapHandler::on_error(String* aMessage)
 // ----------------------------------------------------------------------
 
 MapWidget::MapWidget(MapHandler* aHandler, ChartAce* aChartAce)
-    : mHandler{aHandler}, mChartAce{aChartAce}, mSurface(nullptr)
+    : mHandler{aHandler}, mChartAce{aChartAce}, mDraw{nullptr}, mSurface(nullptr)
 {
-    log("ace", mChartAce);
+    log("MapWidget::MapWidget ace", mChartAce);
     create();
     attach();
 
@@ -116,8 +116,14 @@ void MapWidget::create()
     ((client::EventTarget&)client::window).set_("CCC", (client::Node*)canvas);
 
     mSurface = new SurfaceCanvas(canvas, {0, 0, 8.5});
+      // sample_drawings();
 
-    sample_drawings();
+    mDraw = new ChartDraw{*mChartAce, 0};
+    mDraw->prepare();
+    log("create prepared");
+    mDraw->calculate_viewport();
+    log("create calculate_viewport");
+    mDraw->draw(*mSurface);
 
 } // MapWidget::create
 

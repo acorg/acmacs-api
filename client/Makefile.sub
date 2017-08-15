@@ -11,7 +11,7 @@ APP_ONE = $(DIST)/app-one.js.gz $(DIST)/app-one.css.gz
 APP_ONE_SRC = app-one.cc $(COMMON_SRC) $(EXT_SRC) sass/app-one.sass
 
 COMMON_SRC = asm.cc application.cc handler.cc login.cc login-widget.cc map-widget.cc surface-canvas.cc
-EXT_SRC = surface.cc draw.cc
+EXT_SRC = surface.cc draw.cc point-style-draw.cc labels.cc map-elements.cc
 
 TARGETS = $(APP_ONE)
 

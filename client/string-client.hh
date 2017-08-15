@@ -171,6 +171,37 @@ namespace string
         return result;
     }
 
+    template <typename Iterator> inline std::string join(std::string separator, Iterator first, Iterator last)
+    {
+        String* result = new String{};
+        if (first != last) {
+              // Note last - first below does not supported for std::set
+              // const size_t resulting_size = std::accumulate(first, last, separator.size() * static_cast<size_t>(last - first - 1), [](size_t acc, const std::string& n) -> size_t { return acc + n.size(); });
+              // result.reserve(resulting_size);
+            for ( ; first != last; ++first) {
+                auto* f_s = to_String(*first);
+                if (is_not_empty(f_s)) {
+                    if (is_not_empty(result))
+                        result = result->concat(to_String(separator));
+                    result = result->concat(f_s);
+                }
+            }
+        }
+        return (std::string)*result;
+    }
+
+    inline std::string join(std::string separator, std::initializer_list<std::string>&& values)
+    {
+        return join(separator, std::begin(values), std::end(values));
+    }
+
+    inline std::string join(std::initializer_list<std::string>&& parts)
+    {
+        std::vector<std::string> p{parts};
+        return join(" ", std::begin(p), std::remove(std::begin(p), std::end(p), std::string()));
+    }
+
+
 } // namespace string
 
 // ----------------------------------------------------------------------
