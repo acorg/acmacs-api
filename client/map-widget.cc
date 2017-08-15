@@ -120,9 +120,7 @@ void MapWidget::create()
 
     mDraw = new ChartDraw{*mChartAce, 0};
     mDraw->prepare();
-    log("create prepared");
     mDraw->calculate_viewport();
-    log("create calculate_viewport");
     mDraw->draw(*mSurface);
 
 } // MapWidget::create

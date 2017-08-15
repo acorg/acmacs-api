@@ -95,7 +95,8 @@ void ApplicationOne::logged_in()
     h_display_name->set_textContent(session()->display_name());
     if (!mHandler) {
           // auto* handler = new JsonPrinter{this};
-        auto* handler = new MapHandler{this, "593a87ee48618fc1e72da4fe"_S};
+          // auto* handler = new MapHandler{this, "593a87ee48618fc1e72da4fe"_S};
+        auto* handler = new MapHandler{this, "597c4b5136f19339b92e5804"_S};
         mHandler = handler;
         handler->run();
     }

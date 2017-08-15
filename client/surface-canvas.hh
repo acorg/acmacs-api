@@ -41,16 +41,19 @@ class SurfaceCanvas : public Surface
 
     inline void new_page() override { log_warning("new_page is not supported in SurfaceCanvas"); }
 
-    inline client::RenderingContext* get_context_2d() { return mCanvas->getContext("2d"); }
+    inline client::RenderingContext* get_context_2d() { return canvas()->getContext("2d"); }
 
  protected:
     inline SurfaceCanvas(const Location& aOriginInParent, Scaled aWidthInParent, const Viewport& aViewport)
         : Surface{aOriginInParent, aWidthInParent, aViewport}, mCanvas{nullptr} {}
 
     Surface* make_child(const Location& aOriginInParent, Scaled aWidthInParent, const Viewport& aViewport, bool aClip) override;
+    virtual client::HTMLCanvasElement* canvas() { return mCanvas; }
 
  private:
     client::HTMLCanvasElement* mCanvas;
+
+    friend class SurfaceCanvasChild;
 
 }; // class SurfaceCanvas
 
@@ -65,6 +68,7 @@ class SurfaceCanvasChild : public SurfaceChild<SurfaceCanvas>
  protected:
     inline SurfaceCanvasChild(SurfaceCanvas& aParent, const Location& aOriginInParent, Scaled aWidthInParent, const Viewport& aViewport, bool aClip)
         : SurfaceChild{aOriginInParent, aWidthInParent, aViewport, aClip}, mParent{aParent} {}
+    client::HTMLCanvasElement* canvas() override { return mParent.canvas(); }
 
  private:
     SurfaceCanvas& mParent;
