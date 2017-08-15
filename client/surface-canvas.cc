@@ -82,7 +82,7 @@ class context
     // inline context& append_path(CairoPath& aPath) { mContext->append_path(aPath); return *this; }
     // inline CairoPath copy_path() { return std::move(mContext->copy_path()); }
 
-    template <typename S> inline context& fill_text(std::string aText, const Location& aOrigin, S aSize, const TextStyle& aTextStyle)
+    template <typename S> inline void prepare_text(S aSize, const TextStyle& aTextStyle)
         {
             mContext->save();
             mContext->scale(1 / mScale, 1 / mScale);
@@ -90,14 +90,27 @@ class context
             if (!is_not_empty(font_family))
                 font_family = "sans-serif"_S;
             const auto font = concat_space(canvas_font_slant(aTextStyle.slant()), canvas_font_weight(aTextStyle.weight()), concat(convert_back(aSize), "px"), font_family);
-            log("font", font);
+            // log("font", font);
             mContext->set_font(font);
+        }
+
+    template <typename S> inline context& fill_text(std::string aText, const Location& aOrigin, S aSize, const TextStyle& aTextStyle, const char* aAlign)
+        {
+            prepare_text(aSize, aTextStyle);
+            mContext->set_textAlign(aAlign);
             mContext->fillText(aText.c_str(), aOrigin.x * mScale, aOrigin.y * mScale);
             mContext->restore();
             return *this;
         }
 
-    //inline context& text_extents(std::string aText, cairo_text_extents_t& extents) { mContext->text_extents(aText.c_str(), &extents); return *this; }
+    template <typename S> inline context& text_metrics(std::string aText, S aSize, const TextStyle& aTextStyle, client::TextMetrics& aMetrics)
+        {
+            prepare_text(aSize, aTextStyle);
+            aMetrics = *mContext->measureText(aText.c_str());
+            log("text_metrics", &aMetrics);
+            mContext->restore();
+            return *this;
+        }
 
       // if Location::x is negative - move_to, else - path_to. It assumes origin is {0,0}!!!
     inline context& move_to_line_to(std::vector<Location>::const_iterator first, std::vector<Location>::const_iterator last)
@@ -461,51 +474,64 @@ void SurfaceCanvas::path_fill(const double* first, const double* last, Color aFi
 
 // ----------------------------------------------------------------------
 
-template <typename S> static inline void s_text(SurfaceCanvas& aSurface, const Location& a, std::string aText, Color aColor, S aSize, const TextStyle& aTextStyle, Rotation aRotation)
+template <typename S> static inline void s_text(SurfaceCanvas& aSurface, const Location& a, std::string aText, Color aColor, S aSize, const TextStyle& aTextStyle, Rotation aRotation, const char* aAlign)
 {
     context(aSurface)
             .new_path()
             .rotate(aRotation)
             .set_fill_style(aColor)
-            .fill_text(aText, a, aSize, aTextStyle);
+            .fill_text(aText, a, aSize, aTextStyle, aAlign);
 }
 
 
 void SurfaceCanvas::text(const Location& a, std::string aText, Color aColor, Pixels aSize, const TextStyle& aTextStyle, Rotation aRotation)
 {
-    s_text(*this, a, aText, aColor, aSize, aTextStyle, aRotation);
+    s_text(*this, a, aText, aColor, aSize, aTextStyle, aRotation, "left");
 
 } // SurfaceCanvas::text
 
 void SurfaceCanvas::text(const Location& a, std::string aText, Color aColor, Scaled aSize, const TextStyle& aTextStyle, Rotation aRotation)
 {
-    s_text(*this, a, aText, aColor, aSize, aTextStyle, aRotation);
+    s_text(*this, a, aText, aColor, aSize, aTextStyle, aRotation, "left");
 
 } // SurfaceCanvas::text
 
 // ----------------------------------------------------------------------
 
-void SurfaceCanvas::text_right_aligned(const Location& aEnd, std::string aText, Color aColor, Pixels aSize, const TextStyle& aTextStyle, Rotation aRotation)
+template <typename S> static inline Size s_text_size(SurfaceCanvas& aSurface, std::string aText, S aSize, const TextStyle& aTextStyle, double* x_bearing)
 {
-
-} // SurfaceCanvas::text_right_aligned
-
-void SurfaceCanvas::text_right_aligned(const Location& aEnd, std::string aText, Color aColor, Scaled aSize, const TextStyle& aTextStyle, Rotation aRotation)
-{
-
-} // SurfaceCanvas::text_right_aligned
-
-// ----------------------------------------------------------------------
+    client::TextMetrics metrics;
+    context(aSurface).text_metrics(aText, aSize, aTextStyle, metrics);
+    // if (x_bearing != nullptr)
+    //     *x_bearing = text_extents.x_bearing;
+    return {metrics.get_width(), 0}; //- text_extents.y_bearing};
+}
 
 Size SurfaceCanvas::text_size(std::string aText, Pixels aSize, const TextStyle& aTextStyle, double* x_bearing)
 {
+    return s_text_size(*this, aText, aSize, aTextStyle, x_bearing);
 
 } // SurfaceCanvas::text_size
 
 Size SurfaceCanvas::text_size(std::string aText, Scaled aSize, const TextStyle& aTextStyle, double* x_bearing)
 {
+    return s_text_size(*this, aText, aSize, aTextStyle, x_bearing);
 
 } // SurfaceCanvas::text_size
+
+// ----------------------------------------------------------------------
+
+void SurfaceCanvas::text_right_aligned(const Location& aEnd, std::string aText, Color aColor, Pixels aSize, const TextStyle& aTextStyle, Rotation aRotation)
+{
+    s_text(*this, aEnd, aText, aColor, aSize, aTextStyle, aRotation, "right");
+
+} // SurfaceCanvas::text_right_aligned
+
+void SurfaceCanvas::text_right_aligned(const Location& aEnd, std::string aText, Color aColor, Scaled aSize, const TextStyle& aTextStyle, Rotation aRotation)
+{
+    s_text(*this, aEnd, aText, aColor, aSize, aTextStyle, aRotation, "right");
+
+} // SurfaceCanvas::text_right_aligned
 
 // ----------------------------------------------------------------------
 
