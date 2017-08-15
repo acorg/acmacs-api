@@ -143,9 +143,10 @@ void MapWidget::sample_drawings()
 
     mSurface->text({0.5, 8}, "Scaled Left", Color{0x80000000}, Scaled{1}, TextStyle{"serif", TextStyle::Slant::Italic, TextStyle::Weight::Normal});
     mSurface->text({3, 6}, "Pixels Left", Color{0x800000FF}, Pixels{59}, TextStyle{"Helvetica Neue", TextStyle::Slant::Italic, TextStyle::Weight::Bold});
-
     mSurface->text_right_aligned({8, 8}, "SRt", Color{0x80000000}, Scaled{1}, TextStyle{"serif", TextStyle::Slant::Italic, TextStyle::Weight::Normal});
     mSurface->text_right_aligned({7, 5}, "PixRt", Color{0x800000FF}, Pixels{59}, TextStyle{"Helvetica Neue", TextStyle::Slant::Italic, TextStyle::Weight::Bold});
+    log("text-size", mSurface->text_size("PX", Pixels{59}, TextStyle{"Helvetica Neue", TextStyle::Slant::Italic, TextStyle::Weight::Bold}));
+    log("text-size", mSurface->text_size("PX", Scaled{1}, TextStyle{"Helvetica Neue", TextStyle::Slant::Italic, TextStyle::Weight::Bold}));
 
 } // MapWidget::sample_drawings
 

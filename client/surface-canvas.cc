@@ -63,7 +63,6 @@ class context
     inline context& lines_to(std::vector<Location>::const_iterator first, std::vector<Location>::const_iterator last) { for ( ; first != last; ++first) { line_to(*first); } return *this; }
     inline context& rectangle(const Location& a, const Size& s) { mContext->rect(a.x, a.y, s.width, s.height); return *this; }
     template <typename S> inline context& rectangle(S x1, S y1, S x2, S y2) { mContext->rect(convert(x1), convert(y1), convert(x2) - convert(x1), convert(y2) - convert(y1)); return *this; }
-      // inline context& arc(const Location& a, double radius, double angle1, double angle2) { mContext->arc(a.x, a.y, radius, angle1, angle2); return *this; }
     template <typename S> inline context& circle(S radius) { mContext->arc(0.0, 0.0, convert(radius), 0.0, 2.0 * M_PI); return *this; }
     template <typename S> inline context& arc(S radius, Rotation start, Rotation end) { mContext->arc(0.0, 0.0, convert(radius), start.value(), end.value()); return *this; }
     inline context& circle(const Location& a, double radius) { mContext->arc(a.x, a.y, radius, 0.0, 2.0 * M_PI); return *this; }
@@ -79,8 +78,6 @@ class context
     inline context& new_path() { mContext->beginPath(); return *this; }
     inline context& close_path() { mContext->closePath(); return *this; }
     inline context& close_path_if(bool aClose) { if (aClose) close_path(); return *this; }
-    // inline context& append_path(CairoPath& aPath) { mContext->append_path(aPath); return *this; }
-    // inline CairoPath copy_path() { return std::move(mContext->copy_path()); }
 
     template <typename S> inline void prepare_text(S aSize, const TextStyle& aTextStyle)
         {
@@ -103,13 +100,12 @@ class context
             return *this;
         }
 
-    template <typename S> inline context& text_metrics(std::string aText, S aSize, const TextStyle& aTextStyle, client::TextMetrics& aMetrics)
+    template <typename S> inline double text_width(std::string aText, S aSize, const TextStyle& aTextStyle)
         {
             prepare_text(aSize, aTextStyle);
-            aMetrics = *mContext->measureText(aText.c_str());
-            log("text_metrics", &aMetrics);
+            auto* metrics = mContext->measureText(aText.c_str());
             mContext->restore();
-            return *this;
+            return metrics->get_width() / mScale;
         }
 
       // if Location::x is negative - move_to, else - path_to. It assumes origin is {0,0}!!!
@@ -149,14 +145,14 @@ class context
             return *this;
         }
 
+    inline double convert(Scaled aValue) { return aValue.value(); }
+    inline double convert(Pixels aValue) { return aValue.value() / mScale; }
+      //inline double convert(double aValue) { return aValue; }
+
  private:
     SurfaceCanvas& mSurface;
     double mScale;
     client::CanvasRenderingContext2D* mContext;
-
-    inline double convert(double aValue) { return aValue; }
-    inline double convert(Scaled aValue) { return aValue.value(); }
-    inline double convert(Pixels aValue) { return aValue.value() / mScale; }
 
     inline double convert_back(Scaled aValue) { return aValue.value() * mScale; }
     inline double convert_back(Pixels aValue) { return aValue.value(); }
@@ -500,11 +496,9 @@ void SurfaceCanvas::text(const Location& a, std::string aText, Color aColor, Sca
 
 template <typename S> static inline Size s_text_size(SurfaceCanvas& aSurface, std::string aText, S aSize, const TextStyle& aTextStyle, double* x_bearing)
 {
-    client::TextMetrics metrics;
-    context(aSurface).text_metrics(aText, aSize, aTextStyle, metrics);
-    // if (x_bearing != nullptr)
-    //     *x_bearing = text_extents.x_bearing;
-    return {metrics.get_width(), 0}; //- text_extents.y_bearing};
+    if (x_bearing != nullptr)
+        *x_bearing = 0;         // not supported (perhaps only in Chrome)
+    return {context(aSurface).text_width(aText, aSize, aTextStyle), context(aSurface).convert(aSize)};
 }
 
 Size SurfaceCanvas::text_size(std::string aText, Pixels aSize, const TextStyle& aTextStyle, double* x_bearing)
