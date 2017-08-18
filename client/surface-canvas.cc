@@ -338,6 +338,7 @@ void SurfaceCanvas::sector_filled(const Location& aCenter, Scaled aDiameter, Rot
 
 template <typename S> static inline void s_square_filled(SurfaceCanvas& aSurface, const Location& aCenter, S aSide, Aspect aAspect, Rotation aAngle, Color aOutlineColor, Pixels aOutlineWidth, Color aFillColor, Surface::LineCap aLineCap)
 {
+      // log("s_square_filled", aOutlineColor, aFillColor);
     context(aSurface)
             .new_path()
             .set_line_width(aOutlineWidth)

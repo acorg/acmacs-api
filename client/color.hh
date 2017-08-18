@@ -28,7 +28,7 @@ class Color
     // inline void alphaI(value_type v) { mColor = (mColor & 0xFFFFFF) | ((v & 0xFF) << 24); }
     // inline size_t rgbI() const { return static_cast<size_t>(mColor & 0xFFFFFF); }
 
-    inline bool empty() const { return mIColor == NoChange; }
+    inline bool empty() const { return client::is_empty(mSColor) && mIColor == NoChange; }
 
     // void light(double value);
 

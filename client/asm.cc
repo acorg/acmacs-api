@@ -15,6 +15,7 @@ void make_asm_definitions()
     __asm__("window.is_undefined_or_null = function(obj) { return obj === undefined || obj === null; };");
     __asm__("window.is_not_null = function(obj) { return obj !== undefined && obj !== null; };");
     __asm__("window.is_defined = function(obj) { return obj !== undefined && obj !== null; };");
+    __asm__("window.is_empty = function(obj) { return obj === undefined || obj === null || Object.keys(obj).length === 0; };"); // Object.keys() works with arrays and strings
     __asm__("window.is_not_empty = function(obj) { return obj !== undefined && obj !== null && Object.keys(obj).length > 0; };"); // Object.keys() works with arrays and strings
 
     __asm__("window.make_number = function(num) { return new Number(num); };");
