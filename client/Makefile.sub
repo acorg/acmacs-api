@@ -24,8 +24,9 @@ install: checks $(TARGETS)
 test: install
 	test/test
 
-include $(ACMACSD_ROOT)/share/Makefile.cheerp
-include $(ACMACSD_ROOT)/share/Makefile.sass
+TARGET_ROOT=$(shell if [ -f /Volumes/rdisk/ramdisk-id ]; then echo /Volumes/rdisk/AD; else echo $(ACMACSD_ROOT); fi)
+include $(TARGET_ROOT)/share/Makefile.cheerp
+include $(TARGET_ROOT)/share/Makefile.sass
 
 checks: check-cheerp check-sassc
 
