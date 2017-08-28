@@ -90,7 +90,7 @@ void Session::login(std::string aUser, std::string aPassword)
     find_user(aUser, true);
     const auto nonce = get_nonce();
     std::random_device rd;
-    const auto cnonce = string::to_hex_string(rd() & 0xFFFFFFFF, false);
+    const auto cnonce = string::to_hex_string(rd() & 0xFFFFFFFF, string::NotShowBase);
     std::unique_lock<decltype(mAccess)> lock{mAccess};
     const auto digest = md5(mUser + ";acmacs-web;" + aPassword);
     lock.unlock();
@@ -114,7 +114,7 @@ std::string Session::get_nonce()
 {
     std::random_device rd;
     std::unique_lock<decltype(mAccess)> lock{mAccess};
-    mNonce = string::to_hex_string(rd() & 0xFFFFFFFF, false);
+    mNonce = string::to_hex_string(rd() & 0xFFFFFFFF, string::NotShowBase);
     return mNonce;
 
 } // Session::get_nonce
