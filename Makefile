@@ -30,15 +30,12 @@ ACMACS_API_SERVER_LIBS = $(MONGO_LDLIBS) -lacmacswebserver
 
 # ----------------------------------------------------------------------
 
-TARGET_ROOT=$(shell if [ -f /Volumes/rdisk/ramdisk-id ]; then echo /Volumes/rdisk/AD; else echo $(ACMACSD_ROOT); fi)
-include $(TARGET_ROOT)/share/Makefile.g++
-include $(TARGET_ROOT)/share/Makefile.dist-build.vars
+include $(ACMACSD_ROOT)/share/makefiles/Makefile.g++
+include $(ACMACSD_ROOT)/share/makefiles/Makefile.dist-build.vars
 
-OPTIMIZATION = -O3 #-fvisibility=hidden -flto
-PROFILE = # -pg
-CXXFLAGS = -g -MMD $(OPTIMIZATION) $(PROFILE) -fPIC -std=$(STD) $(WEVERYTHING) $(WARNINGS) -Icc -I$(AD_INCLUDE) $(PKG_INCLUDES)
+CXXFLAGS = -g -MMD $(OPTIMIZATION) $(PROFILE) -fPIC -std=$(STD) $(WARNINGS) -Icc -I$(AD_INCLUDE) $(PKG_INCLUDES)
 LDFLAGS = $(OPTIMIZATION) $(PROFILE)
-LDLIBS = -L$(AD_LIB) -lboost_filesystem -lboost_system -lpthread $$(pkg-config --libs liblzma) -lcurl
+LDLIBS = -L$(AD_LIB) -lboost_system -lpthread $$(pkg-config --libs liblzma) -lcurl $(FS_LIB)
 
 PKG_INCLUDES = -I$(AD_INCLUDE)/mongocxx/v_noabi -I$(AD_INCLUDE)/bsoncxx/v_noabi $$(pkg-config --cflags liblzma) $$(pkg-config --cflags libcrypto)
 
@@ -67,14 +64,14 @@ endif
 test: install
 	test/test
 
-checks: check-acmacsd-root check-libcurl
-
-RTAGS_TARGET = $(PROGS)
-include $(AD_SHARE)/Makefile.rtags
+checks: check-acmacsd-root
 
 # ----------------------------------------------------------------------
 
 -include $(BUILD)/*.d
+include $(ACMACSD_ROOT)/share/makefiles/Makefile.dist-build.rules
+RTAGS_TARGET = $(PROGS)
+include $(ACMACSD_ROOT)/share/makefiles/Makefile.rtags
 
 # ----------------------------------------------------------------------
 
@@ -92,27 +89,13 @@ $(ACMACS_C2): $(patsubst %.cc,$(BUILD)/%.o,$(ACMACS_C2_SOURCES)) | $(DIST)
 
 # ----------------------------------------------------------------------
 
-$(BUILD)/%.o: $(CC)/%.cc | $(BUILD)
-	@echo $(CXX_NAME) $<
-	@$(CXX) $(CXXFLAGS) -c -o $@ $(abspath $<)
-
-# ----------------------------------------------------------------------
-
-check-libcurl:
-	ls /usr/lib/libcurl.* >/dev/null 2>&1 || ls /usr/lib/*/libcurl.so.4 >/dev/null 2>&1 || ( echo "ERROR: Please install libcurl (apt-get install libcurl4-openssl-dev)" >&2 && false )
-
-ifeq ($(shell uname -s),Darwin)
- SASSC_INSTALL = "brew install sassc (https://github.com/sass/sassc)"
-else
- SASSC_INSTALL = "https://github.com/sass/sassc"
-endif
+# check-libcurl:
+#	ls /usr/lib/libcurl.* >/dev/null 2>&1 || ls /usr/lib/*/libcurl.so.4 >/dev/null 2>&1 || ( echo "ERROR: Please install libcurl (apt-get install libcurl4-openssl-dev)" >&2 && false )
 
 kill-server:
 ifneq ($(KILL_SERVER),NO)
 	if [ "`uname`" = "Darwin" ]; then killall acmacs-api-server 2>/dev/null || true; fi
 endif
-
-include $(AD_SHARE)/Makefile.dist-build.rules
 
 # ======================================================================
 ### Local Variables:

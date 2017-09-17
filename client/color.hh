@@ -46,8 +46,8 @@ class Color
         }
 
     inline std::string to_string() const { return static_cast<std::string>(*to_String()); }
-    // inline client::String* to_hex_String() const { return concat("#", client::to_hex_string(mIColor, 6)); }
-    // inline std::string to_hex_string() const { return static_cast<std::string>(*to_hex_String()); }
+    inline client::String* to_hex_String() const { return concat("#", client::to_hex_string(mIColor, 6)); }
+    inline std::string to_hex_string() const { return static_cast<std::string>(*to_hex_String()); }
 
     // static const value_type DistinctColors[];
     // static std::vector<std::string> distinct_colors();
