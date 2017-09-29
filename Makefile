@@ -57,9 +57,9 @@ install: checks $(PROGS) client
 
 .PHONY: client
 client:
-ifeq ($(shell uname -s),Darwin)
-	$(MAKE) -C client -f Makefile.sub BUILD=$(abspath $(BUILD))/client DIST=$(abspath $(DIST))
-endif
+# ifeq ($(shell uname -s),Darwin)
+#	$(MAKE) -C client -f Makefile.sub BUILD=$(abspath $(BUILD))/client DIST=$(abspath $(DIST))
+# endif
 
 test: install
 	test/test
