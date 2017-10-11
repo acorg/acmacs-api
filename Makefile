@@ -25,7 +25,13 @@ COMMANDS_SOURCES = command.cc command-factory.cc command-info.cc command-session
 
 # ----------------------------------------------------------------------
 
-MONGO_LDLIBS = -L$(AD_LIB) -lmongocxx -lbsoncxx -L/usr/local/opt/openssl/lib $$(pkg-config --libs libssl)
+ifeq ($(shell uname -s),Darwin)
+  SSL_LIB = -L/usr/local/opt/openssl/lib $$(pkg-config --libs libssl)
+else
+  SSL_LIB = $$(pkg-config --libs libssl) $$(pkg-config --libs libcrypto)
+endif
+
+MONGO_LDLIBS = -L$(AD_LIB) -lmongocxx -lbsoncxx $(SSL_LIB)
 ACMACS_API_SERVER_LIBS = $(MONGO_LDLIBS) -lacmacswebserver
 
 # ----------------------------------------------------------------------
