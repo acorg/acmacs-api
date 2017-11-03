@@ -255,7 +255,7 @@ class ChartAce : public ChartBase
         inline const MinimumColumnBasisBase& minimum_column_basis() const override { return * new MinimumColumnBasis{mData->get_m()}; }
         inline const ColumnBasesBase& column_bases() const override { return * new ColumnBases{mData->get_C()}; }
         inline bool dodgy_titer_is_regular() const override { return mData->get_d(); }
-        inline const Transformation& transformation() const override { const auto& tr = *mData->get_t(); return * new Transformation{*tr[0], *tr[1], *tr[2], *tr[3]};  }
+        inline const xTransformation& transformation() const override { const auto& tr = *mData->get_t(); return * new Transformation{*tr[0], *tr[1], *tr[2], *tr[3]};  }
         inline double stress_diff_to_stop() const override { return mData->get_e(); }
 
      private:
