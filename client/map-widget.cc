@@ -145,6 +145,7 @@ void MapWidget::sample_drawings()
     std::vector<Location> path2{{1.5, 5.5}, {2.2, 5.5}, {2.2, 6.2}, {2.0, 6.4}};
     mSurface->path_fill(path2.begin(), path2.end(), Color{0x80FF00A0});
 
+    using TextStyle = acmacs::TextStyle;
     mSurface->text({0.5, 8}, "Scaled Left", Color{0x80000000}, Scaled{1}, TextStyle{"serif", TextStyle::Slant::Italic, TextStyle::Weight::Normal});
     mSurface->text({3, 6}, "Pixels Left", Color{0x800000FF}, Pixels{59}, TextStyle{"Helvetica Neue", TextStyle::Slant::Italic, TextStyle::Weight::Bold});
     mSurface->text_right_aligned({8, 8}, "SRt", Color{0x80000000}, Scaled{1}, TextStyle{"serif", TextStyle::Slant::Italic, TextStyle::Weight::Normal});
