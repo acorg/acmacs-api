@@ -165,12 +165,12 @@ class MongodbAccess
 
     inline std::string time_now() const
         {
-            return time_format_gm(std::chrono::system_clock::now(), "%F %T");
+            return acmacs::time_format_gm(std::chrono::system_clock::now(), "%F %T");
         }
 
     inline std::string time_in_seconds(std::int32_t aSeconds) const
         {
-            return time_format_gm(std::chrono::system_clock::now() + std::chrono::seconds{aSeconds}, "%F %T");
+            return acmacs::time_format_gm(std::chrono::system_clock::now() + std::chrono::seconds{aSeconds}, "%F %T");
         }
 
       // ----------------------------------------------------------------------
