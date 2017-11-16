@@ -32,7 +32,7 @@ else
 endif
 
 MONGO_LDLIBS = -L$(AD_LIB) -lmongocxx -lbsoncxx $(SSL_LIB)
-ACMACS_API_SERVER_LIBS = $(MONGO_LDLIBS) -lacmacswebserver
+ACMACS_API_SERVER_LIBS = $(MONGO_LDLIBS) $(AD_LIB)/$(call shared_lib_name,libacmacswebserver,1,0)
 
 # ----------------------------------------------------------------------
 
