@@ -3,7 +3,7 @@
 #include <cheerp/clientlib.h>
 
 #include "acmacs-base/passage.hh"
-#include "acmacs-chart/chart-base.hh"
+#include "acmacs-chart-1/chart-base.hh"
 #include "string-client.hh"
 
 // ----------------------------------------------------------------------
