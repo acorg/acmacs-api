@@ -112,7 +112,7 @@ std::string AcmacsC2::embed_session_in_command(const SessionId& aSession, std::s
 
 std::string AcmacsC2::ace_uncompressed(const SessionId& aSession, std::string aObjectId, size_t aMaxNumberOfProjections)
 {
-    const auto projections = "[" + string::join(",", acmacs::incrementer<size_t>::begin(0), acmacs::incrementer<size_t>::end(aMaxNumberOfProjections)) + "]";
+    const auto projections = "[" + string::join(",", acmacs::index_iterator(0UL), acmacs::index_iterator(aMaxNumberOfProjections)) + "]";
     auto result = command(aSession, std::string{R"({"C":"chart_export","format":"ace_uncompressed","pretty":false,"id":")"} + aObjectId + R"(","projection":)" + projections + "}");
       // "chart_json" is a string with embedded json
     return result.get_string("chart_json");
