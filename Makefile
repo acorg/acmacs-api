@@ -39,8 +39,7 @@ ACMACS_API_SERVER_LIBS = $(MONGO_LDLIBS) $(AD_LIB)/$(call shared_lib_name,libacm
 include $(ACMACSD_ROOT)/share/makefiles/Makefile.g++
 include $(ACMACSD_ROOT)/share/makefiles/Makefile.dist-build.vars
 
-CXXFLAGS = -g -MMD $(OPTIMIZATION) $(PROFILE) -fPIC -std=$(STD) $(WARNINGS) -Icc -I$(AD_INCLUDE) $(PKG_INCLUDES)
-LDFLAGS = $(OPTIMIZATION) $(PROFILE)
+CXXFLAGS += -Icc $(PKG_INCLUDES)
 LDLIBS = -L$(AD_LIB) -lboost_system -lpthread $$(pkg-config --libs liblzma) -lcurl $(FS_LIB)
 
 PKG_INCLUDES = -I$(AD_INCLUDE)/mongocxx/v_noabi -I$(AD_INCLUDE)/bsoncxx/v_noabi $$(pkg-config --cflags liblzma) $$(pkg-config --cflags libcrypto)
