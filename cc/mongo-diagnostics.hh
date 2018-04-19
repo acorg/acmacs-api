@@ -6,6 +6,7 @@
 #pragma GCC diagnostic ignored "-Wdocumentation-deprecated-sync"
 #pragma GCC diagnostic ignored "-Wdocumentation-unknown-command"
 #pragma GCC diagnostic ignored "-Wfloat-equal"
+#pragma GCC diagnostic ignored "-Wnewline-eof"
 #pragma GCC diagnostic ignored "-Wredundant-parens"
 #pragma GCC diagnostic ignored "-Wshadow"
 #pragma GCC diagnostic ignored "-Wshadow-field-in-constructor"
