@@ -36,8 +36,6 @@ class MongodbAccess
     using cursor = mongocxx::cursor;
     using mongo_find = mongocxx::options::find;
 
-    using key_context = bsoncxx::builder::stream::key_context<bsoncxx::builder::stream::closed_context>;
-
       // ----------------------------------------------------------------------
 
     class find_options
@@ -239,8 +237,6 @@ class StoredInMongodb : public MongodbAccess
     inline StoredInMongodb(mongocxx::database aDb, const char* aCollection) : MongodbAccess{aDb}, mCollection{aCollection} {}
 
  protected:
-    using bld_key_context = bsoncxx::builder::stream::key_context<bsoncxx::builder::stream::key_context<bsoncxx::builder::stream::closed_context>>;
-
     using MongodbAccess::find;
     inline auto find(bson_view aFilter, const mongo_find& aOptions = mongo_find{}) { return find(mCollection, aFilter, aOptions); }
     inline auto find() { return find(mCollection); }
