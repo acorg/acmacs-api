@@ -24,12 +24,12 @@ class WsppThreadWithMongoAccess : public WsppThread, public MongoAcmacsC2Access
 
 class CommandFactory;
 
-class BrowserConnection : public ClientConnection, public WsppWebsocketLocationHandler
+class WebsocketConnection : public ClientConnection, public WsppWebsocketLocationHandler
 {
  public:
-    BrowserConnection(CommandFactory& aCommandFactory)
+    WebsocketConnection(CommandFactory& aCommandFactory)
         : ClientConnection{}, WsppWebsocketLocationHandler{}, mCommandFactory{aCommandFactory} {}
-    BrowserConnection(const BrowserConnection& aSrc)
+    WebsocketConnection(const WebsocketConnection& aSrc)
         : ClientConnection{aSrc}, WsppWebsocketLocationHandler{aSrc}, mCommandFactory{aSrc.mCommandFactory} {}
 
     void send(std::string aMessage, send_message_type aMessageType = send_message_type::text) override;
@@ -40,7 +40,7 @@ class BrowserConnection : public ClientConnection, public WsppWebsocketLocationH
 
     std::shared_ptr<WsppWebsocketLocationHandler> clone() const override
         {
-            return std::make_shared<BrowserConnection>(*this);
+            return std::make_shared<WebsocketConnection>(*this);
         }
 
     void opening(std::string, WsppThread& /*aThread*/) override
@@ -56,7 +56,7 @@ class BrowserConnection : public ClientConnection, public WsppWebsocketLocationH
  private:
     CommandFactory& mCommandFactory;
 
-}; // class BrowserConnection
+}; // class WebsocketConnection
 
 // ----------------------------------------------------------------------
 /// Local Variables:

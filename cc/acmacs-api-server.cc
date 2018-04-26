@@ -29,7 +29,7 @@ void WsppThreadWithMongoAccess::initialize()
 
 // ----------------------------------------------------------------------
 
-void BrowserConnection::message(std::string aMessage, WsppThread& aThread)
+void WebsocketConnection::message(std::string aMessage, WsppThread& aThread)
 {
     auto& thread = dynamic_cast<WsppThreadWithMongoAccess&>(aThread);
 
@@ -42,11 +42,11 @@ void BrowserConnection::message(std::string aMessage, WsppThread& aThread)
         command->send_error(err.what());
     }
 
-} // BrowserConnection::message
+} // WebsocketConnection::message
 
 // ----------------------------------------------------------------------
 
-void BrowserConnection::send(std::string aMessage, send_message_type aMessageType)
+void WebsocketConnection::send(std::string aMessage, send_message_type aMessageType)
 {
     auto op_code = websocketpp::frame::opcode::text;
     switch (aMessageType) {
@@ -60,7 +60,7 @@ void BrowserConnection::send(std::string aMessage, send_message_type aMessageTyp
     print_cerr("SEND: ", aMessage.substr(0, 100));
     WsppWebsocketLocationHandler::send(aMessage, op_code);
 
-} // BrowserConnection::send
+} // WebsocketConnection::send
 
 // ----------------------------------------------------------------------
 
@@ -77,29 +77,6 @@ class AcmacsAPISettings : public ServerSettings
 
 // ----------------------------------------------------------------------
 
-// class RootPage : public WsppHttpLocationHandler
-// {
-//  public:
-//     virtual bool handle(const HttpResource& aResource, WsppHttpResponseData& aResponse)
-//         {
-//             // std::cerr << "ARGV: " << aResource.argv() << std::endl;
-//             // std::cerr << "ARGV: " << to_json::object(aResource.argv()) << std::endl;
-//             bool handled = false;
-//             if (aResource.location() == "/") {
-//                 aResponse.body = R"(<!DOCTYPE html><html><head>
-//                                     <meta charset="utf-8">
-//                                     <link rel="stylesheet" type="text/css" href="css/app-one.css">
-//                                     <script src="/js/app-one.js"></script>
-//                                     <script src="/js/lib/md5.js"></script>)";
-//                 aResponse.body += "<script>ARGV = " + to_json::object(aResource.argv()) + "</script>";
-//                 aResponse.body += "</head><body></body></html>";
-//                 handled = true;
-//             }
-//             return handled;
-//         }
-
-// }; // class RootPage
-
 class RootPage : public WsppHttpLocationHandler
 {
  public:
@@ -107,16 +84,15 @@ class RootPage : public WsppHttpLocationHandler
 
     bool handle(const HttpResource& aResource, WsppHttpResponseData& aResponse) override
         {
-            bool handled = false;
-            if (aResource.location() == "/") {
-                constexpr size_t bufsize = 1024;
-                aResponse.body.resize(bufsize);
-                std::ifstream input(filename_);
-                input.read(aResponse.body.data(), bufsize);
-                aResponse.body.resize(static_cast<size_t>(input.gcount()));
-                handled = true;
-            }
-            return handled;
+            print_cerr("RootPage location: ", aResource.location());
+            if (aResource.location().substr(0, 4) == "/js/")
+                return false;
+            constexpr size_t bufsize = 1024;
+            aResponse.body.resize(bufsize);
+            std::ifstream input(filename_);
+            input.read(aResponse.body.data(), bufsize);
+            aResponse.body.resize(static_cast<size_t>(input.gcount()));
+            return true;
         }
 
  private:
@@ -154,7 +130,7 @@ int main(int argc, char* const argv[])
         std::signal(SIGQUIT, signal_handler);
 
         wspp.add_location_handler(std::make_shared<RootPage>(settings.root_page()));
-        wspp.add_location_handler(std::make_shared<BrowserConnection>(command_factory));
+        wspp.add_location_handler(std::make_shared<WebsocketConnection>(command_factory));
 
         wspp.run();
         return 0;
@@ -177,4 +153,3 @@ int main(int argc, char* const argv[])
 // ----------------------------------------------------------------------
 /// Local Variables:
 /// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
-/// End:
