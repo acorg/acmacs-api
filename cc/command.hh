@@ -64,7 +64,7 @@ class Command_unknown : public Command
             send_error("unrecognized message");
         }
 
-}; // class Command_users
+}; // class Command_unknown
 
 // ----------------------------------------------------------------------
 /// Local Variables:

@@ -7,7 +7,7 @@
 
 void Command_version::run()
 {
-    send(to_json::object("version", "acmacs-d-20170724"));
+    send(to_json::object("version", "acmacs-d-20180426"));
 
 } // Command_version::run
 

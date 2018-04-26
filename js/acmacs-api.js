@@ -10,7 +10,18 @@ function test_websocket() {
     var websocket = new WebSocket("wss://" + url.host + "/acmacs-api");
     websocket.onopen = evt => console.log("websocket opened", evt);
     websocket.onclose = evt => console.log("websocket closed", evt);
-    websocket.onmessage = evt => console.log("websocket message", evt);
+    var num_messages = 0;
+    websocket.onmessage = evt => {
+        ++num_messages;
+        const message = JSON.parse(evt.data);
+        console.log("websocket message", message, num_messages);
+        if (message.hello) {
+            websocket.send('{"C": "version"}');
+        }
+        else if (message.C === "version") {
+            websocket.send('{"C": "list_commands"}');
+        }
+    }
     websocket.onerror = evt => console.log("websocket error", evt);
 }
 
