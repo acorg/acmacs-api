@@ -12,11 +12,11 @@
 class WsppThreadWithMongoAccess : public WsppThread, public MongoAcmacsC2Access
 {
  public:
-    inline WsppThreadWithMongoAccess(Wspp& aWspp, std::string aMongoURI, AcmacsC2& aAcmacsC2)
+    WsppThreadWithMongoAccess(Wspp& aWspp, std::string aMongoURI, AcmacsC2& aAcmacsC2)
         : WsppThread{aWspp}, MongoAcmacsC2Access{aMongoURI, aAcmacsC2} {}
 
  protected:
-    virtual void initialize();
+    void initialize() override;
 
 }; // class WsppThreadWithMongoAccess
 
@@ -27,28 +27,28 @@ class CommandFactory;
 class BrowserConnection : public ClientConnection, public WsppWebsocketLocationHandler
 {
  public:
-    inline BrowserConnection(CommandFactory& aCommandFactory)
+    BrowserConnection(CommandFactory& aCommandFactory)
         : ClientConnection{}, WsppWebsocketLocationHandler{}, mCommandFactory{aCommandFactory} {}
-    inline BrowserConnection(const BrowserConnection& aSrc)
+    BrowserConnection(const BrowserConnection& aSrc)
         : ClientConnection{aSrc}, WsppWebsocketLocationHandler{aSrc}, mCommandFactory{aSrc.mCommandFactory} {}
 
-    virtual void send(std::string aMessage, send_message_type aMessageType = send_message_type::text);
+    void send(std::string aMessage, send_message_type aMessageType = send_message_type::text) override;
 
  protected:
-    virtual inline bool use(std::string aLocation) const { return ClientConnection::use(aLocation); }
-    virtual void message(std::string aMessage, WsppThread& aThread);
+    bool use(std::string aLocation) const override { return ClientConnection::use(aLocation); }
+    void message(std::string aMessage, WsppThread& aThread) override;
 
-    virtual std::shared_ptr<WsppWebsocketLocationHandler> clone() const
+    std::shared_ptr<WsppWebsocketLocationHandler> clone() const override
         {
             return std::make_shared<BrowserConnection>(*this);
         }
 
-    virtual inline void opening(std::string, WsppThread& /*aThread*/)
+    void opening(std::string, WsppThread& /*aThread*/) override
         {
             send(to_json::object("hello", "acmacs-api-server-v1"));
         }
 
-    virtual void after_close(std::string, WsppThread& /*aThread*/)
+    void after_close(std::string, WsppThread& /*aThread*/) override
         {
               //print_cerr("ClientConnection after_close");
         }

@@ -3,6 +3,7 @@
 #include <getopt.h>
 #include <atomic>
 #include <csignal>
+#include <fstream>
 
 #include "acmacs-webserver/server-settings.hh"
 #include "acmacs-webserver/print.hh"
@@ -68,47 +69,61 @@ class AcmacsAPISettings : public ServerSettings
  public:
     using ServerSettings::ServerSettings;
 
-    auto mongodb_uri() const
-        {
-            auto uri = doc_.get_or_default("mongodb_uri", "");
-            if (uri.empty())
-                uri = "mongodb://localhost:27017/";
-            return uri;
-        }
+    std::string mongodb_uri() const { return doc_.get_or_default("mongodb_uri", "mongodb://localhost:27017/"); }
+    std::string acmacs_c2_uri() const { return doc_.get_or_default("acmacs_c2_uri", "https://localhost:1168/api"); }
+    std::string root_page() const { return doc_.get_or_default("root_page", "/tmp/not-found"); }
 
-    auto acmacs_c2_uri() const
-        {
-            auto uri = doc_.get_or_default("acmacs_c2_uri", "");
-            if (uri.empty())
-                uri = "https://localhost:1168/api";
-            return uri;
-        }
 };
 
 // ----------------------------------------------------------------------
 
+// class RootPage : public WsppHttpLocationHandler
+// {
+//  public:
+//     virtual bool handle(const HttpResource& aResource, WsppHttpResponseData& aResponse)
+//         {
+//             // std::cerr << "ARGV: " << aResource.argv() << std::endl;
+//             // std::cerr << "ARGV: " << to_json::object(aResource.argv()) << std::endl;
+//             bool handled = false;
+//             if (aResource.location() == "/") {
+//                 aResponse.body = R"(<!DOCTYPE html><html><head>
+//                                     <meta charset="utf-8">
+//                                     <link rel="stylesheet" type="text/css" href="css/app-one.css">
+//                                     <script src="/js/app-one.js"></script>
+//                                     <script src="/js/lib/md5.js"></script>)";
+//                 aResponse.body += "<script>ARGV = " + to_json::object(aResource.argv()) + "</script>";
+//                 aResponse.body += "</head><body></body></html>";
+//                 handled = true;
+//             }
+//             return handled;
+//         }
+
+// }; // class RootPage
+
 class RootPage : public WsppHttpLocationHandler
 {
  public:
-    virtual bool handle(const HttpResource& aResource, WsppHttpResponseData& aResponse)
+    RootPage(std::string filename) : filename_{filename} {}
+
+    bool handle(const HttpResource& aResource, WsppHttpResponseData& aResponse) override
         {
-            // std::cerr << "ARGV: " << aResource.argv() << std::endl;
-            // std::cerr << "ARGV: " << to_json::object(aResource.argv()) << std::endl;
             bool handled = false;
             if (aResource.location() == "/") {
-                aResponse.body = R"(<!DOCTYPE html><html><head>
-                                    <meta charset="utf-8">
-                                    <link rel="stylesheet" type="text/css" href="css/app-one.css">
-                                    <script src="/js/app-one.js"></script>
-                                    <script src="/js/lib/md5.js"></script>)";
-                aResponse.body += "<script>ARGV = " + to_json::object(aResource.argv()) + "</script>";
-                aResponse.body += "</head><body></body></html>";
+                constexpr size_t bufsize = 1024;
+                aResponse.body.resize(bufsize);
+                std::ifstream input(filename_);
+                input.read(aResponse.body.data(), bufsize);
+                aResponse.body.resize(static_cast<size_t>(input.gcount()));
                 handled = true;
             }
             return handled;
         }
 
+ private:
+    std::string filename_;
+
 }; // class RootPage
+
 
 // ----------------------------------------------------------------------
 
@@ -138,7 +153,7 @@ int main(int argc, char* const argv[])
         std::signal(SIGTERM, signal_handler);
         std::signal(SIGQUIT, signal_handler);
 
-        wspp.add_location_handler(std::make_shared<RootPage>());
+        wspp.add_location_handler(std::make_shared<RootPage>(settings.root_page()));
         wspp.add_location_handler(std::make_shared<BrowserConnection>(command_factory));
 
         wspp.run();

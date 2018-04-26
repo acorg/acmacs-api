@@ -57,15 +57,16 @@ PROGS = $(API_DIRECT) $(ACMACS_API_SERVER) $(ACMACS_C2)
 
 CC = cc
 
-all: checks kill-server $(PROGS) client
+all: checks kill-server $(PROGS)
 
 install: checks $(PROGS) client
 	@#ln -sf $(ACMACS_) $(AD_BIN)
+	mkdir -p $(AD_SHARE)/js/acmacs-api; ln -sf $(shell pwd)/js/* $(AD_SHARE)/js/acmacs-api
 
-.PHONY: client
-client:
+# .PHONY: client-cheerp
+# client-cheerp:
 # ifeq ($(shell uname -s),Darwin)
-#	$(MAKE) -C client -f Makefile.sub BUILD=$(abspath $(BUILD))/client DIST=$(abspath $(DIST))
+#	$(MAKE) -C client-cheerp -f Makefile.sub BUILD=$(abspath $(BUILD))/client-cheerp DIST=$(abspath $(DIST))
 # endif
 
 test: install
