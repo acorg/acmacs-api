@@ -15,11 +15,8 @@
     "root_page": "js/acmacs-api.html",
     "locations": [
         {"location": "/favicon.ico", "files": ["favicon.ico"]},
-        {"location": "/js/app-one.js", "files": ["dist/app-one.js.gz"]},
-        {"location": "/css/app-one.css", "files": ["dist/app-one.css.gz"]},
-        {"location": "/js/app-one.js.map", "files": ["dist/app-one.js.map.gz"]},
-
-        {"_": "3rd party js libs", "location": "/js/lib/", "dirs": ["js/"]},
-        {"_": "for source maps", "location": "/js/client/", "dirs": ["client/"]}
+        {"location": "/js/", "dirs": ["js/"]},
+        {"location": "/css/", "dirs": ["js/"]},
+        {"_": "3rd party js libs", "location": "/js/lib/", "dirs": ["js/"]}
         ]
 }

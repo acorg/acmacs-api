@@ -59,7 +59,7 @@ CC = cc
 
 all: checks kill-server $(PROGS)
 
-install: checks $(PROGS) client
+install: checks $(PROGS)
 	@#ln -sf $(ACMACS_) $(AD_BIN)
 	mkdir -p $(AD_SHARE)/js/acmacs-api; ln -sf $(shell pwd)/js/* $(AD_SHARE)/js/acmacs-api
 
