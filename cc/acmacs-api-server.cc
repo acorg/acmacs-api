@@ -84,7 +84,6 @@ class RootPage : public WsppHttpLocationHandler
 
     bool handle(const HttpResource& aResource, WsppHttpResponseData& aResponse) override
         {
-            print_cerr("RootPage location: ", aResource.location());
             if (aResource.location().substr(0, 4) == "/js/")
                 return false;
             constexpr size_t bufsize = 1024;
@@ -92,6 +91,7 @@ class RootPage : public WsppHttpLocationHandler
             std::ifstream input(filename_);
             input.read(aResponse.body.data(), bufsize);
             aResponse.body.resize(static_cast<size_t>(input.gcount()));
+            aResponse.append_header("Content-Type", "text/html; charset=utf-8");
             return true;
         }
 
