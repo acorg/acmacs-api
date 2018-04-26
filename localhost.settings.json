@@ -15,8 +15,8 @@
     "root_page": "js/acmacs-api.html",
     "locations": [
         {"location": "/favicon.ico", "files": ["favicon.ico"]},
-        {"location": "/js/", "dirs": ["js/"]},
-        {"location": "/css/", "dirs": ["js/"]},
-        {"_": "3rd party js libs", "location": "/js/lib/", "dirs": ["js/"]}
+        {"location": "/js/ad/acmacs-api/", "dirs": ["js/"]},
+        {"location": "/js/ad/draw/", "dirs": ["/Library/WebServer/Documents/js/ad/draw/"]},
+        {"location": "/js/ad/map-draw/", "dirs": ["/Library/WebServer/Documents/js/ad/map-draw/"]}
         ]
 }

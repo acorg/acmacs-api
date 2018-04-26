@@ -20,13 +20,13 @@ class ClientConnection
  public:
     class Error : public std::runtime_error { public: using std::runtime_error::runtime_error; };
 
-    inline ClientConnection() = default;
-    inline ClientConnection(const ClientConnection&) = default;
-    virtual ~ClientConnection();
+    ClientConnection() = default;
+    ClientConnection(const ClientConnection&) = default;
+    virtual ~ClientConnection() = default;
 
     virtual void send(std::string aMessage, send_message_type aMessageType = send_message_type::text) = 0;
 
-    inline Session& session()
+    Session& session()
         {
             if (!mSession)
                 throw Error{"no session"};
@@ -36,9 +36,9 @@ class ClientConnection
     void make_session(mongocxx::database& aDb);
 
  protected:
-    virtual inline bool use(std::string aLocation) const
+    virtual bool use(std::string aLocation) const
         {
-            return aLocation == "/api";
+            return aLocation == "/acmacs-api";
         }
 
  private:
