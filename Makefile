@@ -40,7 +40,9 @@ include $(ACMACSD_ROOT)/share/makefiles/Makefile.g++
 include $(ACMACSD_ROOT)/share/makefiles/Makefile.dist-build.vars
 
 CXXFLAGS += -Icc $(PKG_INCLUDES)
-LDLIBS = -L$(AD_LIB) -lboost_system -lpthread $$(pkg-config --libs liblzma) -lcurl $(FS_LIB)
+LDLIBS = \
+  $(AD_LIB)/$(call shared_lib_name,libacmacsbase,1,0) \
+  -L$(AD_LIB) -lboost_system -lpthread $$(pkg-config --libs liblzma) -lcurl $(FS_LIB)
 
 PKG_INCLUDES = -I$(AD_INCLUDE)/mongocxx/v_noabi -I$(AD_INCLUDE)/bsoncxx/v_noabi $$(pkg-config --cflags liblzma) $$(pkg-config --cflags libcrypto)
 

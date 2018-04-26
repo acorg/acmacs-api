@@ -68,17 +68,17 @@ class AcmacsAPISettings : public ServerSettings
  public:
     using ServerSettings::ServerSettings;
 
-    inline auto mongodb_uri() const
+    auto mongodb_uri() const
         {
-            auto uri = mDoc.get("mongodb_uri", std::string{});
+            auto uri = doc_.get_or_default("mongodb_uri", "");
             if (uri.empty())
                 uri = "mongodb://localhost:27017/";
             return uri;
         }
 
-    inline auto acmacs_c2_uri() const
+    auto acmacs_c2_uri() const
         {
-            auto uri = mDoc.get("acmacs_c2_uri", std::string{});
+            auto uri = doc_.get_or_default("acmacs_c2_uri", "");
             if (uri.empty())
                 uri = "https://localhost:1168/api";
             return uri;
@@ -90,7 +90,7 @@ class AcmacsAPISettings : public ServerSettings
 class RootPage : public WsppHttpLocationHandler
 {
  public:
-    virtual inline bool handle(const HttpResource& aResource, WsppHttpResponseData& aResponse)
+    virtual bool handle(const HttpResource& aResource, WsppHttpResponseData& aResponse)
         {
             // std::cerr << "ARGV: " << aResource.argv() << std::endl;
             // std::cerr << "ARGV: " << to_json::object(aResource.argv()) << std::endl;
