@@ -165,8 +165,8 @@ const LoginWidget_css = "\
   #login .title { font: 32px Helvetica,Arial,sans-serif; font-weight: bold; margin-bottom: 2em; color: $aw-orange; }\
   #login input { border: none; width: 100%; font: 400 16px Helvetica,Arial,sans-serif; }\
   #login input:focus { outline: none; }\
-  #login div.separator { background-color: rgba(0,0,0,0.12); height: 1px; width: 100%; margin-bottom: 2em };\
-  #login div.separator-focused { background-color: #54964e; height: 2px; transition: 0.2s; }\
+  #login div.separator { background-color: rgba(0,0,0,0.12); height: 1px; width: 100%; margin-bottom: 2em }\
+  #login form div.separator-focused { background-color: #54964e; height: 2px; transition: 0.2s; }\
   #login div.label-focused { color: #54964e; transition: 0.2s; }\
   #login .button { margin-left: auto; width: 4em; background-color: #54964e; color: white; font-size: 1.2em; padding: 0.2em 0.2em; text-align: center; font-weight: bold; cursor: pointer; }\
   #login .error-message { color: red; margin-top: 1em; }\
