@@ -7,11 +7,16 @@ export class Dispatcher {
         this.websocket_.onclose = evt => this.onclose(evt);
         this.websocket_.onmessage = evt => this.expect_hello(evt);
         this.websocket_.onerror = evt => this.onerror(evt);
+        this.login_process_ = false;
+        this.command_queue_ = []; // when waiting for login
+        this.commands_sent_ = {};
+        this.command_id_ = 1;
         this.setup_handlers_(url);
     }
 
     setup_handlers_(url) {
-        this.handlers_ = {};
+        this.handlers_ = {
+        };
         switch (url.pathname) {
         case "/list_commands":
         case "/list-commands":
@@ -30,7 +35,27 @@ export class Dispatcher {
 
     send(data) {
         if (typeof(data) === "object" && data.C) {
-            this.websocket_.send(JSON.stringify(data));
+            if (this.login_process_) {
+                this.command_queue_.push(data);
+            }
+            else {
+                if (data.S === undefined) {
+                    const session = this.store_session_();
+                    if (!session) {
+                        this.command_queue_.push(data);
+                        this.login();
+                    }
+                    else {
+                        data.S = session;
+                        if (data.D === undefined) {
+                            data.D = data.C + "#" + this.command_id_;
+                            ++this.command_id_;
+                            this.commands_sent_[data.D] = data;
+                        }
+                        this.websocket_.send(JSON.stringify(data));
+                    }
+                }
+            }
         }
         else if (typeof(data) === "string" && data.indexOf('"C":') >= 0) {
             this.websocket_.send(data);
@@ -50,11 +75,16 @@ export class Dispatcher {
 
     onmessage(evt) {
         const message = JSON.parse(evt.data);
-        const handler_name = message.D || message.C;
-        if (this.handlers_[handler_name])
-            this.handlers_[handler_name](message, this);
+        if (!message.E) {
+            delete this.commands_sent_[message.D];
+            const handler_name = message.D || message.C;
+            if (this.handlers_[handler_name])
+                this.handlers_[handler_name](message, this);
+            else
+                console.warn("Dispatcher.onmessage: unhandled", handler_name, this.handlers_, message);
+        }
         else
-            console.warn("Dispatcher.onmessage: unhandled", handler_name, this.handlers_, message);
+            this.handle_error(message);
     }
 
     onopen(evt) {
@@ -67,6 +97,49 @@ export class Dispatcher {
 
     onerror(evt) {
         console.log("websocket error", evt);
+    }
+
+    handle_error(message) {
+        switch (message.E) {
+        case "no session":
+            this.command_queue_.push(this.commands_sent_[message.D]);
+            this.login();
+            break;
+        default:
+            console.error(message);
+            break;
+        }
+    }
+
+    login() {
+        this.login_process_ = true;
+        this.login_widget_ = new LoginWidget(this);
+    }
+
+    store_session_(session) {
+        const storage_key = "acmacs-d-session-id";
+        try {
+            if (!session)
+                return window.localStorage.getItem(storage_key);
+            else if (session === "remove")
+                return window.localStorage.removeItem(storage_key);
+            else
+                return window.localStorage.setItem(storage_key, session);
+        }
+        catch(e) {
+            return null;
+        }
+    }
+}
+
+// ----------------------------------------------------------------------
+
+class LoginWidget {
+    constructor(dispatcher) {
+        this.div = $("<div class='login box-shadow-popup hidden' id='login'><div class='title'>Acmacs-Web</div><form><div>Username</div></form></div>").appendTo($("body"));
+    }
+
+    destroy() {
     }
 }
 
