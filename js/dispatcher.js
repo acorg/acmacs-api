@@ -43,7 +43,7 @@ export class Dispatcher {
                     const session = this.store_session_();
                     if (!session) {
                         this.command_queue_.push(data);
-                        this.login();
+                        this.show_login_widget();
                     }
                     else {
                         data.S = session;
@@ -103,7 +103,7 @@ export class Dispatcher {
         switch (message.E) {
         case "no session":
             this.command_queue_.push(this.commands_sent_[message.D]);
-            this.login();
+            this.show_login_widget();
             break;
         default:
             console.error(message);
@@ -111,7 +111,7 @@ export class Dispatcher {
         }
     }
 
-    login() {
+    show_login_widget() {
         this.login_process_ = true;
         this.login_widget_ = new LoginWidget(this);
     }
@@ -144,53 +144,86 @@ const LoginWidget_html = "\
     <div name='password-label'>Password</div>\
     <input autocomplete=password spellcheck=false tabIndex=2 name=password type=password></input>\
     <div class='separator' name=password></div>\
-    <div class='button box-shadow-button'>Login</div>\
+    <div class='button box-shadow-button' name='login-button'>Login</div>\
     <div class='error-message'></div>\
   </form>\
 </div>\
 ";
 
-const LoginWidget_css = "\
-<style name='login-widget'>\
-  #login.box-shadow-popup { box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14),0 3px 1px -2px rgba(0,0,0,0.12),0 1px 5px 0 rgba(0,0,0,0.2); }\
-  #login .box-shadow-button {\
-    border-radius: 3px;\
-    box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14),0 3px 1px -2px rgba(0,0,0,0.12),0 1px 5px 0 rgba(0,0,0,0.2);\
-    transition: box-shadow .28s cubic-bezier(0.4,0.0,0.2,1);\
-  }\
-\
-\
-  #login { width: 20em; height: 20em; padding: 2em;\
-          position: absolute; top: 0; bottom: 0; left: 0; right: 0; margin: auto;}\
-  #login .title { font: 32px Helvetica,Arial,sans-serif; font-weight: bold; margin-bottom: 2em; color: $aw-orange; }\
-  #login input { border: none; width: 100%; font: 400 16px Helvetica,Arial,sans-serif; }\
-  #login input:focus { outline: none; }\
-  #login div.separator { background-color: rgba(0,0,0,0.12); height: 1px; width: 100%; margin-bottom: 2em }\
-  #login form div.separator-focused { background-color: #54964e; height: 2px; transition: 0.2s; }\
-  #login div.label-focused { color: #54964e; transition: 0.2s; }\
-  #login .button { margin-left: auto; width: 4em; background-color: #54964e; color: white; font-size: 1.2em; padding: 0.2em 0.2em; text-align: center; font-weight: bold; cursor: pointer; }\
-  #login .error-message { color: red; margin-top: 1em; }\
-</style>\
-";
-
 class LoginWidget {
 
     constructor(dispatcher) {
-        if ($("head").find("style[name='login-widget']").length === 0)
-            $("head").append(LoginWidget_css);
         this.div = $(LoginWidget_html).appendTo($("body"));
+
         let username_input = this.div.find("input[name=username]");
         let username_separator = this.div.find("div.separator[name=username]");
         let username_label = this.div.find("div[name='username-label']");
-        username_input.on("focus", () => {
+        let password_input = this.div.find("input[name=password]");
+        let password_separator = this.div.find("div.separator[name=password]");
+        let password_label = this.div.find("div[name='password-label']");
+        let login_button = this.div.find("div[name='login-button']");
+
+        username_input.on("focus", evt => {
             username_input.select();
             username_separator.addClass("separator-focused");
             username_label.addClass("label-focused");
         });
+        username_input.on("blur", evt => {
+            username_separator.removeClass("separator-focused");
+            username_label.removeClass("label-focused");
+        });
+        username_input.on("keydown", evt => {
+            this.hide_error_message();
+            if (evt.key === "Enter")
+                password_input.focus();
+        });
+
+        password_input.on("focus", evt => {
+            password_input.select();
+            password_separator.addClass("separator-focused");
+            password_label.addClass("label-focused");
+        });
+        password_input.on("blur", evt => {
+            password_separator.removeClass("separator-focused");
+            password_label.removeClass("label-focused");
+        });
+        password_input.on("keydown", evt => {
+            this.hide_error_message();
+            if (evt.key === "Enter")
+                this.submit(dispatcher);
+        });
+
+        login_button.on("click", evt => {
+            console.log("click", this);
+            if (evt.button === 0)
+                this.submit(dispatcher);
+        });
+
+        username_input.focus();
     }
 
     destroy() {
         this.div.remove();
+    }
+
+    show_error_message(message) {
+        this.div.find(".error-message").append(message);
+    }
+
+    hide_error_message() {
+        this.div.find(".error-message").empty();
+    }
+
+    submit(dispatcher) {
+        let username_input = this.div.find("input[name=username]");
+        if (username_input.val().length > 0) {
+            //mLogin->initiate_login(username_input->get_value(), password_input->get_value());
+        }
+        else {
+            this.show_error_message("Username cannot be empty");
+            username_input.focus();
+        }
+        this.div.find("input[name=password]").val("");
     }
 }
 
