@@ -1,3 +1,5 @@
+import "./md5.js";
+
 export class Dispatcher {
 
     constructor() {
@@ -8,6 +10,7 @@ export class Dispatcher {
         this.websocket_.onmessage = evt => this.expect_hello(evt);
         this.websocket_.onerror = evt => this.onerror(evt);
         this.login_process_ = false;
+        this.session_ = this.store_value_("session-id");
         this.command_queue_ = []; // when waiting for login
         this.commands_sent_ = {};
         this.command_id_ = 1;
@@ -16,6 +19,8 @@ export class Dispatcher {
 
     setup_handlers_(url) {
         this.handlers_ = {
+            login_nonce: msg => this.login_nonce_response(msg),
+            login_digest: msg => this.login_digest_response(msg)
         };
         switch (url.pathname) {
         case "/list_commands":
@@ -34,26 +39,30 @@ export class Dispatcher {
     }
 
     send(data) {
+        console.log("send", data);
         if (typeof(data) === "object" && data.C) {
-            if (this.login_process_) {
+            if (this.login_process_ && data.S != "login") {
                 this.command_queue_.push(data);
             }
             else {
                 if (data.S === undefined) {
-                    const session = this.store_session_();
-                    if (!session) {
+                    console.log("send session", this.session_, !this.session_, this.command_queue_);
+                    if (!this.session_) {
                         this.command_queue_.push(data);
                         this.show_login_widget();
                     }
                     else {
-                        data.S = session;
-                        if (data.D === undefined) {
-                            data.D = data.C + "#" + this.command_id_;
-                            ++this.command_id_;
-                            this.commands_sent_[data.D] = data;
-                        }
-                        this.websocket_.send(JSON.stringify(data));
+                        data.S = this.session_;
                     }
+                }
+                if (data.S) {
+                    if (data.D === undefined) {
+                        data.D = data.C + "#" + this.command_id_;
+                        ++this.command_id_;
+                        this.commands_sent_[data.D] = data;
+                    }
+                    console.log("send really", data);
+                    this.websocket_.send(JSON.stringify(data));
                 }
             }
         }
@@ -65,6 +74,14 @@ export class Dispatcher {
         }
     }
 
+    process_command_queue() {
+        console.log("process_command_queue", this.command_queue_);
+        while (this.command_queue_.length > 0 && !this.login_process_) {
+            let cmd = this.command_queue_.shift();
+            this.send(cmd);
+        }
+    }
+
     expect_hello(evt) {
         this.websocket_.onmessage = evt => this.onmessage(evt);
         if (this.handlers_.hello)
@@ -73,18 +90,26 @@ export class Dispatcher {
             console.warn("Dispatcher: no hello handler", evt);
     }
 
+    // ----------------------------------------------------------------------
+
     onmessage(evt) {
-        const message = JSON.parse(evt.data);
-        if (!message.E) {
-            delete this.commands_sent_[message.D];
-            const handler_name = message.D || message.C;
-            if (this.handlers_[handler_name])
-                this.handlers_[handler_name](message, this);
+        try {
+            const message = JSON.parse(evt.data);
+            if (!message.E) {
+                delete this.commands_sent_[message.D];
+                //const handler_name = message.D || message.C;
+                if (this.handlers_[message.C])
+                    this.handlers_[message.C](message, this);
+                else
+                    console.warn("Dispatcher.onmessage: unhandled", message.C, this.handlers_, message);
+            }
             else
-                console.warn("Dispatcher.onmessage: unhandled", handler_name, this.handlers_, message);
+                this.handle_error(message);
         }
-        else
-            this.handle_error(message);
+        catch (err) {
+            window.DDD = evt.data;
+            console.error(err, evt, evt.data);
+        }
     }
 
     onopen(evt) {
@@ -105,26 +130,65 @@ export class Dispatcher {
             this.command_queue_.push(this.commands_sent_[message.D]);
             this.show_login_widget();
             break;
+        case "invalid user or password":
+            if (this.login_process_ && this.login_widget_)
+                this.login_widget_.error(message.E);
+            else
+                console.error(message);
+            break;
         default:
             console.error(message);
             break;
         }
     }
 
+    // ----------------------------------------------------------------------
+    // Login
+
     show_login_widget() {
         this.login_process_ = true;
         this.login_widget_ = new LoginWidget(this);
     }
 
-    store_session_(session) {
-        const storage_key = "acmacs-d-session-id";
+    initiate_login(user, password) {
+        this.user_ = user;
+        this.password_ = password;
+        this.send({C: "login_nonce", S: "login", user: user});
+    }
+
+    login_nonce_response(message) {
+        const cnonce = Math.floor(Math.random() * 0xFFFFFFFF).toString(16);
+        const digest = md5(message.login_nonce + ";" + cnonce + ";" + md5(this.user_ + ";acmacs-web;" + this.password_));
+        delete this.password_;
+        this.send({C: "login_digest", S: "login", cnonce: cnonce, digest: digest});
+    }
+
+    login_digest_response(message) {
+        this.login_widget_.destroy();
+        delete this.login_widget_;
+        this.session_ = message.S;
+        this.store_value_("session-id", this.session_);
+        this.user_ = message.user;
+        this.user_name_ = message.display_name;
+        this.store_value_("user", this.user_);
+        this.store_value_("user_name", this.user_name_);
+        this.logged_in();
+    }
+
+    logged_in() {
+        this.login_process_ = false;
+        this.process_command_queue();
+    }
+
+    store_value_(key, value) {
+        key = "acmacs-d-" + key;
         try {
-            if (!session)
-                return window.localStorage.getItem(storage_key);
-            else if (session === "remove")
-                return window.localStorage.removeItem(storage_key);
+            if (!value)
+                return window.localStorage.getItem(key);
+            else if (value === "#remove")
+                return window.localStorage.removeItem(key);
             else
-                return window.localStorage.setItem(storage_key, session);
+                return window.localStorage.setItem(key, value);
         }
         catch(e) {
             return null;
@@ -194,12 +258,11 @@ class LoginWidget {
         });
 
         login_button.on("click", evt => {
-            console.log("click", this);
             if (evt.button === 0)
                 this.submit(dispatcher);
         });
 
-        username_input.focus();
+        setTimeout(() => { username_input.focus(); }, 10);
     }
 
     destroy() {
@@ -214,16 +277,23 @@ class LoginWidget {
         this.div.find(".error-message").empty();
     }
 
+    error(message) {
+        this.show_error_message(message);
+        this.div.find("input[name=username]").focus();
+    }
+
     submit(dispatcher) {
         let username_input = this.div.find("input[name=username]");
+        let password_input = this.div.find("input[name=password]");
+        // console.log("submit", username_input.val(), password_input.val());
         if (username_input.val().length > 0) {
-            //mLogin->initiate_login(username_input->get_value(), password_input->get_value());
+            dispatcher.initiate_login(username_input.val(), password_input.val());
         }
         else {
             this.show_error_message("Username cannot be empty");
             username_input.focus();
         }
-        this.div.find("input[name=password]").val("");
+        password_input.val("");
     }
 }
 
@@ -238,9 +308,9 @@ function list_commands(data, dispatcher) {
         });
     }
     else {
-        const message_name = "LC";
+        const message_name = "list_commands";
         dispatcher.handle(message_name, list_commands);
-        dispatcher.send({C: "list_commands", D: message_name});
+        dispatcher.send({C: message_name, S: "no-session", D: message_name});
     }
 }
 

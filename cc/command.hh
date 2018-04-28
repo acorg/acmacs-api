@@ -25,9 +25,9 @@ class Command : public from_json::object
 
     Command(from_json::object&& aSrc, MongoAcmacsC2Access& aMongoAccess, ClientConnection& aClientConnection, size_t aCommandNumber);
 
-    inline std::string command_name() const { return get_string("C"); }
-    inline std::string command_id() const { return get_string("D"); }
-    inline size_t command_number() const { return mCommandNumber; }
+    std::string command_name() const { return get_string("C"); }
+    std::string command_id() const { return get_string("D"); }
+    size_t command_number() const { return mCommandNumber; }
 
     virtual void run() = 0;
 
@@ -35,14 +35,14 @@ class Command : public from_json::object
     void send_error(std::string aMessage);
 
  protected:
-    inline mongocxx::database& db() { return mDb; }
-    inline Session& session() { return mClientConnection.session(); }
-    inline void make_session() { return mClientConnection.make_session(db()); }
+    mongocxx::database& db() { return mDb; }
+    Session& session() { return mClientConnection.session(); }
+    void make_session() { return mClientConnection.make_session(db()); }
 
-    inline time_point now() const { return std::chrono::high_resolution_clock::now(); }
-    inline void set_command_start() { mCommandStart = now(); }
-    inline auto command_start() const { return mCommandStart; }
-    inline double command_duration() const { return std::chrono::duration<double>{now() - command_start()}.count(); }
+    time_point now() const { return std::chrono::high_resolution_clock::now(); }
+    void set_command_start() { mCommandStart = now(); }
+    auto command_start() const { return mCommandStart; }
+    double command_duration() const { return std::chrono::duration<double>{now() - command_start()}.count(); }
 
  private:
     mongocxx::database mDb;
@@ -56,13 +56,10 @@ class Command : public from_json::object
 
 class Command_unknown : public Command
 {
- public:
+  public:
     using Command::Command;
 
-    virtual inline void run()
-        {
-            send_error("unrecognized message");
-        }
+    void run() override { send_error("unrecognized message"); }
 
 }; // class Command_unknown
 
