@@ -65,7 +65,7 @@ void WebsocketConnection::send(std::string aMessage, send_message_type aMessageT
           op_code = websocketpp::frame::opcode::binary;
           break;
     }
-    print_cerr("SEND: ", aMessage.substr(0, 100));
+    print_cerr("SEND: ", aMessage.substr(0, 200));
     WsppWebsocketLocationHandler::send(aMessage, op_code);
 
 } // WebsocketConnection::send

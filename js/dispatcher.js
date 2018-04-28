@@ -7,10 +7,12 @@ export class Dispatcher {
         this.websocket_ = new WebSocket("wss://" + url.host + "/acmacs-api");
         this.websocket_.onopen = evt => this.onopen(evt);
         this.websocket_.onclose = evt => this.onclose(evt);
-        this.websocket_.onmessage = evt => this.expect_hello(evt);
+        this.websocket_.onmessage = evt => this.onmessage(evt);
         this.websocket_.onerror = evt => this.onerror(evt);
         this.login_process_ = false;
         this.session_ = this.store_value_("session-id");
+        this.user_ = this.store_value_("user");
+        this.user_name_ = this.store_value_("user_name");
         this.command_queue_ = []; // when waiting for login
         this.commands_sent_ = {};
         this.command_id_ = 1;
@@ -19,17 +21,25 @@ export class Dispatcher {
 
     setup_handlers_(url) {
         this.handlers_ = {
+            "ERROR#no session": msg => this.no_session(msg),
+            "ERROR#invalid session": msg => this.invalid_session(msg),
+            "ERROR#invalid user or password": msg => this.invalid_user(msg),
             login_nonce: msg => this.login_nonce_response(msg),
-            login_digest: msg => this.login_digest_response(msg)
+            login_digest: msg => this.login_digest_response(msg),
+            login_session: msg => this.login_session_response(msg),
+            hello: msg => this.hello_handler(msg),
+
+            list_commands: list_commands,
+            chains: chains
         };
         switch (url.pathname) {
         case "/list_commands":
         case "/list-commands":
         case "/lc":
-            this.handlers_.hello = list_commands;
+            this.command_on_hello_ = {C: "list_commands"};
             break;
         case "/chains":
-            this.handlers_.hello = chains;
+            this.command_on_hello_ = {C: "chains"}; // types: ["incremental"]
             break;
         }
     }
@@ -41,29 +51,17 @@ export class Dispatcher {
     send(data) {
         console.log("send", data);
         if (typeof(data) === "object" && data.C) {
-            if (this.login_process_ && data.S != "login") {
+            if (this.login_process_ && data.C.substr(0, 6) != "login_") {
                 this.command_queue_.push(data);
             }
             else {
-                if (data.S === undefined) {
-                    console.log("send session", this.session_, !this.session_, this.command_queue_);
-                    if (!this.session_) {
-                        this.command_queue_.push(data);
-                        this.show_login_widget();
-                    }
-                    else {
-                        data.S = this.session_;
-                    }
+                if (data.D === undefined) {
+                    data.D = data.C + "#" + this.command_id_;
+                    ++this.command_id_;
+                    this.commands_sent_[data.D] = data;
                 }
-                if (data.S) {
-                    if (data.D === undefined) {
-                        data.D = data.C + "#" + this.command_id_;
-                        ++this.command_id_;
-                        this.commands_sent_[data.D] = data;
-                    }
-                    console.log("send really", data);
-                    this.websocket_.send(JSON.stringify(data));
-                }
+                console.log("send really", data);
+                this.websocket_.send(JSON.stringify(data));
             }
         }
         else if (typeof(data) === "string" && data.indexOf('"C":') >= 0) {
@@ -74,6 +72,42 @@ export class Dispatcher {
         }
     }
 
+    // send(data) {
+    //     console.log("send", data);
+    //     if (typeof(data) === "object" && data.C) {
+    //         if (this.login_process_ && data.S != "login") {
+    //             this.command_queue_.push(data);
+    //         }
+    //         else {
+    //             if (data.S === undefined) {
+    //                 console.log("send session", this.session_, !this.session_, this.command_queue_);
+    //                 if (!this.session_) {
+    //                     this.command_queue_.push(data);
+    //                     this.show_login_widget();
+    //                 }
+    //                 else {
+    //                     data.S = this.session_;
+    //                 }
+    //             }
+    //             if (data.S) {
+    //                 if (data.D === undefined) {
+    //                     data.D = data.C + "#" + this.command_id_;
+    //                     ++this.command_id_;
+    //                     this.commands_sent_[data.D] = data;
+    //                 }
+    //                 console.log("send really", data);
+    //                 this.websocket_.send(JSON.stringify(data));
+    //             }
+    //         }
+    //     }
+    //     else if (typeof(data) === "string" && data.indexOf('"C":') >= 0) {
+    //         this.websocket_.send(data);
+    //     }
+    //     else {
+    //         throw "invalid data passed to Dispatcher.send: " + JSON.stringify(data);
+    //     }
+    // }
+
     process_command_queue() {
         console.log("process_command_queue", this.command_queue_);
         while (this.command_queue_.length > 0 && !this.login_process_) {
@@ -82,12 +116,15 @@ export class Dispatcher {
         }
     }
 
-    expect_hello(evt) {
-        this.websocket_.onmessage = evt => this.onmessage(evt);
-        if (this.handlers_.hello)
-            this.handlers_.hello(JSON.parse(evt.data), this);
-        else
-            console.warn("Dispatcher: no hello handler", evt);
+    hello_handler(evt) {
+        this.login_session();
+        if (this.command_on_hello_) {
+            this.send(this.command_on_hello_);
+            delete this.command_on_hello_;
+        }
+        else {
+            console.warn("Dispatcher: no command_on_hello_");
+        }
     }
 
     // ----------------------------------------------------------------------
@@ -101,10 +138,15 @@ export class Dispatcher {
                 if (this.handlers_[message.C])
                     this.handlers_[message.C](message, this);
                 else
-                    console.warn("Dispatcher.onmessage: unhandled", message.C, this.handlers_, message);
+                    console.warn("Dispatcher.onmessage: unhandled", message.C, message);
             }
-            else
-                this.handle_error(message);
+            else {
+                const handler_name = "ERROR#" + message.E;
+                if (this.handlers_[handler_name])
+                    this.handlers_[handler_name](message, this);
+                else
+                    console.warn("Dispatcher.onmessage: unhandled ERROR#", message.E, message);
+            }
         }
         catch (err) {
             window.DDD = evt.data;
@@ -124,26 +166,29 @@ export class Dispatcher {
         console.log("websocket error", evt);
     }
 
-    handle_error(message) {
-        switch (message.E) {
-        case "no session":
-            this.command_queue_.push(this.commands_sent_[message.D]);
-            this.show_login_widget();
-            break;
-        case "invalid user or password":
-            if (this.login_process_ && this.login_widget_)
-                this.login_widget_.error(message.E);
-            else
-                console.error(message);
-            break;
-        default:
-            console.error(message);
-            break;
-        }
-    }
-
     // ----------------------------------------------------------------------
     // Login
+
+    no_session(message) {
+        this.command_queue_.push(this.commands_sent_[message.D]);
+        this.show_login_widget();
+    }
+
+    invalid_session(message) {
+        this.session_ = undefined;
+        this.user_ = undefined;
+        this.user_name_ = undefined;
+        this.store_value_("session-id", "#remove");
+        this.store_value_("user", "#remove");
+        this.store_value_("user_name", "#remove");
+    }
+
+    invalid_user(message) {
+        if (this.login_widget_)
+            this.login_widget_.error(message.E);
+        else
+            console.error(message);
+    }
 
     show_login_widget() {
         this.login_process_ = true;
@@ -167,16 +212,28 @@ export class Dispatcher {
         this.login_widget_.destroy();
         delete this.login_widget_;
         this.session_ = message.S;
-        this.store_value_("session-id", this.session_);
         this.user_ = message.user;
         this.user_name_ = message.display_name;
+        this.store_value_("session-id", this.session_);
         this.store_value_("user", this.user_);
         this.store_value_("user_name", this.user_name_);
         this.logged_in();
     }
 
+    login_session() {
+        if (this.session_) {
+            this.login_process_ = true;
+            this.send({C: "login_session", S: this.session_});
+        }
+    }
+
+    login_session_response(message) {
+        this.logged_in();
+    }
+
     logged_in() {
         this.login_process_ = false;
+        // setup title bar
         this.process_command_queue();
     }
 
@@ -285,7 +342,6 @@ class LoginWidget {
     submit(dispatcher) {
         let username_input = this.div.find("input[name=username]");
         let password_input = this.div.find("input[name=password]");
-        // console.log("submit", username_input.val(), password_input.val());
         if (username_input.val().length > 0) {
             dispatcher.initiate_login(username_input.val(), password_input.val());
         }
@@ -300,31 +356,23 @@ class LoginWidget {
 // ----------------------------------------------------------------------
 
 function list_commands(data, dispatcher) {
-    if (data.D) {
-        console.log(data);
-        var ol = $("<ol></ol>").appendTo($("body"));
-        data.commands.forEach(entry => {
-            ol.append(`<li><span style="font-weight: bold">${entry.name}</span><pre style="margin-top: 0;">${entry.description}</pre></li>\n`);
-        });
-    }
-    else {
-        const message_name = "list_commands";
-        dispatcher.handle(message_name, list_commands);
-        dispatcher.send({C: message_name, S: "no-session", D: message_name});
-    }
+    console.log(data);
+    var ol = $("<ol></ol>").appendTo($("body"));
+    data.commands.forEach(entry => {
+        ol.append(`<li><span style="font-weight: bold">${entry.name}</span><pre style="margin-top: 0;">${entry.description}</pre></li>\n`);
+    });
 }
 
 // ----------------------------------------------------------------------
 
 function chains(data, dispatcher) {
-    if (data.D) {
-        console.log(data);
-    }
-    else {
-        const message_name = "chains";
-        dispatcher.handle(message_name, chains);
-        dispatcher.send({C: "chains", D: message_name, types: ["incremental"]});
-    }
+    console.log(data, typeof(data.chains), data.chains);
+    $("body").append(`<h3>Chains: ${data.chain_count}</h3>`);
+    let ol = $("<ol></ol>").appendTo($("body"));
+    data.chains.forEach(entry => {
+        const text = JSON.stringify(entry, 2);
+        ol.append(`<li style="border-top: 1px solid black"><pre style="margin-top: 0;">${text}</pre></li>\n`);
+    });
 }
 
 // ----------------------------------------------------------------------
