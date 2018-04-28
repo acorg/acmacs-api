@@ -29,6 +29,14 @@ void WsppThreadWithMongoAccess::initialize()
 
 // ----------------------------------------------------------------------
 
+void WebsocketConnection::opening(std::string, WsppThread& /*aThread*/)
+{
+    send(to_json::object("C", "hello", "server", "acmacs-api-server-v1"));
+
+} // WebsocketConnection::opening
+
+// ----------------------------------------------------------------------
+
 void WebsocketConnection::message(std::string aMessage, WsppThread& aThread)
 {
     auto& thread = dynamic_cast<WsppThreadWithMongoAccess&>(aThread);
@@ -153,3 +161,4 @@ int main(int argc, char* const argv[])
 // ----------------------------------------------------------------------
 /// Local Variables:
 /// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
+/// End:

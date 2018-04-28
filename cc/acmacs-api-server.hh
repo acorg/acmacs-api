@@ -43,10 +43,7 @@ class WebsocketConnection : public ClientConnection, public WsppWebsocketLocatio
             return std::make_shared<WebsocketConnection>(*this);
         }
 
-    void opening(std::string, WsppThread& /*aThread*/) override
-        {
-            send(to_json::object("hello", "acmacs-api-server-v1"));
-        }
+    void opening(std::string, WsppThread& /*aThread*/) override;
 
     void after_close(std::string, WsppThread& /*aThread*/) override
         {
