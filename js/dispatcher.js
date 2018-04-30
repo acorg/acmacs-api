@@ -23,6 +23,7 @@ export class Dispatcher {
         this.handlers_ = {
             "ERROR#no session": msg => this.no_session(msg),
             "ERROR#invalid session": msg => this.invalid_session(msg),
+            "ERROR#could not parse Object ID string": msg => this.invalid_object_id(msg),
             "ERROR#invalid user or password": msg => this.invalid_user(msg),
             login_nonce: msg => this.login_nonce_response(msg),
             login_digest: msg => this.login_digest_response(msg),
@@ -49,7 +50,7 @@ export class Dispatcher {
     }
 
     send(data) {
-        console.log("send", data);
+        // console.log("send", data);
         if (typeof(data) === "object" && data.C) {
             if (this.login_process_ && data.C.substr(0, 6) != "login_") {
                 this.command_queue_.push(data);
@@ -60,7 +61,7 @@ export class Dispatcher {
                     ++this.command_id_;
                     this.commands_sent_[data.D] = data;
                 }
-                console.log("send really", data);
+                // console.log("send really", data);
                 this.websocket_.send(JSON.stringify(data));
             }
         }
@@ -71,42 +72,6 @@ export class Dispatcher {
             throw "invalid data passed to Dispatcher.send: " + JSON.stringify(data);
         }
     }
-
-    // send(data) {
-    //     console.log("send", data);
-    //     if (typeof(data) === "object" && data.C) {
-    //         if (this.login_process_ && data.S != "login") {
-    //             this.command_queue_.push(data);
-    //         }
-    //         else {
-    //             if (data.S === undefined) {
-    //                 console.log("send session", this.session_, !this.session_, this.command_queue_);
-    //                 if (!this.session_) {
-    //                     this.command_queue_.push(data);
-    //                     this.show_login_widget();
-    //                 }
-    //                 else {
-    //                     data.S = this.session_;
-    //                 }
-    //             }
-    //             if (data.S) {
-    //                 if (data.D === undefined) {
-    //                     data.D = data.C + "#" + this.command_id_;
-    //                     ++this.command_id_;
-    //                     this.commands_sent_[data.D] = data;
-    //                 }
-    //                 console.log("send really", data);
-    //                 this.websocket_.send(JSON.stringify(data));
-    //             }
-    //         }
-    //     }
-    //     else if (typeof(data) === "string" && data.indexOf('"C":') >= 0) {
-    //         this.websocket_.send(data);
-    //     }
-    //     else {
-    //         throw "invalid data passed to Dispatcher.send: " + JSON.stringify(data);
-    //     }
-    // }
 
     process_command_queue() {
         console.log("process_command_queue", this.command_queue_);
@@ -164,6 +129,17 @@ export class Dispatcher {
 
     onerror(evt) {
         console.log("websocket error", evt);
+    }
+
+    // ----------------------------------------------------------------------
+
+    invalid_object_id(message) {
+        if (message.C.substr(0, 6) === "login_") {
+            this.invalid_session(message);
+            this.show_login_widget();
+        }
+        else
+            console.warn("Dispatcher.invalid_object_id: unhandled ERROR#", message.E, message);
     }
 
     // ----------------------------------------------------------------------
