@@ -200,7 +200,8 @@ class DocumentFindResults : public MongodbAccess
     inline DocumentFindResults(mongocxx::database aDb, const char* aCollection, const bson_value& aFilter, const mongo_find& aOptions = mongo_find{})
         : DocumentFindResults(aDb, aCollection, aFilter.view(), aOptions) {}
 
-    inline std::string json(std::string key = std::string{}) { return to_json::object(key, *this); }
+    inline std::string json(std::string key) { return to_json::object(key, *this); }
+    std::string json() { return to_json::array(*this); }
 
     inline size_t count() const { return mCount; }
     inline void increment_count() { ++mCount; }
