@@ -34,7 +34,7 @@ void Command_chains::run()
                     .sort("_m", -1).skip(skip).limit(use_limit)
                     };
         const auto results_json = results.json(); // results.count() is available only after calling results.json()
-        print_cerr("INFO: command_chains: ", results_json);
+          // print_cerr("INFO: command_chains: ", results_json);
         if (chunk_no != 0 && results.count() == 0)
             break; // no more data but at least one chunk alreay reported
         send(to_json::object("chain_count", results.count(), "chains", to_json::raw{results_json}));
