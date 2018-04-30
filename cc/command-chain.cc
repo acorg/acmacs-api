@@ -29,9 +29,9 @@ void Command_chains::run()
         const int use_limit = limit == 0 ? chunk_size : std::min(chunk_size, limit - skip);
         DocumentFindResults results{acmacs_web_db, "inspectors",
                     criteria,
-                    MongodbAccess::exclude("_id")
+                                      //MongodbAccess::exclude("_id").
                       // MongodbAccess::include("name", "parent", "_m", "keywords", "search", "p.o")
-                    .sort("_m", -1).skip(skip).limit(use_limit)
+                    MongodbAccess::sort("_m", -1).skip(skip).limit(use_limit)
                     };
         const auto results_json = results.json(); // results.count() is available only after calling results.json()
           // print_cerr("INFO: command_chains: ", results_json);

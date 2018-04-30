@@ -201,7 +201,7 @@ class DocumentFindResults : public MongodbAccess
         : DocumentFindResults(aDb, aCollection, aFilter.view(), aOptions) {}
 
     inline std::string json(std::string key) { return to_json::object(key, *this); }
-    std::string json() { return to_json::array(*this); }
+    std::string json();
 
     inline size_t count() const { return mCount; }
     inline void increment_count() { ++mCount; }
@@ -229,6 +229,8 @@ namespace to_json
     }
 
 } // namespace to_json
+
+inline std::string DocumentFindResults::json() { return to_json::value(*this); }
 
 // ----------------------------------------------------------------------
 
