@@ -17,6 +17,7 @@ export class Dispatcher {
         this.commands_sent_ = {};
         this.command_id_ = 1;
         this.setup_handlers_(url);
+        this.modules = {};
     }
 
     setup_handlers_(url) {
@@ -31,7 +32,7 @@ export class Dispatcher {
             hello: msg => this.hello_handler(msg),
 
             list_commands: list_commands,
-            chains: chains
+            chains: {import: "./chain.js", func: "chains"}
         };
         switch (url.pathname) {
         case "/list_commands":
@@ -74,7 +75,7 @@ export class Dispatcher {
     }
 
     process_command_queue() {
-        console.log("process_command_queue", this.command_queue_);
+        // console.log("process_command_queue", this.command_queue_);
         while (this.command_queue_.length > 0 && !this.login_process_) {
             let cmd = this.command_queue_.shift();
             this.send(cmd);
@@ -83,13 +84,31 @@ export class Dispatcher {
 
     hello_handler(evt) {
         this.login_session();
+        console.log("command_on_hello_", this.command_on_hello_);
         if (this.command_on_hello_) {
             this.send(this.command_on_hello_);
             delete this.command_on_hello_;
         }
         else {
-            console.warn("Dispatcher: no command_on_hello_");
+            console.warn("Dispatcher.hello_handler: no command_on_hello_");
         }
+    }
+
+    invoke_handler(key, message) {
+        const handler = this.handlers_[key];
+        if (handler) {
+            if (typeof(handler) === "function") {
+                handler(message, this);
+            }
+            else if (typeof(handler) === "object" && handler.import && handler.func) {
+                import(handler.import).then(mod => mod[handler.func](message, this));
+            }
+            else {
+                console.warn("Dispatcher.invoke_handler: handler not supported: ", JSON.stringify(key), message);
+            }
+        }
+        else
+            console.warn("Dispatcher.invoke_handler: handler not found: ", JSON.stringify(key), message);
     }
 
     // ----------------------------------------------------------------------
@@ -99,18 +118,10 @@ export class Dispatcher {
             const message = JSON.parse(evt.data);
             if (!message.E) {
                 delete this.commands_sent_[message.D];
-                //const handler_name = message.D || message.C;
-                if (this.handlers_[message.C])
-                    this.handlers_[message.C](message, this);
-                else
-                    console.warn("Dispatcher.onmessage: unhandled", message.C, message);
+                this.invoke_handler(message.C, message);
             }
             else {
-                const handler_name = "ERROR#" + message.E;
-                if (this.handlers_[handler_name])
-                    this.handlers_[handler_name](message, this);
-                else
-                    console.warn("Dispatcher.onmessage: unhandled ERROR#", message.E, message);
+                this.invoke_handler("ERROR#" + message.E, message);
             }
         }
         catch (err) {
@@ -336,18 +347,6 @@ function list_commands(data, dispatcher) {
     var ol = $("<ol></ol>").appendTo($("body"));
     data.commands.forEach(entry => {
         ol.append(`<li><span style="font-weight: bold">${entry.name}</span><pre style="margin-top: 0;">${entry.description}</pre></li>\n`);
-    });
-}
-
-// ----------------------------------------------------------------------
-
-function chains(data, dispatcher) {
-    console.log(data, typeof(data.chains), data.chains);
-    $("body").append(`<h3>Chains: ${data.chain_count}</h3>`);
-    let ol = $("<ol></ol>").appendTo($("body"));
-    data.chains.forEach(entry => {
-        const text = JSON.stringify(entry, 2);
-        ol.append(`<li style="border-top: 1px solid black"><pre style="margin-top: 0;">${text}</pre></li>\n`);
     });
 }
 
