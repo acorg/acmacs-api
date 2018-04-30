@@ -34,7 +34,8 @@ export class Dispatcher {
             list_commands: list_commands,
             chains: {import: "./chain.js", func: "chains"}
         };
-        switch (url.pathname) {
+
+        switch (url.pathname.replace(/^\/ads/, "")) {
         case "/list_commands":
         case "/list-commands":
         case "/lc":
