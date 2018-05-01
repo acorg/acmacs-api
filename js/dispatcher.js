@@ -169,6 +169,7 @@ export class Dispatcher {
         this.store_value_("session-id", "#remove");
         this.store_value_("user", "#remove");
         this.store_value_("user_name", "#remove");
+        this.show_login_widget();
     }
 
     invalid_user(message) {
@@ -180,7 +181,8 @@ export class Dispatcher {
 
     show_login_widget() {
         this.login_process_ = true;
-        this.login_widget_ = new LoginWidget(this);
+        if (this.login_widget_ === undefined)
+            this.login_widget_ = new LoginWidget(this);
     }
 
     initiate_login(user, password) {
