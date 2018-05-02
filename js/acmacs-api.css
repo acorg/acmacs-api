@@ -109,6 +109,26 @@ span.chain-tables {
     color: #808080;
 }
 
+.chains .chains-chain-id {
+    cursor: pointer;
+    font-size: 0.8em;
+    padding-left: 0.5em;
+}
+
+.chains .chains-chain-m {
+    cursor: pointer;
+    padding-left: 0.5em;
+    color: #008000;
+}
+
+.chains .chains-chain-m-older-one-month {
+    color: #800000;
+}
+
+.chains .chains-chain-m-older-six-months {
+    color: black;
+}
+
 /* ---------------------------------------------------------------------- */
 
 /* ---------------------------------------------------------------------- */

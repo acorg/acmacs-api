@@ -66,7 +66,7 @@ const sChainType = {
 };
 
 const sVirusTypes = {"H1pdm": "H1pdm", "A(H1N1)2009pdm": "H1pdm", "H1": "H1", "A(H3N2)": "H3", "H3": "H3", "B/Vic": "B/Vic", "B/Yam": "B/Yam"};
-const sVirusTypeOrder = ["H1pdm", "H1", "H3", "B/Vic", "B/Yam", "Other"];
+const sVirusTypeOrder = ["H1pdm", "H1", "H3 HI", "H3 Neut", "B/Vic", "B/Yam", "Other"];
 const sLabs = {CDC: "CDC", MELB: "VIDRL", NIID: "NIID", NIMR: "Crick", CNIC: "CNIC"};
 const sLabsOrder = ["CDC", "Crick", "NIID", "VIDRL", "CNIC", "Other"];
 
@@ -106,10 +106,19 @@ class Chains {
     }
 
     show_chain_(node, chain) {
-        const modif_time = chain._m ? `<span class='chains-chain-m' title='${chain._m.substr(0, chain._m.indexOf("."))}'>[${chain._m.substr(0, 10)}]</span>` : "";
-        const classes = this.keyword_classes_(chain);
+        let classes = this.keyword_classes_(chain);
+        let modif_time = "";
+        if (chain._m) {
+            let m_classes = ["chains-chain-m"];
+            const oldness = new Date() - new Date(chain._m.substr(0, 10));
+            if (oldness > (1000 * 60 * 60 * 24 * 183)) // 1/2 year
+                m_classes.push("chains-chain-m-older-six-months");
+            else if (oldness > (1000 * 60 * 60 * 24 * 30)) // 30 days
+                m_classes.push("chains-chain-m-older-one-month");
+            modif_time = `<span class='${m_classes.join(" ")}' title='${chain._m.substr(0, chain._m.indexOf("."))}'>[${chain._m.substr(0, 10)}]</span>`;
+        }
         const title = (chain.keywords && chain.keywords.length) ? "keywords: " + JSON.stringify(chain.keywords) : "";
-        let chain_li = $(`<li class='${classes}' title='${title}'><a href="/chain/${chain._id}" target="_blank" class='chains-chain-name'>${chain.name}</a>${modif_time}</li>`).appendTo(node);
+        let chain_li = $(`<li class='${classes}' title='${title}'><a href="/chain/${chain._id}" target="_blank" class='chains-chain-name'>${chain.name}</a>${modif_time}<span class='chains-chain-id'>${chain._id}</span></li>`).appendTo(node);
     }
 
     keyword_classes_(chain) {
@@ -148,9 +157,16 @@ class Chains {
 
     find_fields(entry) {
         if (entry.description) {
-            entry.virus_type = this.find_replace_field_(sVirusTypes, entry);
-            entry.lab = this.find_replace_field_(sLabs, entry);
             entry.name = entry.description;
+            entry.lab = this.find_replace_field_(sLabs, entry);
+            entry.virus_type = this.find_replace_field_(sVirusTypes, entry);
+            if (entry.virus_type === "H3") {
+                const is_neut = (entry.keywords || []).filter(kw => ["neutralization", "microneutralization", "focus-reduction"].indexOf(kw) >= 0).length > 0;
+                if (is_neut)
+                    entry.virus_type += " Neut";
+                else
+                    entry.virus_type += " HI";
+            }
         }
         else {
             entry.virus_type = "Other";
