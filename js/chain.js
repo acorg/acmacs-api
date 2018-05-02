@@ -106,7 +106,7 @@ class Chains {
     }
 
     show_chain_(node, chain) {
-        let chain_li = $(`<li>${chain.name}</li>`).appendTo(node);
+        let chain_li = $(`<li><a href="/chain/${chain._id}" target="_blank" class='chains-chain-name'>${chain.name}</a><span class='chains-chain-m'>${chain._m}</span></li>`).appendTo(node);
     }
 
     split_by_virus_type_lab(data) {
@@ -123,18 +123,17 @@ class Chains {
     }
 
     find_fields(entry) {
-        let result = {id: entry._id, chain_type: entry._t};
         if (entry.description) {
-            result.virus_type = this.find_replace_field_(sVirusTypes, entry);
-            result.lab = this.find_replace_field_(sLabs, entry);
-            result.name = entry.description;
+            entry.virus_type = this.find_replace_field_(sVirusTypes, entry);
+            entry.lab = this.find_replace_field_(sLabs, entry);
+            entry.name = entry.description;
         }
         else {
-            result.virus_type = "Other";
-            result.lab = "Other";
-            result.name = entry._id;
+            entry.virus_type = "Other";
+            entry.lab = "Other";
+            entry.name = entry._id;
         }
-        return result;
+        return entry;
     }
 
     find_replace_field_(collection, entry) {
