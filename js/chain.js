@@ -79,7 +79,9 @@ class Chains {
         this.node = node;
         this.chains_total = data.chain_count;
         this.dispatcher = dispatcher;
-        this.split_by_virus_type_lab(data);
+        this.split_by_virus_type_lab_(data);
+        this.find_forked_();
+        console.log("Chains.constructor", this.data);
         this.show();
     }
 
@@ -120,8 +122,12 @@ class Chains {
                 m_classes.push("chains-chain-m-older-one-month");
             modif_time = `<span class='${m_classes.join(" ")}' title='${chain._m.substr(0, chain._m.indexOf("."))}'>[${chain._m.substr(0, 10)}]</span>`;
         }
+        let parent_chain = "";
+        if (chain.forked_parent) {
+            parent_chain = `<br><span>fork of ${chain.forked_parent._id} at ${chain.forked_step}</span>`;
+        }
         const title = (chain.keywords && chain.keywords.length) ? "keywords: " + JSON.stringify(chain.keywords) : "";
-        let chain_li = $(`<li class='${classes}' title='${title}'><a href="${url_prefix()}chain/${chain._id}" target="_blank" class='chains-chain-name'>${chain.name}</a>${modif_time}<span class='chains-chain-id'>${chain._id}</span></li>`).appendTo(node);
+        let chain_li = $(`<li class='${classes}' title='${title}'><a href="${url_prefix()}chain/${chain._id}" target="_blank" class='chains-chain-name'>${chain.name}</a>${modif_time}<span class='chains-chain-id'>${chain._id}</span>${parent_chain}</li>`).appendTo(node);
         chain_li.find(".chains-chain-id").on("click", (evt) => { new ADT_Popup1(chain.name, `<pre class='json-highlight'>${json_syntax_highlight(JSON.stringify(chain, undefined, 2))}</pre>`, evt.target); });
     }
 
@@ -147,20 +153,19 @@ class Chains {
         return classes.join(" ");
     }
 
-    split_by_virus_type_lab(data) {
+    split_by_virus_type_lab_(data) {
         this.data = {};         // virus_type -> lab -> [fields]
         for (let chain_entry of data.chains) {
-            const fields = this.find_fields(chain_entry);
+            const fields = this.find_fields_(chain_entry);
             if (this.data[fields.virus_type] === undefined)
                 this.data[fields.virus_type] = {};
             if (this.data[fields.virus_type][fields.lab] === undefined)
                 this.data[fields.virus_type][fields.lab] = [];
             this.data[fields.virus_type][fields.lab].push(fields);
         }
-        console.log("split_by_virus_type_lab", this.data);
     }
 
-    find_fields(entry) {
+    find_fields_(entry) {
         if (entry.description) {
             entry.name = entry.description;
             entry.lab = this.find_replace_field_(sLabs, entry);
@@ -195,6 +200,27 @@ class Chains {
         else
             result = "Other";
         return result;
+    }
+
+    find_forked_() {
+        for (let for_vt of Object.values(this.data)) {
+            for (let for_lab of Object.values(for_vt)) {
+                let to_remove = [];
+                for (let entry of for_lab) {
+                    if (entry.forked) {
+                        const forked_parent = for_lab.filter(ee => ee._id === entry.forked);
+                        if (forked_parent.length === 1) {
+                            entry.forked_parent = forked_parent[0];
+                            to_remove.push(entry.forked);
+                        }
+                    }
+                }
+                for (let to_rem of to_remove) {
+                    const index = for_lab.findIndex(elt => elt._id === to_rem);
+                    for_lab.splice(index, 1);
+                }
+            }
+        }
     }
 }
 
