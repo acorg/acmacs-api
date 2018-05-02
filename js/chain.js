@@ -106,7 +106,9 @@ class Chains {
     }
 
     show_chain_(node, chain) {
-        let chain_li = $(`<li><a href="/chain/${chain._id}" target="_blank" class='chains-chain-name'>${chain.name}</a><span class='chains-chain-m'>${chain._m}</span></li>`).appendTo(node);
+        const modif_time = chain._m ? `<span class='chains-chain-m' title='${chain._m.substr(0, chain._m.indexOf("."))}'>[${chain._m.substr(0, 10)}]</span>` : "";
+        const keywords = chain.keywords ? `<span class='chains-chain-keywords'>${JSON.stringify(chain.keywords)}</span>` : "";
+        let chain_li = $(`<li><a href="/chain/${chain._id}" target="_blank" class='chains-chain-name'>${chain.name}</a>${modif_time}${keywords}</li>`).appendTo(node);
     }
 
     split_by_virus_type_lab(data) {
