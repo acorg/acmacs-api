@@ -106,7 +106,7 @@ class Chains {
             let lab_li = $(`<li><div class='chains-lab-name'>${lab}</div></li>`).appendTo(node);
             let chain_ul = $("<ul class='chains-chains'></ul>").appendTo(lab_li);
             for (let chain of entries)
-                this.show_chain_(chain_ul, chain);
+                this.show_chain_($("<li></li>").appendTo(chain_ul), chain);
         }
     }
 
@@ -122,13 +122,14 @@ class Chains {
                 m_classes.push("chains-chain-m-older-one-month");
             modif_time = `<span class='${m_classes.join(" ")}' title='${chain._m.substr(0, chain._m.indexOf("."))}'>[${chain._m.substr(0, 10)}]</span>`;
         }
-        let parent_chain = "";
-        if (chain.forked_parent) {
-            parent_chain = `<br><span>fork of ${chain.forked_parent._id} at ${chain.forked_step}</span>`;
-        }
         const title = (chain.keywords && chain.keywords.length) ? "keywords: " + JSON.stringify(chain.keywords) : "";
-        let chain_li = $(`<li class='${classes}' title='${title}'><a href="${url_prefix()}chain/${chain._id}" target="_blank" class='chains-chain-name'>${chain.name}</a>${modif_time}<span class='chains-chain-id'>${chain._id}</span>${parent_chain}</li>`).appendTo(node);
+        let chain_li = $(`<span class='${classes}' title='${title}'><a href="${url_prefix()}chain/${chain._id}" target="_blank" class='chains-chain-name'>${chain.name}</a>${modif_time}<span class='chains-chain-id'>${chain._id}</span></span>`).appendTo(node);
         chain_li.find(".chains-chain-id").on("click", (evt) => { new ADT_Popup1(chain.name, `<pre class='json-highlight'>${json_syntax_highlight(JSON.stringify(chain, undefined, 2))}</pre>`, evt.target); });
+        if (chain.forked_parent) {
+            const sp = $("<br><span class='chains-chain-fork-of'><span class='chains-chain-fork-of-prefix'>fork of </span></span>").appendTo(chain_li);
+            this.show_chain_(sp, chain.forked_parent);
+            sp.append(`<span class='chains-chain-fork-of-suffix'> at ${chain.forked_step}</span>`);
+        }
     }
 
     keyword_classes_(chain) {

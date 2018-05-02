@@ -131,6 +131,18 @@ span.chain-tables {
     color: black;
 }
 
+.chains-chain-fork-of {
+    padding-left: 1em;
+}
+
+.chains-chain-fork-of-prefix {
+    /* padding-right: 1em; */
+}
+
+.chains-chain-fork-of-suffix {
+    /* padding-left: 1em; */
+}
+
 /* ---------------------------------------------------------------------- */
 
 /* ---------------------------------------------------------------------- */
