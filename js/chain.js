@@ -1,4 +1,4 @@
-import {json_syntax_highlight} from "../draw/utils.js";
+import {json_syntax_highlight, url_prefix} from "../draw/utils.js";
 import {ADT_Popup1} from "../draw/toolkit.js";
 
 export function chains(data, dispatcher) {
@@ -121,7 +121,7 @@ class Chains {
             modif_time = `<span class='${m_classes.join(" ")}' title='${chain._m.substr(0, chain._m.indexOf("."))}'>[${chain._m.substr(0, 10)}]</span>`;
         }
         const title = (chain.keywords && chain.keywords.length) ? "keywords: " + JSON.stringify(chain.keywords) : "";
-        let chain_li = $(`<li class='${classes}' title='${title}'><a href="/chain/${chain._id}" target="_blank" class='chains-chain-name'>${chain.name}</a>${modif_time}<span class='chains-chain-id'>${chain._id}</span></li>`).appendTo(node);
+        let chain_li = $(`<li class='${classes}' title='${title}'><a href="${url_prefix()}chain/${chain._id}" target="_blank" class='chains-chain-name'>${chain.name}</a>${modif_time}<span class='chains-chain-id'>${chain._id}</span></li>`).appendTo(node);
         chain_li.find(".chains-chain-id").on("click", (evt) => { new ADT_Popup1(chain.name, `<pre class='json-highlight'>${json_syntax_highlight(JSON.stringify(chain, undefined, 2))}</pre>`, evt.target); });
     }
 
