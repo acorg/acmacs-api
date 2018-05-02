@@ -113,6 +113,8 @@ span.chain-tables {
     cursor: pointer;
     font-size: 0.8em;
     padding-left: 0.5em;
+    text-decoration: underline dotted;
+    -webkit-text-decoration: underline dotted;
 }
 
 .chains .chains-chain-m {
