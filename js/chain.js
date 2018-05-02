@@ -121,7 +121,7 @@ class Chains {
         }
         const title = (chain.keywords && chain.keywords.length) ? "keywords: " + JSON.stringify(chain.keywords) : "";
         let chain_li = $(`<li class='${classes}' title='${title}'><a href="/chain/${chain._id}" target="_blank" class='chains-chain-name'>${chain.name}</a>${modif_time}<span class='chains-chain-id'>${chain._id}</span></li>`).appendTo(node);
-        chain_li.find(".chains-chain-id").on("click", (evt) => { new ADT_Popup1(chain._id, `<pre>${JSON.stringify(chain, undefined, 2)}</pre>`, evt.target); });
+        chain_li.find(".chains-chain-id").on("click", (evt) => { new ADT_Popup1(chain.name, `<pre>${JSON.stringify(chain, undefined, 2)}</pre>`, evt.target); });
     }
 
     keyword_classes_(chain) {
@@ -135,6 +135,7 @@ class Chains {
             case "neutralization":
             case "focus-reduction":
             case "microneutralization":
+            case "sparse":
                 classes.push("chains-chain-keyword-" + kw);
                 break;
             default:
