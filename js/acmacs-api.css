@@ -101,6 +101,14 @@ span.chain-tables {
     padding-left: 1em;
 }
 
+.chains .chains-chain-keyword-whocc a {
+    color: green;
+}
+
+.chains .chains-chain-keyword-degraded a {
+    color: #808080;
+}
+
 /* ---------------------------------------------------------------------- */
 
 /* ---------------------------------------------------------------------- */

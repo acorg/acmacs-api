@@ -107,8 +107,30 @@ class Chains {
 
     show_chain_(node, chain) {
         const modif_time = chain._m ? `<span class='chains-chain-m' title='${chain._m.substr(0, chain._m.indexOf("."))}'>[${chain._m.substr(0, 10)}]</span>` : "";
-        const keywords = chain.keywords ? `<span class='chains-chain-keywords'>${JSON.stringify(chain.keywords)}</span>` : "";
-        let chain_li = $(`<li><a href="/chain/${chain._id}" target="_blank" class='chains-chain-name'>${chain.name}</a>${modif_time}${keywords}</li>`).appendTo(node);
+        const classes = this.keyword_classes_(chain);
+        const title = (chain.keywords && chain.keywords.length) ? "keywords: " + JSON.stringify(chain.keywords) : "";
+        let chain_li = $(`<li class='${classes}' title='${title}'><a href="/chain/${chain._id}" target="_blank" class='chains-chain-name'>${chain.name}</a>${modif_time}</li>`).appendTo(node);
+    }
+
+    keyword_classes_(chain) {
+        let classes = [];
+        for (let kw of (chain.keywords || [])) {
+            switch (kw) {
+            case "whocc":
+            case "degraded":
+            case "no-min-col-basis":
+            case "backward":
+            case "neutralization":
+            case "focus-reduction":
+            case "microneutralization":
+                classes.push("chains-chain-keyword-" + kw);
+                break;
+            default:
+                console.warn("Unsupported chain keyword " + JSON.stringify(kw) + " of chain " + chain._id);
+                break;
+            }
+        }
+        return classes.join(" ");
     }
 
     split_by_virus_type_lab(data) {
