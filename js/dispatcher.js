@@ -30,18 +30,34 @@ export class Dispatcher {
             hello: msg => this.hello_handler(msg),
 
             list_commands: list_commands,
-            chains: {import: "./chain.js", func: "chains"}
+            chains: {import: "./chain.js", func: "chains"},
+            doc: {import: "./doc.js", func: "doc"}
         };
 
-        const url = new URL(document.location);
-        switch (url.pathname.replace(/^\/ads/, "")) {
-        case "/list_commands":
-        case "/list-commands":
-        case "/lc":
+        const url_pathname_fields = new URL(document.location).pathname.replace(/^\/ads/, "").split("/");
+        console.log("url_pathname_fields", url_pathname_fields);
+        switch (url_pathname_fields[1]) {
+        case "list_commands":
+        case "list-commands":
+        case "lc":
             this.command_on_hello_ = {C: "list_commands"};
             break;
-        case "/chains":
-            this.command_on_hello_ = {C: "chains"}; // types: ["incremental"]
+        case "chains":
+            switch(url_pathname_fields[2]) {
+            case "whocc":
+                this.command_on_hello_ = {C: "chains", keywords: ["whocc"]};
+                break;
+            default:
+                this.command_on_hello_ = {C: "chains"}; // types: ["incremental"]
+                break;
+            }
+            break;
+        case "doc":
+        case "chain":
+            this.command_on_hello_ = {C: "doc", id: url_pathname_fields[2]};
+            break;
+        default:
+            this.command_on_hello_ = {C: "chains", keywords: ["whocc"]};
             break;
         }
     }

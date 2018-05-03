@@ -34,7 +34,6 @@ class Chains {
         this.dispatcher = dispatcher;
         this.split_by_virus_type_lab_(data);
         this.find_forked_();
-        console.log("Chains.constructor", this.data);
         this.show();
     }
 
