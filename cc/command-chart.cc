@@ -114,7 +114,7 @@ void Command_doc::run()
         const auto doc = MongodbAccess{acmacs_web_db}.find_one(
         collection,
         to_bson::object("_id", get_id(), session().read_permissions()),
-        MongodbAccess::exclude("projections", "conformance"));
+        MongodbAccess::exclude("projections", "table"));
         if (doc) {
             send(to_json::object("doc", doc->view()));
             found = true;
@@ -151,7 +151,7 @@ void Command_chart::run()
     const auto chart = MongodbAccess{acmacs_web_db}.find_one(
         "charts",
         to_bson::object("_id", get_id(), session().read_permissions()),
-        MongodbAccess::exclude("_id", "projections", "conformance"));
+        MongodbAccess::exclude("_id", "table", "projections", "conformance"));
     if (!chart)
         throw Error{"not found"};
     const auto ace = mAcmacsC2.ace_uncompressed(session().id(), get_string("id"), 5);
