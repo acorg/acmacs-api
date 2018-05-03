@@ -224,24 +224,38 @@ class Chain {
     show(data) {
         const ul = $("<ul class='chain'></ul>").appendTo(this.node);
         for (let src_no = data.sources.length - 1; src_no >= 0; --src_no) {
-            if (data.results[src_no]) {
-                this.make_results($("<li></li>").appendTo(ul), src_no, data.results[src_no]);
-            }
-            else if (data.sources[src_no]) {
-                this.make_source($("<li></li>").appendTo(ul), src_no, data.sources[src_no]);
-            }
+            let li = $(`<li><h3>${src_no}</h3><table><tr></tr></table></li>`).appendTo(ul);
+            if (data.sources[src_no])
+                this.make_source(li, src_no, data.sources[src_no]);
+            if (data.results[src_no])
+                this.make_results(li.find("tr"), src_no, data.results[src_no]);
         }
     }
 
     make_results(node, step_no, data) {
-        node.append(`<h3>${step_no}</h3><table><tr></tr></table>`);
+        if (data["i"]) {
+            let cell = $("<td></td>").appendTo(node);
+            this.dispatcher.send_receive({C: "doc", id: data["i"]}, (message, dispatcher) => console.log("make_results received", message));
+        }
+        if (data["s"]) {
+            let cell = $("<td></td>").appendTo(node);
+            this.dispatcher.send_receive({C: "doc", id: data["s"]}, (message, dispatcher) => console.log("make_results received", message));
+        }
         if (data["1"]) {
-            let cell = $("<td></td>").appendTo(node.find("tr"));
+            let cell = $("<td></td>").appendTo(node);
             this.dispatcher.send_receive({C: "doc", id: data["1"]}, (message, dispatcher) => console.log("make_results received", message));
+        }
+        if (data["1m"]) {
+            let cell = $("<td></td>").appendTo(node);
+            this.dispatcher.send_receive({C: "doc", id: data["1m"]}, (message, dispatcher) => console.log("make_results received", message));
         }
     }
 
     make_source(node, step_no, data) {
+        this.dispatcher.send_receive({C: "doc", id: data}, (message, dispatcher) => {
+            // console.log("make_source received", message);
+            node.find("h3").append(` ${message.doc.name}`);
+        });
     }
 }
 
