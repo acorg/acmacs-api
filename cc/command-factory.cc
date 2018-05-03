@@ -17,6 +17,7 @@ CommandFactory::CommandFactory()
     {"chain_keywords", data<Command_chain_keywords>()},
     {"chain_types",    data<Command_chain_types>()},
 
+    {"doc",            data<Command_doc>()},
     {"chart",          data<Command_chart>()},
     {"root_charts",    data<Command_root_charts>()},
     {"chart_keywords", data<Command_chart_keywords>()},

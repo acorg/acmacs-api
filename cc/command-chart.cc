@@ -106,6 +106,37 @@ const char* Command_chart_owners::description()
 
 // ----------------------------------------------------------------------
 
+void Command_doc::run()
+{
+    auto acmacs_web_db = db();
+    bool found = false;
+    for (const auto collection : {"charts", "inspectors", "logs", "configuration", "users_groups"}) {
+        const auto doc = MongodbAccess{acmacs_web_db}.find_one(
+        collection,
+        to_bson::object("_id", get_id(), session().read_permissions()),
+        MongodbAccess::exclude("projections", "conformance"));
+        if (doc) {
+            send(to_json::object("doc", doc->view()));
+            found = true;
+            break;
+        }
+    }
+    if (!found)
+        throw Error{"not found"};
+
+} // Command_doc::run
+
+// ----------------------------------------------------------------------
+
+const char* Command_doc::description()
+{
+    return R"(gets document (json) by id, looking in collections: "charts", "inspectors", "logs", "configuration", "users_groups"
+    id :id)";
+
+} // Command_doc::description
+
+// ----------------------------------------------------------------------
+
 Command_chart::Command_chart(from_json::object&& aSrc, MongoAcmacsC2Access& aMongoAccess, ClientConnection& aClientConnection, size_t aCommandNumber)
     : Command{std::move(aSrc), aMongoAccess, aClientConnection, aCommandNumber}, mAcmacsC2{aMongoAccess.acmacs_c2()}
 {
