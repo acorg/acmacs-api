@@ -85,27 +85,84 @@ body {
 /* ---------------------------------------------------------------------- */
 /* Chains */
 
-.chain-list li {
+.chains ul.chains-virus-types {
+    list-style-type: none;
+    margin: 0 0.5em;
+    padding: 0;
+}
+
+.chains ul.chains-virus-types > li {
+    padding: 0.5em;
+}
+
+.chains .chains-virus-types .chains-virus-type-name {
+    font-weight: bold;
+    color: #800000;
+    font-size: 1.5em;
+}
+
+.chains .chains-virus-types .chains-labs {
+    list-style-type: none;
+    margin-left: 1em;
+    padding: 0;
+}
+
+.chains .chains-virus-types .chains-labs .chains-lab-name {
+    font-weight: bold;
+    color: #000080;
+    font-size: 1.2em;
     margin-top: 0.5em;
 }
 
-span.chain-type {
+.chains .chains-virus-types .chains-labs .chains-chains {
+    margin-top: 0.5em;
 }
 
-span.chain-name {
+.chains .chains-virus-types .chains-labs .chains-chains > li {
+    margin-bottom: 0.5em;
+}
+
+.chains .chain-list li {
+    margin-top: 0.5em;
+}
+
+.chains span.chain-state {
+    padding-right: 0.5em;
+}
+
+.chains span.chain-state-FAILED {
+    color: red;
+}
+
+.chains span.chain-state-handling {
+    color: blue;
+}
+
+.chains span.chain-state-waiting {
+    color: blue;
+}
+
+.chains span.chain-type {
+}
+
+.chains span.chain-name {
     padding-left: 1em;
     font-weight: bold;
 }
 
-span.chain-tables {
+.chains span.chain-tables {
     padding-left: 1em;
 }
 
-.chains .chains-chain-keyword-whocc a {
+.chains .chains-virus-types .chains-labs .chains-chains a {
+    color: black;
+}
+
+.chains .chains-virus-types .chains-labs .chains-chains .chains-chain-keyword-whocc a {
     color: green;
 }
 
-.chains .chains-chain-keyword-degraded a {
+.chains .chains-virus-types .chains-labs .chains-chains .chains-chain-keyword-degraded a {
     color: #808080;
 }
 

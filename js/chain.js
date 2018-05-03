@@ -86,7 +86,8 @@ class Chains {
     }
 
     show() {
-        this.node.append(`<div class='chains-title'>Chains: ${this.chains_total}</div>`);
+        console.log("Total chains: " + this.chains_total);
+        // this.node.append(`<div class='chains-title'>Chains: ${this.chains_total}</div>`);
         let vt_ul = $("<ul class='chains-virus-types'></ul>").appendTo(this.node);
         for (let virus_type of sVirusTypeOrder)
             this.show_vt_(vt_ul, virus_type, this.data[virus_type]);
@@ -94,7 +95,7 @@ class Chains {
 
     show_vt_(node, virus_type, entries) {
         if (entries !== undefined) {
-            let vt_li = $(`<li><div class='chains-virus-type-name'>${virus_type}</div></li>`).appendTo(node);
+            let vt_li = $(`<li class='adt-shadow'><div class='chains-virus-type-name'>${virus_type}</div></li>`).appendTo(node);
             let lab_ul = $("<ul class='chains-labs'></ul>").appendTo(vt_li);
             for (let lab of sLabsOrder)
                 this.show_lab_(lab_ul, lab, entries[lab]);
@@ -104,15 +105,43 @@ class Chains {
     show_lab_(node, lab, entries) {
         if (entries !== undefined) {
             let lab_li = $(`<li><div class='chains-lab-name'>${lab}</div></li>`).appendTo(node);
-            let chain_ul = $("<ul class='chains-chains'></ul>").appendTo(lab_li);
+            let chain_list = $("<ol class='chains-chains'></ol>").appendTo(lab_li);
             for (let chain of entries)
-                this.show_chain_($("<li></li>").appendTo(chain_ul), chain);
+                this.show_chain_($("<li></li>").appendTo(chain_list), chain);
         }
     }
 
     show_chain_(node, chain) {
+        const span_name = `<a href="${url_prefix()}chain/${chain._id}" target="_blank" class='chains-chain-name'>${chain.name}</a>`;
+        const span_id = `<span class='chains-chain-id'>${chain._id}</span>`;
         let classes = this.keyword_classes_(chain);
-        let modif_time = "";
+        const title = (chain.keywords && chain.keywords.length) ? "keywords: " + JSON.stringify(chain.keywords) : "";
+
+        const chain_row = $(`<span class='${classes}' title='${title}'>${this.span_state_(chain)}${span_name}${this.span_modification_time_(chain)}${span_id}</span>`).appendTo(node);
+        chain_row.find(".chains-chain-id").on("click", (evt) => { new ADT_Popup1(chain.name, `<pre class='json-highlight'>${json_syntax_highlight(JSON.stringify(chain, undefined, 2))}</pre>`, evt.target); });
+        if (chain.forked_parent) {
+            const sp = $("<br><span class='chains-chain-fork-of'><span class='chains-chain-fork-of-prefix'>fork of </span></span>").appendTo(chain_row);
+            this.show_chain_(sp, chain.forked_parent);
+            sp.append(`<span class='chains-chain-fork-of-suffix'> at ${chain.forked_step}</span>`);
+        }
+    }
+
+    span_state_(chain) {
+        switch (chain.state) {
+        case "FAILED":
+            return "<span class='chain-state chain-state-FAILED' title='FAILED'>F</span>";
+        case "handling":
+            return "<span class='chain-state chain-state-handling' title='handling'>H</span>";
+        case "waiting":
+            return "<span class='chain-state chain-state-waiting' title='waiting'>W</span>";
+        case "completed":
+            return ""; // `<span class='chain-state chain-state-${chain.state}' title='completed'> </span>`;
+        default:
+            return "";
+        }
+    }
+
+    span_modification_time_(chain) {
         if (chain._m) {
             let m_classes = ["chains-chain-m"];
             const oldness = new Date() - new Date(chain._m.substr(0, 10));
@@ -120,16 +149,10 @@ class Chains {
                 m_classes.push("chains-chain-m-older-six-months");
             else if (oldness > (1000 * 60 * 60 * 24 * 30)) // 30 days
                 m_classes.push("chains-chain-m-older-one-month");
-            modif_time = `<span class='${m_classes.join(" ")}' title='${chain._m.substr(0, chain._m.indexOf("."))}'>[${chain._m.substr(0, 10)}]</span>`;
+            return `<span class='${m_classes.join(" ")}' title='${chain._m.substr(0, chain._m.indexOf("."))}'>[${chain._m.substr(0, 10)}]</span>`;
         }
-        const title = (chain.keywords && chain.keywords.length) ? "keywords: " + JSON.stringify(chain.keywords) : "";
-        let chain_li = $(`<span class='${classes}' title='${title}'><a href="${url_prefix()}chain/${chain._id}" target="_blank" class='chains-chain-name'>${chain.name}</a>${modif_time}<span class='chains-chain-id'>${chain._id}</span></span>`).appendTo(node);
-        chain_li.find(".chains-chain-id").on("click", (evt) => { new ADT_Popup1(chain.name, `<pre class='json-highlight'>${json_syntax_highlight(JSON.stringify(chain, undefined, 2))}</pre>`, evt.target); });
-        if (chain.forked_parent) {
-            const sp = $("<br><span class='chains-chain-fork-of'><span class='chains-chain-fork-of-prefix'>fork of </span></span>").appendTo(chain_li);
-            this.show_chain_(sp, chain.forked_parent);
-            sp.append(`<span class='chains-chain-fork-of-suffix'> at ${chain.forked_step}</span>`);
-        }
+        else
+            return "";
     }
 
     keyword_classes_(chain) {
