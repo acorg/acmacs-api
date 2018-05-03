@@ -1,4 +1,8 @@
+import {json_syntax_highlight} from "../draw/utils.js";
+import {ADT_Popup1} from "../draw/toolkit.js";
 import "./md5.js";
+
+// ----------------------------------------------------------------------
 
 export class Dispatcher {
 
@@ -24,6 +28,7 @@ export class Dispatcher {
             "ERROR#invalid session": msg => this.invalid_session(msg),
             "ERROR#could not parse Object ID string": msg => this.invalid_object_id(msg),
             "ERROR#invalid user or password": msg => this.invalid_user(msg),
+            "ERROR#": msg => this.default_error_handler(msg),
             login_nonce: msg => this.login_nonce_response(msg),
             login_digest: msg => this.login_digest_response(msg),
             login_session: msg => this.login_session_response(msg),
@@ -120,7 +125,7 @@ export class Dispatcher {
     }
 
     invoke_handler(key1, key2, message) {
-        const handler = this.handlers_[key1] || this.handlers_[key2];
+        let handler = this.handlers_[key1] || this.handlers_[key2] || (key2 && key2.substr(0, 6) === "ERROR#" ? this.handlers_["ERROR#"] : undefined);
         if (handler) {
             if (typeof(handler) === "function") {
                 handler(message, this);
@@ -182,6 +187,10 @@ export class Dispatcher {
     }
 
     // ----------------------------------------------------------------------
+
+    default_error_handler(message) {
+        new ADT_Popup1("ERROR", `<pre class='json-highlight'>${json_syntax_highlight(JSON.stringify(message, undefined, 2))}</pre>`, "center", "adt-error-popup");
+    }
 
     invalid_object_id(message) {
         if (message.C.substr(0, 6) === "login_") {
