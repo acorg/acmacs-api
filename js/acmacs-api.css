@@ -38,6 +38,16 @@ div.acmacs-web-header .acmacs-web-user {
 }
 
 /* ---------------------------------------------------------------------- */
+
+.ads-id-popup {
+    cursor: pointer;
+    font-size: 0.8em;
+    font-weight: normal;
+    text-decoration: underline dotted;
+    -webkit-text-decoration: underline dotted;
+}
+
+/* ---------------------------------------------------------------------- */
 /* Login  */
 
 #login {
@@ -189,11 +199,7 @@ div.acmacs-web-header .acmacs-web-user {
 }
 
 .chains .chains-chain-id {
-    cursor: pointer;
-    font-size: 0.8em;
     padding-left: 0.5em;
-    text-decoration: underline dotted;
-    -webkit-text-decoration: underline dotted;
 }
 
 .chains .chains-chain-m {
@@ -225,20 +231,24 @@ div.acmacs-web-header .acmacs-web-user {
 /* ---------------------------------------------------------------------- */
 /* Chain */
 
-.chain-date {
+.acmacs-web-title .chain-date {
     padding-left: 1em;
     color: #004000;
 }
 
-.chain-date .chain-begin-date {
+.acmacs-web-title .chain-date .chain-begin-date {
 }
 
-.chain-date .chain-end-date {
+.acmacs-web-title .chain-date .chain-end-date {
 }
 
-.chain-date .chain-date-dash {
+.acmacs-web-title .chain-date .chain-date-dash {
     display: none;
     padding: 0.1em;
+}
+
+.acmacs-web-title .chain-id {
+    padding-left: 0.5em;
 }
 
 /* ul.chain { */
@@ -274,11 +284,6 @@ table.chain > tr > td {
 
 .chain .chain-title-row .chain-step-id {
     padding-left: 0.5em;
-    cursor: pointer;
-    font-size: 0.8em;
-    font-weight: normal;
-    text-decoration: underline dotted;
-    -webkit-text-decoration: underline dotted;
 }
 
 /* ul.chain > li { */

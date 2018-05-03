@@ -12,7 +12,7 @@ export function chains(data, dispatcher) {
 // ----------------------------------------------------------------------
 
 export function chain(data, dispatcher) {
-    acmacs_web_title("Acmacs-Web Chain: " + (data.description || data._id), true);
+    acmacs_web_title(data.description || data._id, true);
     let chains = new Chain($("<div class='chain'></div>").appendTo($("body")), data, dispatcher);
     $("head title").empty().append("AW: chain " + (data.description || data._id));
 }
@@ -75,7 +75,7 @@ class Chains {
 
     show_chain_(node, chain) {
         const span_name = `<a href="${url_prefix()}chain/${chain._id}" target="_blank" class='chains-chain-name'>${chain.name}</a>`;
-        const span_id = `<span class='chains-chain-id'>${chain._id}</span>`;
+        const span_id = `<span class='chains-chain-id ads-id-popup'>${chain._id}</span>`;
         let classes = this.keyword_classes_(chain);
         const title = (chain.keywords && chain.keywords.length) ? "keywords: " + JSON.stringify(chain.keywords) : "";
 
@@ -217,15 +217,16 @@ class Chain {
     constructor(node, data, dispatcher) {
         this.node = node;
         this.dispatcher = dispatcher;
-        popup_with_json(data, "center");
-        acmacs_web_title("<span class='chain-date'><span class='chain-begin-date'></span><span class='chain-date-dash'>-</span><span class='chain-end-date'></span></span>", false);
+        // popup_with_json(data, "center");
+        acmacs_web_title(`<span class='chain-date'><span class='chain-begin-date'></span><span class='chain-date-dash'>-</span><span class='chain-end-date'></span></span><span class='chain-id ads-id-popup'>${data._id}</span>`, false);
+        $("body .acmacs-web-header .acmacs-web-title .chain-id").on("click", evt => popup_with_json(data, evt.target));
         this.show(data);
     }
 
     show(data) {
         const ul = $("<table class='chain'></table>").appendTo(this.node);
         for (let src_no = data.sources.length - 1; src_no >= 0; --src_no) {
-            let li = $(`<tr><td class='adt-shadow'><div class='chain-title-row'><span class='chain-step-no'>${src_no}</span><a class='chain-step-title' target="_blank">Step</a><span class='chain-step-id'>${data.sources[src_no]}</span></div><table><tr></tr></table></td></tr>`).appendTo(ul);
+            let li = $(`<tr><td class='adt-shadow'><div class='chain-title-row'><span class='chain-step-no'>${src_no}</span><a class='chain-step-title' target="_blank">Step</a><span class='chain-step-id ads-id-popup'>${data.sources[src_no]}</span></div><table><tr></tr></table></td></tr>`).appendTo(ul);
             if (data.sources[src_no])
                 this.make_source(li, src_no, data);
             if (data.results[src_no])
@@ -235,20 +236,36 @@ class Chain {
 
     make_results(node, step_no, data) {
         if (data["i"]) {
-            let cell = $("<td></td>").appendTo(node);
-            this.dispatcher.send_receive({C: "doc", id: data["i"]}, (message, dispatcher) => console.log("make_results received", message));
+            let cell = $("<td><div>incremental</div></td>").appendTo(node);
+            this.dispatcher.send_receive({C: "doc", id: data["i"]}, (message, dispatcher) => {
+                if (message.doc.stresses && message.doc.stresses.length)
+                    cell.find("div").append(" " + message.doc.stresses[0].toFixed(2));
+                console.log("make_results incremental received", message);
+            });
         }
         if (data["s"]) {
-            let cell = $("<td></td>").appendTo(node);
-            this.dispatcher.send_receive({C: "doc", id: data["s"]}, (message, dispatcher) => console.log("make_results received", message));
+            let cell = $("<td><div>from scratch</div></td>").appendTo(node);
+            this.dispatcher.send_receive({C: "doc", id: data["s"]}, (message, dispatcher) => {
+                if (message.doc.stresses && message.doc.stresses.length)
+                    cell.find("div").append(" " + message.doc.stresses[0].toFixed(2));
+                console.log("make_results from scratch received", message);
+            });
         }
         if (data["1"]) {
-            let cell = $("<td></td>").appendTo(node);
-            this.dispatcher.send_receive({C: "doc", id: data["1"]}, (message, dispatcher) => console.log("make_results received", message));
+            let cell = $("<td><div>individual</div></td>").appendTo(node);
+            this.dispatcher.send_receive({C: "doc", id: data["1"]}, (message, dispatcher) => {
+                if (message.doc.stresses && message.doc.stresses.length)
+                    cell.find("div").append(" " + message.doc.stresses[0].toFixed(2));
+                console.log("make_results individual received", message);
+            });
         }
         if (data["1m"]) {
-            let cell = $("<td></td>").appendTo(node);
-            this.dispatcher.send_receive({C: "doc", id: data["1m"]}, (message, dispatcher) => console.log("make_results received", message));
+            let cell = $("<td><div>merge col bases</div></td>").appendTo(node);
+            this.dispatcher.send_receive({C: "doc", id: data["1m"]}, (message, dispatcher) => {
+                if (message.doc.stresses && message.doc.stresses.length)
+                    cell.find("div").append(" " + message.doc.stresses[0].toFixed(2));
+                console.log("make_results merge col bases received", message);
+            });
         }
     }
 
