@@ -31,7 +31,7 @@ export class Dispatcher {
 
             list_commands: list_commands,
             chains: {import: "./chain.js", func: "chains"},
-            doc: {import: "./doc.js", func: "doc"}
+            doc: doc_info
         };
 
         const url_pathname_fields = new URL(document.location).pathname.replace(/^\/ads/, "").split("/");
@@ -69,24 +69,33 @@ export class Dispatcher {
     send(data) {
         // console.log("send", data);
         if (typeof(data) === "object" && data.C) {
-            if (this.login_process_ && data.C.substr(0, 6) != "login_") {
+            this.make_D_(data);
+            this.commands_sent_[data.D] = data;
+            if (this.login_process_ && data.C.substr(0, 6) != "login_")
                 this.command_queue_.push(data);
-            }
-            else {
-                if (data.D === undefined) {
-                    data.D = data.C + "#" + this.command_id_;
-                    ++this.command_id_;
-                    this.commands_sent_[data.D] = data;
-                }
-                // console.log("send really", data);
+            else
                 this.websocket_.send(JSON.stringify(data));
-            }
         }
         else if (typeof(data) === "string" && data.indexOf('"C":') >= 0) {
             this.websocket_.send(data);
         }
         else {
             throw "invalid data passed to Dispatcher.send: " + JSON.stringify(data);
+        }
+    }
+
+    send_receive(data, handler) {
+        if (typeof(data) !== "object" || !data.C)
+            throw "invalid data passed to Dispatcher.send_receive: " + JSON.stringify(data);
+        this.make_D_(data);
+        this.handle(data.D, handler);
+        this.send(data);
+    }
+
+    make_D_(data) {
+        if (typeof(data) === "object" && data.C && data.D === undefined) {
+            data.D = data.C + "#" + this.command_id_;
+            ++this.command_id_;
         }
     }
 
@@ -110,8 +119,8 @@ export class Dispatcher {
         }
     }
 
-    invoke_handler(key, message) {
-        const handler = this.handlers_[key];
+    invoke_handler(key1, key2, message) {
+        const handler = this.handlers_[key1] || this.handlers_[key2];
         if (handler) {
             if (typeof(handler) === "function") {
                 handler(message, this);
@@ -120,11 +129,13 @@ export class Dispatcher {
                 import(handler.import).then(mod => mod[handler.func](message, this));
             }
             else {
-                console.warn("Dispatcher.invoke_handler: handler not supported: ", JSON.stringify(key), message);
+                console.warn("Dispatcher.invoke_handler: handler not supported: ", JSON.stringify([key1, key2]), message);
             }
+            if (key1 && key1.indexOf("#") > 0)
+                delete this.handlers_[key1];
         }
         else
-            console.warn("Dispatcher.invoke_handler: handler not found: ", JSON.stringify(key), message);
+            console.warn("Dispatcher.invoke_handler: handler not found: ", JSON.stringify([key1, key2]), message);
     }
 
     // ----------------------------------------------------------------------
@@ -144,10 +155,10 @@ export class Dispatcher {
             const message = JSON.parse(evt.data);
             if (!message.E) {
                 delete this.commands_sent_[message.D];
-                this.invoke_handler(message.C, message);
+                this.invoke_handler(message.D, message.C, message);
             }
             else {
-                this.invoke_handler("ERROR#" + message.E, message);
+                this.invoke_handler(null, "ERROR#" + message.E, message);
             }
         }
         catch (err) {
@@ -372,12 +383,25 @@ class LoginWidget {
 
 // ----------------------------------------------------------------------
 
-function list_commands(data, dispatcher) {
-    console.log(data);
+function list_commands(message, dispatcher) {
+    // console.log("list_commands", message);
     var ol = $("<ol></ol>").appendTo($("body"));
-    data.commands.forEach(entry => {
+    message.commands.forEach(entry => {
         ol.append(`<li><span style="font-weight: bold">${entry.name}</span><pre style="margin-top: 0;">${entry.description}</pre></li>\n`);
     });
+}
+
+// ----------------------------------------------------------------------
+
+function doc_info(message, dispatcher) {
+    switch (message.doc._t) {
+    case "acmacs.inspectors.routine_diagnostics.IncrementalChainForked":
+    case "acmacs.inspectors.routine_diagnostics.IncrementalChain":
+        import("./chain.js").then(mod => mod.chain(message.doc, dispatcher));
+        break;
+    default:
+        console.error("doc_info: unsupported doc type " + message.doc._t, message.doc);
+    }
 }
 
 // ----------------------------------------------------------------------

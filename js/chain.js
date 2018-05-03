@@ -1,10 +1,20 @@
 import {json_syntax_highlight, url_prefix} from "../draw/utils.js";
 import {ADT_Popup1} from "../draw/toolkit.js";
 
+// ----------------------------------------------------------------------
+
 export function chains(data, dispatcher) {
     let chains = new Chains($("<div class='chains'></div>").appendTo($("body")), data, dispatcher);
     $("head title").empty().append("AW: chains");
     $("body .acmacs-web-header .acmacs-web-title").empty().append("Acmacs-Web Chains");
+}
+
+// ----------------------------------------------------------------------
+
+export function chain(data, dispatcher) {
+    let chains = new Chain($("<div class='chain'></div>").appendTo($("body")), data, dispatcher);
+    $("head title").empty().append("AW: chain " + (data.description || data._id));
+    $("body .acmacs-web-header .acmacs-web-title").empty().append("Acmacs-Web Chain: " + (data.description || data._id));
 }
 
 // ----------------------------------------------------------------------
@@ -70,7 +80,7 @@ class Chains {
         const title = (chain.keywords && chain.keywords.length) ? "keywords: " + JSON.stringify(chain.keywords) : "";
 
         const chain_row = $(`<span class='${classes}' title='${title}'>${this.span_state_(chain)}${span_name}${this.span_modification_time_(chain)}${span_id}</span>`).appendTo(node);
-        chain_row.find(".chains-chain-id").on("click", (evt) => { new ADT_Popup1(chain.name, `<pre class='json-highlight'>${json_syntax_highlight(JSON.stringify(chain, undefined, 2))}</pre>`, evt.target); });
+        chain_row.find(".chains-chain-id").on("click", (evt) => popup_with_json(chain, evt.target));
         if (chain.forked_parent) {
             const sp = $("<br><span class='chains-chain-fork-of'><span class='chains-chain-fork-of-prefix'>fork of </span></span>").appendTo(chain_row);
             this.show_chain_(sp, chain.forked_parent);
@@ -198,6 +208,47 @@ class Chains {
             }
         }
     }
+}
+
+// ----------------------------------------------------------------------
+
+class Chain {
+
+    constructor(node, data, dispatcher) {
+        this.node = node;
+        this.dispatcher = dispatcher;
+        popup_with_json(data, node);
+        this.show(data);
+    }
+
+    show(data) {
+        const ul = $("<ul class='chain'></ul>").appendTo(this.node);
+        for (let src_no = data.sources.length - 1; src_no >= 0; --src_no) {
+            if (data.results[src_no]) {
+                this.make_results($("<li></li>").appendTo(ul), src_no, data.results[src_no]);
+            }
+            else if (data.sources[src_no]) {
+                this.make_source($("<li></li>").appendTo(ul), src_no, data.sources[src_no]);
+            }
+        }
+    }
+
+    make_results(node, step_no, data) {
+        node.append(`<h3>${step_no}</h3><table><tr></tr></table>`);
+        if (data["1"]) {
+            let cell = $("<td></td>").appendTo(node.find("tr"));
+            this.dispatcher.send_receive({C: "doc", id: data["1"]}, (message, dispatcher) => console.log("make_results received", message));
+        }
+    }
+
+    make_source(node, step_no, data) {
+    }
+}
+
+// ----------------------------------------------------------------------
+
+function popup_with_json(data, invoking_node) {
+    new ADT_Popup1(data.name || data.description, `<pre class='json-highlight'>${json_syntax_highlight(JSON.stringify(data, undefined, 2))}</pre>`, invoking_node);
 }
 
 // ----------------------------------------------------------------------
