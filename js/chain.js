@@ -80,7 +80,7 @@ class Chains {
         const title = (chain.keywords && chain.keywords.length) ? "keywords: " + JSON.stringify(chain.keywords) : "";
 
         const chain_row = $(`<span class='${classes}' title='${title}'>${this.span_state_(chain)}${span_name}${this.span_modification_time_(chain)}${span_id}</span>`).appendTo(node);
-        chain_row.find(".chains-chain-id").on("click", (evt) => popup_with_json(chain, evt.target));
+        chain_row.find(".chains-chain-id").on("click", evt => popup_with_json(chain, evt.target));
         if (chain.forked_parent) {
             const sp = $("<br><span class='chains-chain-fork-of'><span class='chains-chain-fork-of-prefix'>fork of </span></span>").appendTo(chain_row);
             this.show_chain_(sp, chain.forked_parent);
@@ -224,9 +224,9 @@ class Chain {
     show(data) {
         const ul = $("<ul class='chain'></ul>").appendTo(this.node);
         for (let src_no = data.sources.length - 1; src_no >= 0; --src_no) {
-            let li = $(`<li><h3>${src_no}</h3><table><tr></tr></table></li>`).appendTo(ul);
+            let li = $(`<li><h3><span class='chain-step-no'>${src_no}<span><a class='chain-step-title'>Step</a><span class='chain-step-id'>${data.sources[src_no]}</span></h3><table><tr></tr></table></li>`).appendTo(ul);
             if (data.sources[src_no])
-                this.make_source(li, src_no, data.sources[src_no]);
+                this.make_source(li, src_no, data);
             if (data.results[src_no])
                 this.make_results(li.find("tr"), src_no, data.results[src_no]);
         }
@@ -252,9 +252,10 @@ class Chain {
     }
 
     make_source(node, step_no, data) {
-        this.dispatcher.send_receive({C: "doc", id: data}, (message, dispatcher) => {
+        this.dispatcher.send_receive({C: "doc", id: data.sources[step_no]}, (message, dispatcher) => {
             // console.log("make_source received", message);
-            node.find("h3").append(` ${message.doc.name}`);
+            node.find(".chain-step-title").empty().append(message.doc.name || "Table").attr("href", url_prefix() + "chain-step/" + data._id + "/" + step_no);
+            node.find(".chain-step-id").on("click", evt => popup_with_json_for_id(data.sources[step_no], evt.target, this.dispatcher));
         });
     }
 }
@@ -262,7 +263,13 @@ class Chain {
 // ----------------------------------------------------------------------
 
 function popup_with_json(data, invoking_node) {
-    new ADT_Popup1(data.name || data.description, `<pre class='json-highlight'>${json_syntax_highlight(JSON.stringify(data, undefined, 2))}</pre>`, invoking_node);
+    new ADT_Popup1(data.name || data.description || data._id, `<pre class='json-highlight'>${json_syntax_highlight(JSON.stringify(data, undefined, 2))}</pre>`, invoking_node);
+}
+
+// ----------------------------------------------------------------------
+
+function popup_with_json_for_id(id, invoking_node, dispatcher) {
+    dispatcher.send_receive({C: "doc", id: id}, (message, dispatcher) => popup_with_json(message.doc, invoking_node));
 }
 
 // ----------------------------------------------------------------------
