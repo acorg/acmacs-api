@@ -4,17 +4,17 @@ import {ADT_Popup1} from "../draw/toolkit.js";
 // ----------------------------------------------------------------------
 
 export function chains(data, dispatcher) {
+    acmacs_web_title("Acmacs-Web Chains", true);
     let chains = new Chains($("<div class='chains'></div>").appendTo($("body")), data, dispatcher);
     $("head title").empty().append("AW: chains");
-    $("body .acmacs-web-header .acmacs-web-title").empty().append("Acmacs-Web Chains");
 }
 
 // ----------------------------------------------------------------------
 
 export function chain(data, dispatcher) {
+    acmacs_web_title("Acmacs-Web Chain: " + (data.description || data._id), true);
     let chains = new Chain($("<div class='chain'></div>").appendTo($("body")), data, dispatcher);
     $("head title").empty().append("AW: chain " + (data.description || data._id));
-    $("body .acmacs-web-header .acmacs-web-title").empty().append("Acmacs-Web Chain: " + (data.description || data._id));
 }
 
 // ----------------------------------------------------------------------
@@ -218,13 +218,14 @@ class Chain {
         this.node = node;
         this.dispatcher = dispatcher;
         popup_with_json(data, "center");
+        acmacs_web_title("<span class='chain-date'><span class='chain-begin-date'></span><span class='chain-date-dash'>-</span><span class='chain-end-date'></span></span>", false);
         this.show(data);
     }
 
     show(data) {
-        const ul = $("<ul class='chain'></ul>").appendTo(this.node);
+        const ul = $("<table class='chain'></table>").appendTo(this.node);
         for (let src_no = data.sources.length - 1; src_no >= 0; --src_no) {
-            let li = $(`<li class='adt-shadow'><span class='chain-title-row'><span class='chain-step-no'>${src_no}</span><a class='chain-step-title' target="_blank">Step</a><span class='chain-step-id'>${data.sources[src_no]}</span></span><table><tr></tr></table></li>`).appendTo(ul);
+            let li = $(`<tr><td class='adt-shadow'><div class='chain-title-row'><span class='chain-step-no'>${src_no}</span><a class='chain-step-title' target="_blank">Step</a><span class='chain-step-id'>${data.sources[src_no]}</span></div><table><tr></tr></table></td></tr>`).appendTo(ul);
             if (data.sources[src_no])
                 this.make_source(li, src_no, data);
             if (data.results[src_no])
@@ -255,7 +256,17 @@ class Chain {
         this.dispatcher.send_receive({C: "doc", id: data.sources[step_no]}, (message, dispatcher) => {
             // console.log("make_source received", message);
             node.find(".chain-step-title").empty().append(message.doc.name || "Table").attr("href", url_prefix() + "chain-step/" + data._id + "/" + step_no);
-            node.find(".chain-step-id").on("click", evt => popup_with_json_for_id(data.sources[step_no], evt.target, this.dispatcher));
+            node.find(".chain-step-id").on("click", evt => popup_with_json(message.doc, evt.target, this.dispatcher));
+            if (step_no === 0) {
+                if (message.doc.date)
+                    $("body .acmacs-web-header .acmacs-web-title .chain-begin-date").empty().append(message.doc.date);
+            }
+            else if (step_no === (data.sources.length - 1)) {
+                if (message.doc.date) {
+                    $("body .acmacs-web-header .acmacs-web-title .chain-end-date").empty().append(message.doc.date);
+                    $("body .acmacs-web-header .acmacs-web-title .chain-date-dash").show();
+                }
+            }
         });
     }
 }
@@ -270,6 +281,16 @@ function popup_with_json(data, invoking_node) {
 
 function popup_with_json_for_id(id, invoking_node, dispatcher) {
     dispatcher.send_receive({C: "doc", id: id}, (message, dispatcher) => popup_with_json(message.doc, invoking_node));
+}
+
+// ----------------------------------------------------------------------
+
+function acmacs_web_title(text, replace=false) {
+    let node = $("body .acmacs-web-header .acmacs-web-title");
+    if (replace)
+        node.empty();
+    node.append(text);
+    console.log("acmacs_web_title", text);
 }
 
 // ----------------------------------------------------------------------

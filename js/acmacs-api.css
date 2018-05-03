@@ -225,16 +225,44 @@ div.acmacs-web-header .acmacs-web-user {
 /* ---------------------------------------------------------------------- */
 /* Chain */
 
-ul.chain {
-    list-style-type: none;
-    margin: 0 0.5em;
-    padding: 0;
+.chain-date {
+    padding-left: 1em;
+    color: #004000;
+}
+
+.chain-date .chain-begin-date {
+}
+
+.chain-date .chain-end-date {
+}
+
+.chain-date .chain-date-dash {
+    display: none;
+    padding: 0.1em;
+}
+
+/* ul.chain { */
+/*     list-style-type: none; */
+/*     margin: 0 0.5em; */
+/*     padding: 0; */
+/* } */
+
+table.chain {
+    border-spacing: 0.5em 1em;
+}
+
+table.chain > tr > td {
 }
 
 .chain .chain-title-row {
     white-space: nowrap;
     font-size: 1.2em;
     font-weight: bold;
+    padding: 0.5em;
+}
+
+.chain .chain-title-row a {
+    color: black;
 }
 
 .chain .chain-title-row .chain-step-no {
@@ -253,11 +281,11 @@ ul.chain {
     -webkit-text-decoration: underline dotted;
 }
 
-ul.chain > li {
-    margin: 1em 0;
-    padding: 0.5em;
-    display: inline-block;
-}
+/* ul.chain > li { */
+/*     margin: 0.5em 0; */
+/*     padding: 0.3em; */
+/*     display: inline-block; */
+/* } */
 
 /* ---------------------------------------------------------------------- */
 
