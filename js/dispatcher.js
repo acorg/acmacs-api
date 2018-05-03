@@ -4,11 +4,8 @@ export class Dispatcher {
 
     constructor() {
         const url = new URL(document.location);
-        this.websocket_ = new WebSocket("wss://" + url.host + "/acmacs-api");
-        this.websocket_.onopen = evt => this.onopen(evt);
-        this.websocket_.onclose = evt => this.onclose(evt);
-        this.websocket_.onmessage = evt => this.onmessage(evt);
-        this.websocket_.onerror = evt => this.onerror(evt);
+        this.websocket_url_ = `wss://${url.host}/acmacs-api`;
+        this.websocket_reconnection_delay_ = 5 * 1000;
         this.login_process_ = false;
         this.session_ = this.store_value_("session-id");
         this.user_ = this.store_value_("user");
@@ -16,11 +13,12 @@ export class Dispatcher {
         this.command_queue_ = []; // when waiting for login
         this.commands_sent_ = {};
         this.command_id_ = 1;
-        this.setup_handlers_(url);
+        this.setup_handlers_();
         this.modules = {};
+        this.reconnect();
     }
 
-    setup_handlers_(url) {
+    setup_handlers_() {
         this.handlers_ = {
             "ERROR#no session": msg => this.no_session(msg),
             "ERROR#invalid session": msg => this.invalid_session(msg),
@@ -35,6 +33,7 @@ export class Dispatcher {
             chains: {import: "./chain.js", func: "chains"}
         };
 
+        const url = new URL(document.location);
         switch (url.pathname.replace(/^\/ads/, "")) {
         case "/list_commands":
         case "/list-commands":
@@ -85,12 +84,12 @@ export class Dispatcher {
 
     hello_handler(evt) {
         this.login_session();
-        console.log("command_on_hello_", this.command_on_hello_);
+        // console.log("command_on_hello_", this.command_on_hello_);
         if (this.command_on_hello_) {
             this.send(this.command_on_hello_);
-            delete this.command_on_hello_;
+            this.command_on_hello_ = null;
         }
-        else {
+        else if (this.command_on_hello_ === undefined) {
             console.warn("Dispatcher.hello_handler: no command_on_hello_");
         }
     }
@@ -113,6 +112,16 @@ export class Dispatcher {
     }
 
     // ----------------------------------------------------------------------
+    // WebSocket
+    // ----------------------------------------------------------------------
+
+    reconnect() {
+        this.websocket_ = new WebSocket(this.websocket_url_);
+        this.websocket_.onopen = evt => this.onopen(evt);
+        this.websocket_.onclose = evt => this.onclose(evt);
+        this.websocket_.onmessage = evt => this.onmessage(evt);
+        this.websocket_.onerror = evt => this.onerror(evt);
+    }
 
     onmessage(evt) {
         try {
@@ -132,15 +141,17 @@ export class Dispatcher {
     }
 
     onopen(evt) {
-        console.log("websocket opened", evt);
+        console.log("connected", evt);
     }
 
     onclose(evt) {
         console.log("websocket closed", evt);
+        setTimeout(() => this.reconnect(), (this.websocket_closed_time_ && (new Date() - this.websocket_closed_time_) < this.websocket_reconnection_delay_) ? this.websocket_reconnection_delay_ : 0);
+        this.websocket_closed_time_ = new Date();
     }
 
     onerror(evt) {
-        console.log("websocket error", evt);
+        // console.error("websocket error", evt);
     }
 
     // ----------------------------------------------------------------------
@@ -309,7 +320,7 @@ class LoginWidget {
                 this.submit(dispatcher);
         });
 
-        setTimeout(() => { username_input.focus(); }, 10);
+        setTimeout(() => username_input.focus(), 10);
     }
 
     destroy() {
