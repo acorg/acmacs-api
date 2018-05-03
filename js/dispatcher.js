@@ -223,7 +223,7 @@ export class Dispatcher {
 
     logged_in() {
         this.login_process_ = false;
-        // setup title bar
+        $("body .acmacs-web-header .acmacs-web-user").empty().append(this.user_name_);
         this.process_command_queue();
     }
 

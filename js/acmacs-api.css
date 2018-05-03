@@ -16,6 +16,28 @@ body {
 }
 
 /* ---------------------------------------------------------------------- */
+/* Header  */
+
+div.acmacs-web-header {
+    box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14);
+    margin: 0 0 0.5em 0;
+    padding: 0;
+}
+
+div.acmacs-web-header .acmacs-web-title {
+    padding: 0.2em 1em;
+    font-weight: bold;
+    font-size: 1.2em;
+    float: left;
+}
+
+div.acmacs-web-header .acmacs-web-user {
+    padding-top: 0.4em;
+    margin-right: 1em;
+    float: right;
+}
+
+/* ---------------------------------------------------------------------- */
 /* Login  */
 
 #login {
