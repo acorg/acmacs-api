@@ -217,14 +217,14 @@ class Chain {
     constructor(node, data, dispatcher) {
         this.node = node;
         this.dispatcher = dispatcher;
-        popup_with_json(data, node);
+        popup_with_json(data, "center");
         this.show(data);
     }
 
     show(data) {
         const ul = $("<ul class='chain'></ul>").appendTo(this.node);
         for (let src_no = data.sources.length - 1; src_no >= 0; --src_no) {
-            let li = $(`<li><h3><span class='chain-step-no'>${src_no}<span><a class='chain-step-title'>Step</a><span class='chain-step-id'>${data.sources[src_no]}</span></h3><table><tr></tr></table></li>`).appendTo(ul);
+            let li = $(`<li class='adt-shadow'><span class='chain-title-row'><span class='chain-step-no'>${src_no}</span><a class='chain-step-title' target="_blank">Step</a><span class='chain-step-id'>${data.sources[src_no]}</span></span><table><tr></tr></table></li>`).appendTo(ul);
             if (data.sources[src_no])
                 this.make_source(li, src_no, data);
             if (data.results[src_no])
