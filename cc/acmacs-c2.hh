@@ -13,8 +13,7 @@ class AcmacsC2
  public:
     class Error : public std::runtime_error { public: using std::runtime_error::runtime_error; };
 
-    AcmacsC2();
-    ~AcmacsC2();
+    AcmacsC2() = default;
 
     void uri(std::string aUri) { acmacs_uri = aUri; }
 
@@ -25,12 +24,8 @@ class AcmacsC2
 
  private:
     std::string acmacs_uri{"https://localhost:1168/api"};
-    bool mVerbose = true;
-    using CURL = void;
-    CURL* curl = nullptr;
-    std::string response;
+    bool mVerbose = false;
 
-    static size_t response_receiver(const char* contents, size_t size, size_t nmemb, AcmacsC2* self);
     std::string embed_session_in_command(const SessionId& aSession, std::string source);
 
 }; // class AcmacsC2

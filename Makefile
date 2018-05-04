@@ -11,13 +11,13 @@ MAKEFLAGS = -w
 # ----------------------------------------------------------------------
 
 ACMACS_API_SERVER = $(DIST)/acmacs-api-server
-ACMACS_API_SERVER_SOURCES = acmacs-api-server.cc mongo-access.cc session.cc acmacs-c2.cc client-connection.cc $(COMMANDS_SOURCES)
+ACMACS_API_SERVER_SOURCES = acmacs-api-server.cc mongo-access.cc session.cc acmacs-c2.cc curl.cc client-connection.cc $(COMMANDS_SOURCES)
 
 API_DIRECT = $(DIST)/api-direct
-API_DIRECT_SOURCES = api-direct.cc mongo-access.cc session.cc acmacs-c2.cc client-connection.cc $(COMMANDS_SOURCES)
+API_DIRECT_SOURCES = api-direct.cc mongo-access.cc session.cc acmacs-c2.cc curl.cc client-connection.cc $(COMMANDS_SOURCES)
 
 ACMACS_C2 = $(DIST)/acmacs-c2
-ACMACS_C2_SOURCES = acmacs-c2.cc acmacs-c2-main.cc
+ACMACS_C2_SOURCES = acmacs-c2.cc curl.cc acmacs-c2-main.cc
 
 # ----------------------------------------------------------------------
 
