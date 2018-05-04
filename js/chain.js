@@ -268,7 +268,7 @@ class Chain {
             this.dispatcher.send_receive({C: "map", id: message.doc._id}, message => {
                 console.log("cell_map_add_content map", message);
                 load_acmacs_map_widget().then(mod => {
-                    // new mod.AntigenicMapWidget(cell, map_data, {});
+                    new mod.AntigenicMapWidget($("<div></div>").appendTo(cell), message.map, {});
                 });
             });
         }
