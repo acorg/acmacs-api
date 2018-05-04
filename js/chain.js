@@ -211,11 +211,15 @@ class Chains {
 
 // ----------------------------------------------------------------------
 
+const Chain_default_options = {steps_with_initial_maps: 2};
+const Chain_cell_type_to_name = {i: "incremental", s: "from scratch", "1": "individual", "1m": "merge col bases"};
+
 class Chain {
 
-    constructor(node, data, dispatcher) {
+    constructor(node, data, dispatcher, options={}) {
         this.node = node;
         this.dispatcher = dispatcher;
+        this.options = Object.assign({}, Chain_default_options, options);
         // popup_with_json(data, "center");
         acmacs_web_title(`<span class='chain-date'><span class='chain-begin-date'></span><span class='chain-date-dash'>-</span><span class='chain-end-date'></span></span><span class='chain-id ads-id-popup'>${data._id}</span>`, false);
         $("body .acmacs-web-header .acmacs-web-title .chain-id").on("click", evt => popup_with_json(data, evt.target));
@@ -229,43 +233,50 @@ class Chain {
             if (data.sources[src_no])
                 this.make_source(li, src_no, data);
             if (data.results[src_no])
-                this.make_results(li.find("tr"), src_no, data.results[src_no]);
+                this.make_results(li.find("tr"), src_no, data);
         }
     }
 
     make_results(node, step_no, data) {
-        if (data["i"]) {
-            let cell = $("<td><div>incremental</div></td>").appendTo(node);
-            this.dispatcher.send_receive({C: "doc", id: data["i"]}, (message, dispatcher) => {
-                if (message.doc.stresses && message.doc.stresses.length)
-                    cell.find("div").append(" " + message.doc.stresses[0].toFixed(2));
-                console.log("make_results incremental received", message);
+        const cell_maker = (step_no >= (data.sources.length - this.options.steps_with_initial_maps))
+              ? {cell: cell_type => this.make_map_cell(node, cell_type), content: (cell_type, cell, message) => this.cell_map_add_content(cell, cell_type, message)}
+              : {cell: cell_type => this.make_text_cell(node, cell_type), content: (cell_type, cell, message) => this.cell_text_add_content(cell, cell_type, message)};
+        for (let cell_type of ["i", "s", "1", "1m"]) {
+            if (data.results[step_no][cell_type]) {
+                let cell = cell_maker.cell(cell_type);
+                this.dispatcher.send_receive({C: "doc", id: data.results[step_no][cell_type]}, message => {
+                    cell_maker.content(cell_type, cell, message);
+                });
+            }
+        }
+    }
+
+    make_map_cell(node, cell_type) {
+        return $(`<td><div>${Chain_cell_type_to_name[cell_type]}</div></td>`).appendTo(node);
+    }
+
+    make_text_cell(node, cell_type) {
+        let td = node.find("td");
+        if (td.length === 0)
+            td = $("<td></td>").appendTo(node);
+        return $(`<div>${Chain_cell_type_to_name[cell_type]}: </div>`).appendTo(td);
+    }
+
+    cell_map_add_content(cell, cell_type, message) {
+        if (message.doc.stresses && message.doc.stresses.length) {
+            cell.find("div").append(" " + message.doc.stresses[0].toFixed(2));
+            this.dispatcher.send_receive({C: "map", id: message.doc._id}, message => {
+                console.log("cell_map_add_content map", message);
+                load_acmacs_map_widget().then(mod => {
+                    // new mod.AntigenicMapWidget(cell, map_data, {});
+                });
             });
         }
-        if (data["s"]) {
-            let cell = $("<td><div>from scratch</div></td>").appendTo(node);
-            this.dispatcher.send_receive({C: "doc", id: data["s"]}, (message, dispatcher) => {
-                if (message.doc.stresses && message.doc.stresses.length)
-                    cell.find("div").append(" " + message.doc.stresses[0].toFixed(2));
-                console.log("make_results from scratch received", message);
-            });
-        }
-        if (data["1"]) {
-            let cell = $("<td><div>individual</div></td>").appendTo(node);
-            this.dispatcher.send_receive({C: "doc", id: data["1"]}, (message, dispatcher) => {
-                if (message.doc.stresses && message.doc.stresses.length)
-                    cell.find("div").append(" " + message.doc.stresses[0].toFixed(2));
-                console.log("make_results individual received", message);
-            });
-        }
-        if (data["1m"]) {
-            let cell = $("<td><div>merge col bases</div></td>").appendTo(node);
-            this.dispatcher.send_receive({C: "doc", id: data["1m"]}, (message, dispatcher) => {
-                if (message.doc.stresses && message.doc.stresses.length)
-                    cell.find("div").append(" " + message.doc.stresses[0].toFixed(2));
-                console.log("make_results merge col bases received", message);
-            });
-        }
+    }
+
+    cell_text_add_content(cell, cell_type, message) {
+        if (message.doc.stresses && message.doc.stresses.length)
+            cell.append(message.doc.stresses[0].toFixed(2));
     }
 
     make_source(node, step_no, data) {
@@ -306,7 +317,15 @@ function acmacs_web_title(text, replace=false) {
     if (replace)
         node.empty();
     node.append(text);
-    console.log("acmacs_web_title", text);
+}
+
+// ----------------------------------------------------------------------
+
+function load_acmacs_map_widget() {
+    const css_href = "/js/ad/map-draw/acmacs-map-widget.css";
+    if ($(`head link[href="${css_href}"]`).length === 0)
+        $("head").append(`<link rel="stylesheet" type="text/css" href="${css_href}">`);
+    return import("../map-draw/acmacs-map-widget.js");
 }
 
 // ----------------------------------------------------------------------
