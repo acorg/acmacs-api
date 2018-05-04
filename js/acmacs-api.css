@@ -216,17 +216,18 @@ div.acmacs-web-header .acmacs-web-user {
     color: black;
 }
 
-.chains-chain-fork-of {
+.chains .chains-chain-fork-of {
     padding-left: 1em;
 }
 
-.chains-chain-fork-of-prefix {
+.chains .chains-chain-fork-at {
+    color: #000080;
+}
+
+.chains .chains-chain-fork-of-prefix {
     /* padding-right: 1em; */
 }
 
-.chains-chain-fork-of-suffix {
-    /* padding-left: 1em; */
-}
 
 /* ---------------------------------------------------------------------- */
 /* Chain */

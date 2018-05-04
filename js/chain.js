@@ -82,9 +82,8 @@ class Chains {
         const chain_row = $(`<span class='${classes}' title='${title}'>${this.span_state_(chain)}${span_name}${this.span_modification_time_(chain)}${span_id}</span>`).appendTo(node);
         chain_row.find(".chains-chain-id").on("click", evt => popup_with_json(chain, evt.target));
         if (chain.forked_parent) {
-            const sp = $("<br><span class='chains-chain-fork-of'><span class='chains-chain-fork-of-prefix'>fork of </span></span>").appendTo(chain_row);
+            const sp = $(`<div class='chains-chain-fork-of'><span class='chains-chain-fork-of-prefix'>fork at <span class='chains-chain-fork-at'>${chain.forked_step}</span> of </span></div>`).appendTo(chain_row);
             this.show_chain_(sp, chain.forked_parent);
-            sp.append(`<span class='chains-chain-fork-of-suffix'> at ${chain.forked_step}</span>`);
         }
     }
 
