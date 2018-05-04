@@ -24,10 +24,10 @@ class AcmacsC2
     std::string ace_uncompressed(const SessionId& aSession, std::string aObjectId, size_t aMaxNumberOfProjections);
 
  private:
-    std::string acmacs_uri;
-    bool mVerbose;
+    std::string acmacs_uri{"https://localhost:1168/api"};
+    bool mVerbose = true;
     using CURL = void;
-    CURL* curl;
+    CURL* curl = nullptr;
     std::string response;
 
     static size_t response_receiver(const char* contents, size_t size, size_t nmemb, AcmacsC2* self);

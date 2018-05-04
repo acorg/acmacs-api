@@ -20,7 +20,6 @@
 // ----------------------------------------------------------------------
 
 AcmacsC2::AcmacsC2()
-    : acmacs_uri{"https://localhost:1168/api"}, mVerbose{false}, curl{nullptr}
 {
     if (CURLcode res = curl_global_init(CURL_GLOBAL_DEFAULT); res != CURLE_OK)
         throw Error{std::string{"curl_global_init failed: "} + curl_easy_strerror(res)};
@@ -51,6 +50,7 @@ from_json::object AcmacsC2::command(const SessionId& aSession, std::string aComm
     curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
     curl_easy_setopt(curl, CURLOPT_URL, acmacs_uri.c_str());
     curl_easy_setopt(curl, CURLOPT_POST, 1L);
+      //curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
 
     response.clear();
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &AcmacsC2::response_receiver); // response_receiver may be called multiple times for a single response
@@ -63,7 +63,7 @@ from_json::object AcmacsC2::command(const SessionId& aSession, std::string aComm
     curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, static_cast<long>(aCommand.size()));
 
     if (CURLcode res = curl_easy_perform(curl); res != CURLE_OK)
-        throw Error(std::string{"curl_easy_perform failed: "} + curl_easy_strerror(res));
+        throw Error(std::string{"curl_easy_perform failed: "} + acmacs_uri + ": " + curl_easy_strerror(res));
 
     from_json::object doc{response};
     try {

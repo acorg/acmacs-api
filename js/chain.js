@@ -241,7 +241,7 @@ class Chain {
         const cell_maker = (step_no >= (data.sources.length - this.options.steps_with_initial_maps))
               ? {cell: cell_type => this.make_map_cell(node, cell_type), content: (cell_type, cell, message) => this.cell_map_add_content(cell, cell_type, message)}
               : {cell: cell_type => this.make_text_cell(node, cell_type), content: (cell_type, cell, message) => this.cell_text_add_content(cell, cell_type, message)};
-        for (let cell_type of ["i", "s", "1", "1m"]) {
+        for (let cell_type of ["i", "s ", "1 ", "1m "]) {
             if (data.results[step_no][cell_type]) {
                 let cell = cell_maker.cell(cell_type);
                 this.dispatcher.send_receive({C: "doc", id: data.results[step_no][cell_type]}, message => {

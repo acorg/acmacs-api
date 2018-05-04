@@ -2,7 +2,8 @@
     "host": "localhost",
     "port": 10067,
     "mongodb_uri": "mongodb://localhost:37017/",
-    "acmacs_c2_uri": "https://albertine:1168/api",
+    "?acmacs_c2_uri": "https://albertine:1168/api",
+    "acmacs_c2_uri": "https://acmacs-web.antigenic-cartography.org/api",
     "number_of_threads": 3,
 
     "certificate_chain_file": "ssl/self-signed.crt",

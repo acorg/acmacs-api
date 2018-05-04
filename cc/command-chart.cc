@@ -1,5 +1,4 @@
 #include <limits>
-#include <random>
 
 #include "acmacs-webserver/print.hh"
 #include "command-chart.hh"
@@ -185,8 +184,8 @@ void Command_map::run()
     auto settings = settings_default();
     settings.update(settings_builtin_mods());
     chart_draw.calculate_viewport();
-    std::random_device rd;
-    chart_draw.draw("/r/a." + string::to_hex_string(rd() & 0xFFFFFFFF, string::NotShowBase) + ".json", 800, report_time::Yes);
+    const auto map_data = chart_draw.draw_json(report_time::Yes);
+    send(to_json::object("map", to_json::raw{map_data}));
 
 } // Command_map::run
 
