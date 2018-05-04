@@ -32,7 +32,7 @@ class SimulatedConnection : public ClientConnection
  public:
     using ClientConnection::ClientConnection;
 
-    virtual inline void send(std::string aMessage, send_message_type /*aMessageType*/ = send_message_type::text)
+    void send(std::string aMessage, send_message_type /*aMessageType*/ = send_message_type::text) override
         {
             print_cerr("SEND: ", aMessage);
         }

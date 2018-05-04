@@ -11,7 +11,7 @@
 
 struct Args
 {
-    inline Args() : acmacs_uri{"https://localhost:1168/api"}, verbose{false} {}
+    Args() : acmacs_uri{"https://localhost:1168/api"}, verbose{false} {}
     std::string acmacs_uri;
     std::string session;
     std::vector<std::string> commands;

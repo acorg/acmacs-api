@@ -36,12 +36,12 @@ class CommandFactory
 
     struct Data
     {
-        inline Data(FactoryFunc aMaker, std::function<const char* ()> aDescription) : maker{aMaker}, description{aDescription} {}
+        Data(FactoryFunc aMaker, std::function<const char* ()> aDescription) : maker{aMaker}, description{aDescription} {}
         FactoryFunc maker;
         std::function<const char* ()> description;
     };
 
-    template <typename Cmd> inline std::shared_ptr<Command> make(from_json::object&& aSrc, MongoAcmacsC2Access& aMongoAccess, ClientConnection& aClientConnection, size_t aCommandNumber) const
+    template <typename Cmd> std::shared_ptr<Command> make(from_json::object&& aSrc, MongoAcmacsC2Access& aMongoAccess, ClientConnection& aClientConnection, size_t aCommandNumber) const
         {
             return std::make_shared<Cmd>(std::move(aSrc), aMongoAccess, aClientConnection, aCommandNumber);
         }

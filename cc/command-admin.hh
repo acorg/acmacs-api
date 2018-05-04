@@ -9,7 +9,7 @@ class CommandAdmin : public Command
  public:
     using Command::Command;
 
-    virtual void run();
+    void run() override;
 
  protected:
     virtual void run_admin() = 0;

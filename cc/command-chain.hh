@@ -11,15 +11,15 @@ class Command_chains : public Command
  public:
     using Command::Command;
 
-    virtual void run();
+    void run() override;
 
-    inline int get_chunk_size() const { return get("chunk_size", 0); }
-    inline int get_skip() const { return get("skip", 0); }
-    inline int get_limit() const { return get("limit", 0); }
-    inline from_json::ConstArray get_owners() const { return get_array("owners"); } // throws rapidjson_assert
-    inline from_json::ConstArray get_keywords() const { return get_array("keywords"); } // throws rapidjson_assert
-    // inline from_json::ConstArray get_search() const { return get_array("search"); } // throws rapidjson_assert
-    inline from_json::ConstArray get_types() const { return get_array("types"); } // throws rapidjson_assert
+    int get_chunk_size() const { return get("chunk_size", 0); }
+    int get_skip() const { return get("skip", 0); }
+    int get_limit() const { return get("limit", 0); }
+    from_json::ConstArray get_owners() const { return get_array("owners"); } // throws rapidjson_assert
+    from_json::ConstArray get_keywords() const { return get_array("keywords"); } // throws rapidjson_assert
+    // from_json::ConstArray get_search() const { return get_array("search"); } // throws rapidjson_assert
+    from_json::ConstArray get_types() const { return get_array("types"); } // throws rapidjson_assert
 
     static const char* description();
 
@@ -32,9 +32,9 @@ class Command_chain_keywords : public Command
  public:
     using Command::Command;
 
-    virtual void run();
+    void run() override;
 
-    inline bool include_rd_keywords() const { return get("include_rd_keywords", false); } // throws rapidjson_assert
+    bool include_rd_keywords() const { return get("include_rd_keywords", false); } // throws rapidjson_assert
 
     static const char* description();
 
@@ -50,7 +50,7 @@ class Command_chain_owners : public Command
  public:
     using Command::Command;
 
-    virtual void run();
+    void run() override;
 
     static const char* description();
 
@@ -63,7 +63,7 @@ class Command_chain_types : public Command
  public:
     using Command::Command;
 
-    virtual void run();
+    void run() override;
 
     static const char* description();
 

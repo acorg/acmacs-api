@@ -16,7 +16,7 @@ class AcmacsC2
     AcmacsC2();
     ~AcmacsC2();
 
-    inline void uri(std::string aUri) { acmacs_uri = aUri; }
+    void uri(std::string aUri) { acmacs_uri = aUri; }
 
     from_json::object command(const SessionId& aSession, std::string aCommand);
     void verbose(bool aVerbose) { mVerbose = aVerbose; }

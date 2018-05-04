@@ -9,13 +9,13 @@ class AcmacsC2;
 class MongoAcmacsC2Access
 {
  public:
-    inline MongoAcmacsC2Access(std::string aMongoURI, AcmacsC2& aAcmacsC2)
+    MongoAcmacsC2Access(std::string aMongoURI, AcmacsC2& aAcmacsC2)
         : mMongoURI{aMongoURI}, mAcmacsC2{aAcmacsC2} {}
 
     auto& client() { return mClient; }
     auto& acmacs_c2() { return mAcmacsC2; }
 
-    inline void create_client()
+    void create_client()
         {
             mClient = mongocxx::client{mMongoURI.empty() ? mongocxx::uri{} : mongocxx::uri{mMongoURI}};
         }

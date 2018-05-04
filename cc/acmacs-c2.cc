@@ -13,7 +13,7 @@
 
 // #pragma GCC diagnostic push
 #ifdef __clang__
-#pragma GCC diagnostic ignored "-Wdisabled-macro-expansion"
+//#pragma GCC diagnostic ignored "-Wdisabled-macro-expansion"
 #endif
 // #pragma GCC diagnostic pop
 

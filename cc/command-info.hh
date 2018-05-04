@@ -8,7 +8,7 @@ class Command_version : public Command
 {
  public:
     using Command::Command;
-    virtual void run();
+    void run() override;
     static const char* description();
 
 }; // class Command_version
@@ -19,7 +19,7 @@ class Command_list_commands : public Command
 {
  public:
     using Command::Command;
-    virtual void run();
+    void run() override;
     static const char* description();
 
 }; // class Command_list_commands
