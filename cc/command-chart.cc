@@ -1,9 +1,15 @@
 #include <limits>
+#include <random>
+
 #include "acmacs-webserver/print.hh"
 #include "command-chart.hh"
 #include "session.hh"
 #include "acmacs-api-server.hh"
 #include "acmacs-c2.hh"
+
+#include "acmacs-chart-2/factory-import.hh"
+#include "acmacs-map-draw/draw.hh"
+#include "acmacs-map-draw/settings.hh"
 
 // ----------------------------------------------------------------------
 
@@ -172,6 +178,15 @@ const char* Command_chart::description()
 
 void Command_map::run()
 {
+    const size_t projection_no = 0;
+
+    const auto ace = c2().ace_uncompressed(session().id(), get_string("id"), projection_no + 1);
+    ChartDraw chart_draw(std::make_shared<acmacs::chart::ChartModify>(acmacs::chart::import_from_data(ace, acmacs::chart::Verify::None, report_time::No)), projection_no);
+    auto settings = settings_default();
+    settings.update(settings_builtin_mods());
+    chart_draw.calculate_viewport();
+    std::random_device rd;
+    chart_draw.draw("/r/a." + string::to_hex_string(rd() & 0xFFFFFFFF, string::NotShowBase) + ".json", 800, report_time::Yes);
 
 } // Command_map::run
 
