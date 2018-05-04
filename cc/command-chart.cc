@@ -137,11 +137,10 @@ const char* Command_doc::description()
 
 // ----------------------------------------------------------------------
 
-Command_chart::Command_chart(from_json::object&& aSrc, MongoAcmacsC2Access& aMongoAccess, ClientConnection& aClientConnection, size_t aCommandNumber)
-    : Command{std::move(aSrc), aMongoAccess, aClientConnection, aCommandNumber}, mAcmacsC2{aMongoAccess.acmacs_c2()}
+Command_with_c2_access::Command_with_c2_access(from_json::object&& aSrc, MongoAcmacsC2Access& aMongoAccess, ClientConnection& aClientConnection, size_t aCommandNumber)
+    : Command{std::move(aSrc), aMongoAccess, aClientConnection, aCommandNumber}, acmacs_c2_{aMongoAccess.acmacs_c2()}
 {
-
-} // Command_chart::Command_chart
+} // Command_with_c2_access::Command_with_c2_access
 
 // ----------------------------------------------------------------------
 
@@ -154,7 +153,7 @@ void Command_chart::run()
         MongodbAccess::exclude("_id", "table", "projections", "conformance"));
     if (!chart)
         throw Error{"not found"};
-    const auto ace = mAcmacsC2.ace_uncompressed(session().id(), get_string("id"), 5);
+    const auto ace = c2().ace_uncompressed(session().id(), get_string("id"), 5);
       // send(to_json::object("chart", to_json::raw{to_json::value(chart->view())}, "chart_ace", to_json::raw{ace}));
     send(to_json::object("chart", chart->view(), "chart_ace", to_json::raw{ace}));
 
@@ -168,6 +167,22 @@ const char* Command_chart::description()
     id :id)";
 
 } // Command_chart::description
+
+// ----------------------------------------------------------------------
+
+void Command_map::run()
+{
+
+} // Command_map::run
+
+// ----------------------------------------------------------------------
+
+const char* Command_map::description()
+{
+    return R"(gets map in the json format by id
+    id :id)";
+
+} // Command_map::description
 
 // ----------------------------------------------------------------------
 /// Local Variables:

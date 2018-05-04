@@ -67,21 +67,42 @@ class Command_chart_owners : public Command
 
 // ----------------------------------------------------------------------
 
-class Command_chart : public Command
+class Command_with_c2_access : public Command
 {
  public:
-    Command_chart(from_json::object&& aSrc, MongoAcmacsC2Access& aMongoAccess, ClientConnection& aClientConnection, size_t aCommandNumber);
-
-    void run() override;
+    Command_with_c2_access(from_json::object&& aSrc, MongoAcmacsC2Access& aMongoAccess, ClientConnection& aClientConnection, size_t aCommandNumber);
 
     auto get_id() const { return bsoncxx::oid{get_string("id")}; }
 
-    static const char* description();
+ protected:
+    auto& c2() { return acmacs_c2_; }
 
  private:
-    AcmacsC2& mAcmacsC2;
+    AcmacsC2& acmacs_c2_;
+
+}; // class Command_with_c2_access
+
+class Command_chart : public Command_with_c2_access
+{
+ public:
+    using Command_with_c2_access::Command_with_c2_access;
+
+    void run() override;
+    static const char* description();
 
 }; // class Command_chart
+
+// ----------------------------------------------------------------------
+
+class Command_map : public Command_with_c2_access
+{
+ public:
+    using Command_with_c2_access::Command_with_c2_access;
+
+    void run() override;
+    static const char* description();
+
+}; // class Command_map
 
 // ----------------------------------------------------------------------
 /// Local Variables:
