@@ -252,7 +252,7 @@ class Chain {
     }
 
     make_map_cell(node, cell_type) {
-        return $(`<td><div>${Chain_cell_type_to_name[cell_type]}</div></td>`).appendTo(node);
+        return $(`<td><div>${Chain_cell_type_to_name[cell_type]}<span class='chart-id ads-id-popup'></span></div></td>`).appendTo(node);
     }
 
     make_text_cell(node, cell_type) {
@@ -263,6 +263,7 @@ class Chain {
     }
 
     cell_map_add_content(cell, cell_type, message) {
+        cell.find("span.chart-id").empty().append(message.doc._id).on("click", evt => popup_with_json(message.doc, evt.target));
         if (message.doc.stresses && message.doc.stresses.length) {
             cell.find("div").append(" " + message.doc.stresses[0].toFixed(2));
             this.dispatcher.send_receive({C: "map", id: message.doc._id}, message => {
