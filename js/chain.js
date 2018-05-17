@@ -266,10 +266,11 @@ class Chain {
         cell.find("span.chart-id").empty().append(message.doc._id).on("click", evt => acv_toolkit.movable_window_with_json(message.doc, evt.target, message.doc.name || message.doc.description || message.doc._id));
         if (message.doc.stresses && message.doc.stresses.length) {
             cell.find("div").append(" " + message.doc.stresses[0].toFixed(2));
-            this.dispatcher.send_receive({C: "map", id: message.doc._id}, message => {
-                load_acmacs_map_widget().then(mod => {
-                    new mod.AntigenicMapWidget($("<div></div>").appendTo(cell), message.map, {});
-                });
+            this.dispatcher.send_receive({C: "ace", id: message.doc._id}, message => {
+                console.log("ace", message);
+                // load_acmacs_map_widget().then(mod => {
+                //     new mod.AntigenicMapWidget($("<div></div>").appendTo(cell), message.map, {});
+                // });
             });
         }
     }
@@ -315,12 +316,12 @@ function acmacs_web_title(text, replace=false) {
 
 // ----------------------------------------------------------------------
 
-function load_acmacs_map_widget() {
-    const css_href = "/js/ad/map-draw/acmacs-map-widget.css";
-    if ($(`head link[href="${css_href}"]`).length === 0)
-        $("head").append(`<link rel="stylesheet" type="text/css" href="${css_href}">`);
-    return import("../map-draw/acmacs-map-widget.js");
-}
+// function load_acmacs_map_widget() {
+//     const css_href = "/js/ad/map-draw/acmacs-map-widget.css";
+//     if ($(`head link[href="${css_href}"]`).length === 0)
+//         $("head").append(`<link rel="stylesheet" type="text/css" href="${css_href}">`);
+//     return import("../map-draw/acmacs-map-widget.js");
+// }
 
 // ----------------------------------------------------------------------
 /// Local Variables:

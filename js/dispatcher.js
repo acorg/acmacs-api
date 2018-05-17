@@ -40,7 +40,7 @@ export class Dispatcher {
         };
 
         const url_pathname_fields = new URL(document.location).pathname.replace(/^\/ads/, "").split("/");
-        console.log("url_pathname_fields", url_pathname_fields);
+        // console.log("url_pathname_fields", url_pathname_fields);
         switch (url_pathname_fields[1]) {
         case "list_commands":
         case "list-commands":
@@ -189,7 +189,7 @@ export class Dispatcher {
     // ----------------------------------------------------------------------
 
     default_error_handler(message) {
-        acv_toolkit.movable_window_with_json(message, "center", "ERROR");
+        acv_toolkit.movable_window_with_error(message, "center", "ERROR");
     }
 
     invalid_object_id(message) {
