@@ -1,5 +1,5 @@
-import {json_syntax_highlight} from "../draw/utils.js";
-import {ADT_Popup1} from "../draw/toolkit.js";
+import * as acv_utils from "../map-draw/ace-view-1/utils.js";
+import * as acv_toolkit from "../map-draw/ace-view-1/toolkit.js";
 import "./md5.js";
 
 // ----------------------------------------------------------------------
@@ -178,7 +178,7 @@ export class Dispatcher {
 
     onclose(evt) {
         console.log("websocket closed", evt);
-        setTimeout(() => this.reconnect(), (this.websocket_closed_time_ && (new Date() - this.websocket_closed_time_) < this.websocket_reconnection_delay_) ? this.websocket_reconnection_delay_ : 0);
+        window.setTimeout(() => this.reconnect(), (this.websocket_closed_time_ && (new Date() - this.websocket_closed_time_) < this.websocket_reconnection_delay_) ? this.websocket_reconnection_delay_ : 0);
         this.websocket_closed_time_ = new Date();
     }
 
@@ -189,7 +189,7 @@ export class Dispatcher {
     // ----------------------------------------------------------------------
 
     default_error_handler(message) {
-        new ADT_Popup1("ERROR", `<pre class='json-highlight'>${json_syntax_highlight(JSON.stringify(message, undefined, 2))}</pre>`, "center", "adt-error-popup");
+        acv_toolkit.movable_window_with_json(message, "center", "ERROR");
     }
 
     invalid_object_id(message) {
@@ -356,7 +356,7 @@ class LoginWidget {
                 this.submit(dispatcher);
         });
 
-        setTimeout(() => username_input.focus(), 10);
+        window.setTimeout(() => username_input.focus(), 10);
     }
 
     destroy() {

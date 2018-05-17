@@ -1,5 +1,6 @@
-import {json_syntax_highlight, url_prefix} from "../draw/utils.js";
-import {ADT_Popup1} from "../draw/toolkit.js";
+import * as acv_utils from "../map-draw/ace-view-1/utils.js";
+import * as acv_toolkit from "../map-draw/ace-view-1/toolkit.js";
+import * as api_utils from "./utils.js";
 
 // ----------------------------------------------------------------------
 
@@ -74,13 +75,13 @@ class Chains {
     }
 
     show_chain_(node, chain) {
-        const span_name = `<a href="${url_prefix()}chain/${chain._id}" target="_blank" class='chains-chain-name'>${chain.name}</a>`;
+        const span_name = `<a href="${api_utils.url_prefix()}chain/${chain._id}" target="_blank" class='chains-chain-name'>${chain.name}</a>`;
         const span_id = `<span class='chains-chain-id ads-id-popup'>${chain._id}</span>`;
         let classes = this.keyword_classes_(chain);
         const title = (chain.keywords && chain.keywords.length) ? "keywords: " + JSON.stringify(chain.keywords) : "";
 
         const chain_row = $(`<span class='${classes}' title='${title}'>${this.span_state_(chain)}${span_name}${this.span_modification_time_(chain)}${span_id}</span>`).appendTo(node);
-        chain_row.find(".chains-chain-id").on("click", evt => popup_with_json(chain, evt.target));
+        chain_row.find(".chains-chain-id").on("click", evt => acv_toolkit.movable_window_with_json(chain, evt.target, chain.name || chain.description || chain._id));
         if (chain.forked_parent) {
             const sp = $(`<div class='chains-chain-fork-of'><span class='chains-chain-fork-of-prefix'>fork at <span class='chains-chain-fork-at'>${chain.forked_step}</span> of </span></div>`).appendTo(chain_row);
             this.show_chain_(sp, chain.forked_parent);
@@ -220,9 +221,8 @@ class Chain {
         this.node = node;
         this.dispatcher = dispatcher;
         this.options = Object.assign({}, Chain_default_options, options);
-        // popup_with_json(data, "center");
         acmacs_web_title(`<span class='chain-date'><span class='chain-begin-date'></span><span class='chain-date-dash'>-</span><span class='chain-end-date'></span></span><span class='chain-id ads-id-popup'>${data._id}</span>`, false);
-        $("body .acmacs-web-header .acmacs-web-title .chain-id").on("click", evt => popup_with_json(data, evt.target));
+        $("body .acmacs-web-header .acmacs-web-title .chain-id").on("click", evt => acv_toolkit.movable_window_with_json(data, evt.target, data.name || data.description || data._id));
         this.show(data);
     }
 
@@ -263,7 +263,7 @@ class Chain {
     }
 
     cell_map_add_content(cell, cell_type, message) {
-        cell.find("span.chart-id").empty().append(message.doc._id).on("click", evt => popup_with_json(message.doc, evt.target));
+        cell.find("span.chart-id").empty().append(message.doc._id).on("click", evt => acv_toolkit.movable_window_with_json(message.doc, evt.target, message.doc.name || message.doc.description || message.doc._id));
         if (message.doc.stresses && message.doc.stresses.length) {
             cell.find("div").append(" " + message.doc.stresses[0].toFixed(2));
             this.dispatcher.send_receive({C: "map", id: message.doc._id}, message => {
@@ -282,8 +282,8 @@ class Chain {
     make_source(node, step_no, data) {
         this.dispatcher.send_receive({C: "doc", id: data.sources[step_no]}, (message, dispatcher) => {
             // console.log("make_source received", message);
-            node.find(".chain-step-title").empty().append(message.doc.name || "Table").attr("href", url_prefix() + "chain-step/" + data._id + "/" + step_no);
-            node.find(".chain-step-id").on("click", evt => popup_with_json(message.doc, evt.target, this.dispatcher));
+            node.find(".chain-step-title").empty().append(message.doc.name || "Table").attr("href", api_utils.url_prefix() + "chain-step/" + data._id + "/" + step_no);
+            node.find(".chain-step-id").on("click", evt => acv_toolkit.movable_window_with_json(message.doc, evt.target, message.doc.name || message.doc.description || message.doc._id));
             if (step_no === 0) {
                 if (message.doc.date)
                     $("body .acmacs-web-header .acmacs-web-title .chain-begin-date").empty().append(message.doc.date);
@@ -300,15 +300,9 @@ class Chain {
 
 // ----------------------------------------------------------------------
 
-function popup_with_json(data, invoking_node) {
-    new ADT_Popup1(data.name || data.description || data._id, `<pre class='json-highlight'>${json_syntax_highlight(JSON.stringify(data, undefined, 2))}</pre>`, invoking_node);
-}
-
-// ----------------------------------------------------------------------
-
-function popup_with_json_for_id(id, invoking_node, dispatcher) {
-    dispatcher.send_receive({C: "doc", id: id}, (message, dispatcher) => popup_with_json(message.doc, invoking_node));
-}
+// function popup_with_json_for_id(id, invoking_node, dispatcher) {
+//     dispatcher.send_receive({C: "doc", id: id}, (message, dispatcher) => acv_toolkit.movable_window_with_json(message.doc, invoking_node, message.doc.name || message.doc.description || message.doc._id));
+// }
 
 // ----------------------------------------------------------------------
 
