@@ -287,6 +287,14 @@ table.chain > tr > td {
     padding-left: 0.5em;
 }
 
+.chain .map-cell-title {
+    text-align: center;
+}
+
+.chain .map-cell-title .chart-id {
+    padding-left: 1em;
+}
+
 /* ul.chain > li { */
 /*     margin: 0.5em 0; */
 /*     padding: 0.3em; */

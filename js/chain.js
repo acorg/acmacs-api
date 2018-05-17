@@ -252,7 +252,7 @@ class Chain {
     }
 
     make_map_cell(node, cell_type) {
-        return $(`<td><div>${Chain_cell_type_to_name[cell_type]}<span class='chart-id ads-id-popup'></span></div></td>`).appendTo(node);
+        return $(`<td><div class='map-cell-title'>${Chain_cell_type_to_name[cell_type]}<span class='chart-id ads-id-popup'></span></div></td>`).appendTo(node);
     }
 
     make_text_cell(node, cell_type) {
@@ -265,7 +265,7 @@ class Chain {
     cell_map_add_content(cell, cell_type, message) {
         cell.find("span.chart-id").empty().append(message.doc._id).on("click", evt => acv_toolkit.movable_window_with_json(message.doc, evt.target, message.doc.name || message.doc.description || message.doc._id));
         if (message.doc.stresses && message.doc.stresses.length) {
-            cell.find("div").append(" " + message.doc.stresses[0].toFixed(2));
+            // cell.find("div").append(" " + message.doc.stresses[0].toFixed(2));
             this.dispatcher.send_receive({C: "ace", id: message.doc._id}, message => {
                 import("../map-draw/ace-view-1/ace-view.js").then(mod => {
                     new mod.AntigenicMapWidget($("<div></div>").appendTo(cell), message, {view_mode: "best-projection", coloring: "default", canvas_size: {width: 500, height: 500}});
