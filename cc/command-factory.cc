@@ -18,7 +18,8 @@ CommandFactory::CommandFactory()
     {"chain_types",    data<Command_chain_types>()},
 
     {"doc",            data<Command_doc>()},
-    {"map",            data<Command_map>()},
+    // {"map",            data<Command_map>()},
+    {"ace",            data<Command_ace>()},
     {"chart",          data<Command_chart>()},
     {"root_charts",    data<Command_root_charts>()},
     {"chart_keywords", data<Command_chart_keywords>()},

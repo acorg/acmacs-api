@@ -1,14 +1,18 @@
 #include <limits>
 
+#include "locationdb/locdb.hh"
+#include "seqdb/seqdb.hh"
+#include "acmacs-chart-2/factory-import.hh"
+#include "acmacs-chart-2/chart-modify.hh"
+#include "acmacs-chart-2/ace-export.hh"
 #include "acmacs-webserver/print.hh"
 #include "command-chart.hh"
 #include "session.hh"
 #include "acmacs-api-server.hh"
 #include "acmacs-c2.hh"
 
-#include "acmacs-chart-2/factory-import.hh"
-#include "acmacs-map-draw/draw.hh"
-#include "acmacs-map-draw/settings.hh"
+// #include "acmacs-map-draw/draw.hh"
+// #include "acmacs-map-draw/settings.hh"
 
 // ----------------------------------------------------------------------
 
@@ -175,28 +179,51 @@ const char* Command_chart::description()
 
 // ----------------------------------------------------------------------
 
-void Command_map::run()
+void Command_ace::run()
 {
     const size_t projection_no = 0;
 
     const auto ace = c2().ace_uncompressed(session().id(), get_string("id"), projection_no + 1);
-    ChartDraw chart_draw(std::make_shared<acmacs::chart::ChartModify>(acmacs::chart::import_from_data(ace, acmacs::chart::Verify::None, report_time::No)), projection_no);
-    auto settings = settings_default();
-    settings.update(settings_builtin_mods());
-    chart_draw.calculate_viewport();
-    const auto map_data = chart_draw.draw_json(report_time::Yes);
-    send(to_json::object("map", to_json::raw{map_data}));
+    acmacs::chart::ChartModify chart(acmacs::chart::import_from_data(ace, acmacs::chart::Verify::None, report_time::No));
+    const auto exported = ace_export(chart, "mod_acmacs");
+    send(exported);
 
-} // Command_map::run
+} // Command_ace::run
 
 // ----------------------------------------------------------------------
 
-const char* Command_map::description()
+const char* Command_ace::description()
 {
-    return R"(gets map in the json format by id
-    id :id)";
+    return R"(gets ace by id
+    id :id
+)";
 
-} // Command_map::description
+} // Command_ace::description
+
+// ----------------------------------------------------------------------
+
+// void Command_map::run()
+// {
+//     const size_t projection_no = 0;
+
+//     const auto ace = c2().ace_uncompressed(session().id(), get_string("id"), projection_no + 1);
+//     ChartDraw chart_draw(std::make_shared<acmacs::chart::ChartModify>(acmacs::chart::import_from_data(ace, acmacs::chart::Verify::None, report_time::No)), projection_no);
+//     auto settings = settings_default();
+//     settings.update(settings_builtin_mods());
+//     chart_draw.calculate_viewport();
+//     const auto map_data = chart_draw.draw_json(report_time::Yes);
+//     send(to_json::object("map", to_json::raw{map_data}));
+
+// } // Command_map::run
+
+// // ----------------------------------------------------------------------
+
+// const char* Command_map::description()
+// {
+//     return R"(gets map in the json format by id
+//     id :id)";
+
+// } // Command_map::description
 
 // ----------------------------------------------------------------------
 /// Local Variables:
