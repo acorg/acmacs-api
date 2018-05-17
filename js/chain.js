@@ -267,10 +267,9 @@ class Chain {
         if (message.doc.stresses && message.doc.stresses.length) {
             cell.find("div").append(" " + message.doc.stresses[0].toFixed(2));
             this.dispatcher.send_receive({C: "ace", id: message.doc._id}, message => {
-                console.log("ace", message);
-                // load_acmacs_map_widget().then(mod => {
-                //     new mod.AntigenicMapWidget($("<div></div>").appendTo(cell), message.map, {});
-                // });
+                import("../map-draw/ace-view-1/ace-view.js").then(mod => {
+                    new mod.AntigenicMapWidget($("<div></div>").appendTo(cell), message, {view_mode: "best-projection", coloring: "default", canvas_size: {width: 500, height: 500}});
+                });;
             });
         }
     }
@@ -313,15 +312,6 @@ function acmacs_web_title(text, replace=false) {
         node.empty();
     node.append(text);
 }
-
-// ----------------------------------------------------------------------
-
-// function load_acmacs_map_widget() {
-//     const css_href = "/js/ad/map-draw/acmacs-map-widget.css";
-//     if ($(`head link[href="${css_href}"]`).length === 0)
-//         $("head").append(`<link rel="stylesheet" type="text/css" href="${css_href}">`);
-//     return import("../map-draw/acmacs-map-widget.js");
-// }
 
 // ----------------------------------------------------------------------
 /// Local Variables:
