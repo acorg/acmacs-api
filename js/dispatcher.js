@@ -58,8 +58,13 @@ export class Dispatcher {
             }
             break;
         case "doc":
-        case "chain":
             this.command_on_hello_ = {C: "doc", id: url_pathname_fields[2], chain_source_data: true};
+            break;
+        case "chain":
+            if (url_pathname_fields.length > 3)
+                this.command_on_hello_ = {C: "doc", id: url_pathname_fields[2], chain_source_data: false, add_to_response: {step_no: url_pathname_fields[3]}};
+            else
+                this.command_on_hello_ = {C: "doc", id: url_pathname_fields[2], chain_source_data: true};
             break;
         default:
             this.command_on_hello_ = {C: "chains", keywords: ["whocc"]};
@@ -406,7 +411,10 @@ function doc_info(message, dispatcher) {
     switch (message.doc._t) {
     case "acmacs.inspectors.routine_diagnostics.IncrementalChainForked":
     case "acmacs.inspectors.routine_diagnostics.IncrementalChain":
-        import("./chain.js").then(mod => mod.chain(message.doc, dispatcher));
+        if (message.add_to_response && message.add_to_response.step_no !== undefined)
+            import("./chain.js").then(mod => mod.chain_step(message.doc, message.add_to_response.step_no, dispatcher));
+        else
+            import("./chain.js").then(mod => mod.chain(message.doc, dispatcher));
         break;
     default:
         console.error("doc_info: unsupported doc type " + message.doc._t, message.doc);

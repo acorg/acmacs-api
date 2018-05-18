@@ -20,6 +20,14 @@ export function chain(data, dispatcher) {
 
 // ----------------------------------------------------------------------
 
+export function chain_step(data, step_no, dispatcher) {
+    acmacs_web_title(data.description || data._id, true);
+    let chains = new ChainStep($("<div class='chain-step'></div>").appendTo($("body")), data, step_no, dispatcher);
+    $("head title").empty().append(`AW: chain ${(data.description || data._id)} step ${step_no + 1}`);
+}
+
+// ----------------------------------------------------------------------
+
 const sChainType = {
     "acmacs.inspectors.routine_diagnostics.IncrementalChainForked": "",
     "acmacs.inspectors.routine_diagnostics.IncrementalChain": "",
@@ -241,7 +249,7 @@ const Chain_source_row_html = "\
 class Chain {
 
     constructor(node, data, dispatcher, options={}) {
-        console.log("Chain.data", data);
+        // console.log("Chain.data", data);
         this.node = node;
         this.dispatcher = dispatcher;
         this.options = Object.assign({}, Chain_default_options, options);
@@ -328,7 +336,7 @@ class Chain {
     make_source(node, step_no, data) {
         const source_data = data.ad_api_source_data && data.ad_api_source_data[step_no];
         const name = (source_data && source_data.name) || "Table";
-        node.find(".chain-step-title").empty().append(name).attr("href", api_utils.url_prefix() + "chain-step/" + data._id + "/" + step_no);
+        node.find(".chain-step-title").empty().append(name).attr("href", api_utils.url_prefix() + "chain/" + data._id + "/" + step_no);
         node.find(".chain-step-id").on("click", evt => movable_window_with_json_for_id(data.sources[step_no], evt.target, this.dispatcher));
         if (step_no === 0 && source_data && source_data.date)
             $("body .acmacs-web-header .acmacs-web-title .chain-begin-date").empty().append(source_data.date);
@@ -336,6 +344,24 @@ class Chain {
             $("body .acmacs-web-header .acmacs-web-title .chain-end-date").empty().append(source_data.date);
             $("body .acmacs-web-header .acmacs-web-title .chain-date-dash").show();
         }
+    }
+}
+
+// ----------------------------------------------------------------------
+
+class ChainStep {
+
+    constructor(node, data, step_no, dispatcher, options={}) {
+        console.log("Chain.data", data, step_no);
+        this.node = node;
+        this.dispatcher = dispatcher;
+        this.options = Object.assign({}, Chain_default_options, options);
+        acmacs_web_title(acv_utils.format(Chain_acmacs_web_title_html, {id: data._id, min_col_basis: data.minimum_column_basis || "none"}), false);
+        $("body .acmacs-web-header .acmacs-web-title .chain-id").on("click", evt => acv_toolkit.movable_window_with_json(data, evt.target, data.name || data.description || data._id));
+        this.show(data);
+    }
+
+    show(data) {
     }
 }
 
