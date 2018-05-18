@@ -259,9 +259,9 @@ class Chain {
     }
 
     show(data) {
-        const ul = $("<table class='chain'></table>").appendTo(this.node);
+        const table = $("<table class='chain'></table>").appendTo(this.node);
         for (let src_no = data.sources.length - 1; src_no >= 0; --src_no) {
-            let row = $(acv_utils.format(Chain_source_row_html, {src_no: src_no + 1, id: data.sources[src_no]})).appendTo(ul);
+            const row = $(acv_utils.format(Chain_source_row_html, {src_no: src_no + 1, id: data.sources[src_no]})).appendTo(table);
             if (data.sources[src_no])
                 this.make_source(row, src_no, data);
             if (data.results[src_no])
@@ -349,6 +349,25 @@ class Chain {
 
 // ----------------------------------------------------------------------
 
+const ChainStep_source_html = "\
+<tr>\
+ <td>\
+  <div>\
+   <div class='chain-title-row'>\
+    Chain source <span class='chain-step-id ads-id-popup'>${id}</span>\
+   </div>\
+  </div>\
+ </td>\
+</tr>\
+";
+
+const ChainStep_results_html = "\
+<tr class='merge-incremental'><td><table class='adt-shadow'><tr></tr></table></td></tr>\
+<tr class='merge-scratch'><td><table class='adt-shadow'><tr></tr></table></td></tr>\
+<tr class='individual'><td><table class='adt-shadow'><tr></tr></table></td></tr>\
+<tr class='individual-col-bases'><td><table class='adt-shadow'><tr></tr></table></td></tr>\
+";
+
 class ChainStep {
 
     constructor(node, data, step_no, dispatcher, options={}) {
@@ -358,10 +377,51 @@ class ChainStep {
         this.options = Object.assign({}, Chain_default_options, options);
         acmacs_web_title(acv_utils.format(Chain_acmacs_web_title_html, {id: data._id, min_col_basis: data.minimum_column_basis || "none"}), false);
         $("body .acmacs-web-header .acmacs-web-title .chain-id").on("click", evt => acv_toolkit.movable_window_with_json(data, evt.target, data.name || data.description || data._id));
-        this.show(data);
+        this.show(data, step_no);
     }
 
-    show(data) {
+    show(data, step_no) {
+        const table = $("<table></table>").appendTo(this.node);
+        if (data.results[step_no])
+            this.show_results(table, data.results[step_no], data.sources[step_no]);
+        else
+            this.show_sources(table, data.sources[step_no]);
+    }
+
+    show_results(table, results, source_id) {
+        table.append(acv_utils.format(ChainStep_results_html, {id: source_id}));
+        for (let [cell_type, tr_class] of [["i", "merge-incremental"], ["s", "merge-scratch"], ["1", "individual"], ["1m", "individual-col-bases"]]) {
+            if (results[cell_type]) {
+                const cell = this.make_map_cell(table.find(`tr.${tr_class} table tr`), cell_type);
+                this.dispatcher.send_receive({C: "doc", id: results[cell_type]}, message => this.cell_map_add_content(cell, cell_type, message));
+            }
+        }
+    }
+
+    make_map_cell(node, cell_type) {
+        return $(`<td><div class='map-cell-title'>${Chain_cell_type_to_name[cell_type]}<span class='chart-id ads-id-popup'></span></div></td>`).appendTo(node);
+    }
+
+    cell_map_add_content(cell, cell_type, message) {
+        cell.find("span.chart-id").empty().append(message.doc._id).on("click", evt => acv_toolkit.movable_window_with_json(message.doc, evt.target, message.doc.name || message.doc.description || message.doc._id));
+        if (message.doc.stresses && message.doc.stresses.length) {
+            // cell.find("div").append(" " + message.doc.stresses[0].toFixed(2));
+            this.dispatcher.send_receive({C: "ace", id: message.doc._id}, message => {
+                import("../map-draw/ace-view-1/ace-view.js").then(mod => {
+                    const widget_options = {
+                        view_mode: "best-projection",
+                        coloring: "default",
+                        canvas_size: {width: 400, height: 400},
+                        title_fields: ["stress", "antigens", "sera", "date", "tables"]
+                    };
+                    new mod.AntigenicMapWidget($("<div></div>").appendTo(cell), message, widget_options);
+                });;
+            });
+        }
+    }
+
+    show_sources(table, source_id) {
+        $(acv_utils.format(ChainStep_source_html, {id: source_id})).appendTo(table);
     }
 }
 

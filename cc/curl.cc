@@ -76,7 +76,7 @@ from_json::object acmacs::Curl::post(std::string url, std::string data, bool ver
         curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, static_cast<long>(data.size()));
 
         if (CURLcode res = curl_easy_perform(curl); res != CURLE_OK)
-            throw Error(std::string{"curl_easy_perform failed: "} + url + ": " + curl_easy_strerror(res));
+            throw Error(std::string{"curl_easy_perform failed: "} + url + ": " + std::to_string(res) + ": " + curl_easy_strerror(res));
 
         curl_easy_cleanup(curl);
     }
