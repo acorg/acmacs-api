@@ -223,11 +223,17 @@ const Chain_acmacs_web_title_html = "\
 
 const Chain_source_row_html = "\
 <tr>\
- <td class='adt-shadow'>\
-  <div class='chain-title-row'>\
-   <span class='chain-step-no'>${src_no}</span><a class='chain-step-title' target='_blank'>Step</a><span class='chain-step-id ads-id-popup'>${id}</span>\
+ <td>\
+  <div>\
+   <div class='chain-title-row'>\
+    <div class='chain-step-no'>${src_no}</div>\
+    <a class='chain-step-title' target='_blank'>Step</a>\
+    <span class='chain-step-id ads-id-popup'>${id}</span>\
+    <a class='chain-step-expand' title='show maps'>&#10550;</a>\
+    <a class='chain-step-collapse' title='hide maps'>&#10548;</a>\
+   </div>\
+   <table><tr></tr></table>\
   </div>\
-  <table><tr></tr></table>\
  </td>\
 </tr>\
 ";
@@ -247,26 +253,42 @@ class Chain {
     show(data) {
         const ul = $("<table class='chain'></table>").appendTo(this.node);
         for (let src_no = data.sources.length - 1; src_no >= 0; --src_no) {
-            let li = $(acv_utils.format(Chain_source_row_html, {src_no: src_no, id: data.sources[src_no]})).appendTo(ul);
+            let row = $(acv_utils.format(Chain_source_row_html, {src_no: src_no + 1, id: data.sources[src_no]})).appendTo(ul);
             if (data.sources[src_no])
-                this.make_source(li, src_no, data);
+                this.make_source(row, src_no, data);
             if (data.results[src_no])
-                this.make_results(li.find("tr"), src_no, data);
+                this.make_results(row, src_no, data);
         }
     }
 
-    make_results(node, step_no, data) {
-        if (step_no >= (data.sources.length - this.options.steps_with_initial_maps)) {
-            // const cell_maker = {cell: cell_type => this.make_map_cell(node, cell_type), content: (cell_type, cell, message) => this.cell_map_add_content(cell, cell_type, message)};
-            for (let cell_type of ["i", "s", "1", "1m"]) {
-                if (data.results[step_no][cell_type]) {
-                    const cell = this.make_map_cell(node, cell_type);
-                    this.dispatcher.send_receive({C: "doc", id: data.results[step_no][cell_type]}, message => this.cell_map_add_content(cell, cell_type, message));
-                }
+    make_results(row, step_no, data) {
+        row.find(".chain-step-expand").on("click", () => this.expand_results(row, step_no, data));
+        row.find(".chain-step-collapse").on("click", () => this.collapse_results(row, step_no, data));
+        if (step_no >= (data.sources.length - this.options.steps_with_initial_maps))
+            this.expand_results(row, step_no, data);
+        else
+            this.collapse_results(row, step_no, data);
+    }
+
+    expand_results(row, step_no, data) {
+        for (let cell_type of ["i", "s", "1", "1m"]) {
+            if (data.results[step_no][cell_type]) {
+                const cell = this.make_map_cell(row.find("tr"), cell_type);
+                this.dispatcher.send_receive({C: "doc", id: data.results[step_no][cell_type]}, message => this.cell_map_add_content(cell, cell_type, message));
             }
         }
-        else {
-        }
+        row.find(">td>div").addClass("adt-shadow");
+        row.addClass("chain-row-expanded");
+        row.find(".chain-step-expand").hide();
+        row.find(".chain-step-collapse").show();
+    }
+
+    collapse_results(row, step_no, data) {
+        row.find(".chain-step-expand").show();
+        row.find(".chain-step-collapse").hide();
+        row.find(">td>div").removeClass("adt-shadow");
+        row.removeClass("chain-row-expanded");
+        row.find("tr").empty();
     }
 
     make_map_cell(node, cell_type) {

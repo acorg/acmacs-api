@@ -264,7 +264,7 @@ div.acmacs-web-header .acmacs-web-user {
 /* } */
 
 table.chain {
-    border-spacing: 0.5em 1em;
+    border-spacing: 0.5em 0;
 }
 
 table.chain > tr > td {
@@ -274,14 +274,38 @@ table.chain > tr > td {
     white-space: nowrap;
     font-size: 1.2em;
     font-weight: bold;
-    padding: 0.5em;
+}
+
+.chain .chain-row-expanded > td > div {
+    margin-bottom: 1em;
+}
+
+.chain .chain-row-expanded .chain-title-row {
+    padding: 0.5em 0;
 }
 
 .chain .chain-title-row a {
     color: black;
 }
 
+.chain .chain-title-row .chain-step-expand {
+    display: none;
+    position: relative;
+    top: 0.5em;
+    cursor: pointer;
+}
+
+.chain .chain-title-row .chain-step-collapse {
+    display: none;
+    position: relative;
+    top: 0.5em;
+    cursor: pointer;
+}
+
 .chain .chain-title-row .chain-step-no {
+    width: 1.5em;
+    text-align: right;
+    float: left;
 }
 
 .chain .chain-title-row .chain-step-title {
