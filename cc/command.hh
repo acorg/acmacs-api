@@ -27,6 +27,7 @@ class Command : public from_json::object
 
     std::string command_name() const { return get_string("C"); }
     std::string command_id() const { return get_string("D"); }
+    std::string add_to_response() const { return get_as_string("add_to_response"); }
     size_t command_number() const { return mCommandNumber; }
 
     virtual void run() = 0;
