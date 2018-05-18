@@ -429,11 +429,18 @@ function antigenic_map_widget(parent, id, dispatcher) {
                 view_mode: "best-projection",
                 coloring: "default",
                 canvas_size: {width: 400, height: 400},
-                title_fields: ["stress", "antigens", "sera", "date", "tables"]
+                title_fields: ["stress", "antigens", "sera", "date", "tables"],
+                point_name_on_click: show_point_info
             };
             new mod.AntigenicMapWidget($("<div></div>").appendTo(parent), message, widget_options);
         });
     });
+}
+
+// ----------------------------------------------------------------------
+
+function show_point_info(name) {
+    console.log("show_point_info", name);
 }
 
 // ----------------------------------------------------------------------
