@@ -104,17 +104,7 @@ namespace to_json
 
     template <> inline std::string value(const bsoncxx::types::value& aV);
 
-    // template <> inline std::string value(const bsoncxx::document::element& aElement)
-    // {
-    //     if (aElement) {
-    //         const auto val = aElement.get_value();
-    //         return value(val);
-    //     }
-    //     else
-    //         return symbol_("invalid");
-    // }
-
-    template <> inline std::string value(const bsoncxx::array::element& aElement)
+    template <typename E> inline std::string value_of_element(const E& aElement)
     {
         if (aElement) {
             const auto val = aElement.get_value();
@@ -123,6 +113,9 @@ namespace to_json
         else
             return symbol_("invalid");
     }
+
+    template <> inline std::string value(const bsoncxx::document::element& aElement) { return value_of_element(aElement); }
+    template <> inline std::string value(const bsoncxx::array::element& aElement) { return value_of_element(aElement); }
 
     template <> inline std::string value(const bsoncxx::array::view& aView)
     {
