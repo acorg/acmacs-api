@@ -59,7 +59,7 @@ export class Dispatcher {
             break;
         case "doc":
         case "chain":
-            this.command_on_hello_ = {C: "doc", id: url_pathname_fields[2]};
+            this.command_on_hello_ = {C: "doc", id: url_pathname_fields[2], chain_source_names: true};
             break;
         default:
             this.command_on_hello_ = {C: "chains", keywords: ["whocc"]};

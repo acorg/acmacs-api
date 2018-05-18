@@ -236,6 +236,7 @@ const Chain_source_row_html = "\
 class Chain {
 
     constructor(node, data, dispatcher, options={}) {
+        console.log("Chain.data", data);
         this.node = node;
         this.dispatcher = dispatcher;
         this.options = Object.assign({}, Chain_default_options, options);
@@ -256,18 +257,32 @@ class Chain {
     }
 
     make_results(node, step_no, data) {
-        const cell_maker = (step_no >= (data.sources.length - this.options.steps_with_initial_maps))
-              ? {cell: cell_type => this.make_map_cell(node, cell_type), content: (cell_type, cell, message) => this.cell_map_add_content(cell, cell_type, message)}
-              : {cell: cell_type => this.make_text_cell(node, cell_type), content: (cell_type, cell, message) => this.cell_text_add_content(cell, cell_type, message)};
-        for (let cell_type of ["i", "s", "1", "1m"]) {
-            if (data.results[step_no][cell_type]) {
-                let cell = cell_maker.cell(cell_type);
-                this.dispatcher.send_receive({C: "doc", id: data.results[step_no][cell_type]}, message => {
-                    cell_maker.content(cell_type, cell, message);
-                });
+        if (step_no >= (data.sources.length - this.options.steps_with_initial_maps)) {
+            // const cell_maker = {cell: cell_type => this.make_map_cell(node, cell_type), content: (cell_type, cell, message) => this.cell_map_add_content(cell, cell_type, message)};
+            for (let cell_type of ["i", "s", "1", "1m"]) {
+                if (data.results[step_no][cell_type]) {
+                    const cell = this.make_map_cell(node, cell_type);
+                    this.dispatcher.send_receive({C: "doc", id: data.results[step_no][cell_type]}, message => this.cell_map_add_content(cell, cell_type, message));
+                }
             }
         }
+        else {
+        }
     }
+
+    // make_results_old(node, step_no, data) {
+    //     const cell_maker = (step_no >= (data.sources.length - this.options.steps_with_initial_maps))
+    //           ? {cell: cell_type => this.make_map_cell(node, cell_type), content: (cell_type, cell, message) => this.cell_map_add_content(cell, cell_type, message)}
+    //           : {cell: cell_type => this.make_text_cell(node, cell_type), content: (cell_type, cell, message) => this.cell_text_add_content(cell, cell_type, message)};
+    //     for (let cell_type of ["i", "s", "1", "1m"]) {
+    //         if (data.results[step_no][cell_type]) {
+    //             let cell = cell_maker.cell(cell_type);
+    //             // this.dispatcher.send_receive({C: "doc", id: data.results[step_no][cell_type]}, message => {
+    //             //     cell_maker.content(cell_type, cell, message);
+    //             // });
+    //         }
+    //     }
+    // }
 
     make_map_cell(node, cell_type) {
         return $(`<td><div class='map-cell-title'>${Chain_cell_type_to_name[cell_type]}<span class='chart-id ads-id-popup'></span></div></td>`).appendTo(node);
@@ -298,22 +313,27 @@ class Chain {
     }
 
     make_source(node, step_no, data) {
-        this.dispatcher.send_receive({C: "doc", id: data.sources[step_no]}, (message, dispatcher) => {
-            // console.log("make_source received", message);
-            node.find(".chain-step-title").empty().append(message.doc.name || "Table").attr("href", api_utils.url_prefix() + "chain-step/" + data._id + "/" + step_no);
-            node.find(".chain-step-id").on("click", evt => acv_toolkit.movable_window_with_json(message.doc, evt.target, message.doc.name || message.doc.description || message.doc._id));
-            if (step_no === 0) {
-                if (message.doc.date)
-                    $("body .acmacs-web-header .acmacs-web-title .chain-begin-date").empty().append(message.doc.date);
-            }
-            else if (step_no === (data.sources.length - 1)) {
-                if (message.doc.date) {
-                    $("body .acmacs-web-header .acmacs-web-title .chain-end-date").empty().append(message.doc.date);
-                    $("body .acmacs-web-header .acmacs-web-title .chain-date-dash").show();
-                }
-            }
-        });
+        node.find(".chain-step-title").empty().append((data.source_names && data.source_names[step_no]) || "Table").attr("href", api_utils.url_prefix() + "chain-step/" + data._id + "/" + step_no);
+        //node.find(".chain-step-id").on("click", evt => acv_toolkit.movable_window_with_json(message.doc, evt.target, message.doc.name || message.doc.description || message.doc._id));
     }
+
+    // make_source_old(node, step_no, data) {
+    //     this.dispatcher.send_receive({C: "doc", id: data.sources[step_no]}, (message, dispatcher) => {
+    //         // console.log("make_source received", message);
+    //         node.find(".chain-step-title").empty().append(message.doc.name || "Table").attr("href", api_utils.url_prefix() + "chain-step/" + data._id + "/" + step_no);
+    //         node.find(".chain-step-id").on("click", evt => acv_toolkit.movable_window_with_json(message.doc, evt.target, message.doc.name || message.doc.description || message.doc._id));
+    //         if (step_no === 0) {
+    //             if (message.doc.date)
+    //                 $("body .acmacs-web-header .acmacs-web-title .chain-begin-date").empty().append(message.doc.date);
+    //         }
+    //         else if (step_no === (data.sources.length - 1)) {
+    //             if (message.doc.date) {
+    //                 $("body .acmacs-web-header .acmacs-web-title .chain-end-date").empty().append(message.doc.date);
+    //                 $("body .acmacs-web-header .acmacs-web-title .chain-date-dash").show();
+    //             }
+    //         }
+    //     });
+    // }
 }
 
 // ----------------------------------------------------------------------
