@@ -121,8 +121,8 @@ void Command_doc::run()
     for (const auto collection : {"charts", "inspectors", "logs", "configuration", "users_groups"}) {
         auto doc = MongodbAccess{db()}.find_one(collection, to_bson::object("_id", get_id(), session().read_permissions()), MongodbAccess::exclude("projections", "table"));
         if (doc) {
-            if (get_chain_source_names())
-                chain_source_names(*doc);
+            if (get_chain_source_data())
+                chain_source_data(*doc);
             send(to_json::object("doc", doc->view()));
             found = true;
             break;
@@ -135,40 +135,41 @@ void Command_doc::run()
 
 // ----------------------------------------------------------------------
 
-void Command_doc::chain_source_names(bsoncxx::document::value& doc)
+void Command_doc::chain_source_data(bsoncxx::document::value& doc)
 {
     const auto view = doc.view();
     if (const auto doc_type = view["_t"]; doc_type) {
         if (const auto doc_type_s = doc_type.get_utf8().value.to_string(); doc_type_s == "acmacs.inspectors.routine_diagnostics.IncrementalChain" || doc_type_s == "acmacs.inspectors.routine_diagnostics.IncrementalChainForked") {
             if (const auto sources = view["sources"]; sources) {
                 bsoncxx::builder::basic::array source_array;
-                for (const auto& source : static_cast<bsoncxx::array::view>(sources.get_array())) {
-                    source_array.append(make_source_name(source.get_oid().value));
-                }
+                for (const auto& source : static_cast<bsoncxx::array::view>(sources.get_array()))
+                    append_source_data(source.get_oid().value, source_array);
                 bsoncxx::builder::basic::document builder;
                 builder.append(bsoncxx::builder::concatenate(view));
-                builder.append(bsoncxx::builder::basic::kvp("source_names", source_array));
+                builder.append(bsoncxx::builder::basic::kvp("ad_api_source_data", source_array));
                 doc = builder.extract();
             }
         }
     }
 
-} // Command_doc::chain_source_names
+} // Command_doc::chain_source_data
 
 // ----------------------------------------------------------------------
 
-std::string Command_doc::make_source_name(bsoncxx::oid&& id)
+void Command_doc::append_source_data(bsoncxx::oid&& id, bsoncxx::builder::basic::array& container)
 {
-    if (auto doc = MongodbAccess{db()}.find_one("charts", to_bson::object("_id", id, session().read_permissions()), MongodbAccess::include("name")); doc) {
+    if (auto doc = MongodbAccess{db()}.find_one("charts", to_bson::object("_id", id, session().read_permissions()), MongodbAccess::include("name", "date")); doc) {
+        bsoncxx::builder::basic::document source_data;
         if (const auto name = doc->view()["name"]; name)
-            return name.get_utf8().value.to_string();
-        else
-            return id.to_string();
+            source_data.append(bsoncxx::builder::basic::kvp("name", name.get_utf8().value));
+        if (const auto date = doc->view()["date"]; date)
+            source_data.append(bsoncxx::builder::basic::kvp("date", date.get_utf8().value));
+        container.append(source_data);
     }
     else
-        return id.to_string() + ": not found";
+        container.append(bsoncxx::types::b_null{});
 
-} // Command_doc::make_source_name
+} // Command_doc::append_source_data
 
 // ----------------------------------------------------------------------
 
@@ -176,7 +177,7 @@ const char* Command_doc::description()
 {
     return R"(gets document (json) by id, looking in collections: "charts", "inspectors", "logs", "configuration", "users_groups"
     id: id
-    chain_source_names: false - if doc is chain, extract its source names)";
+    chain_source_data: false - if doc is chain, extract its source names and dates and put into ad_api_source_data array)";
 
 } // Command_doc::description
 

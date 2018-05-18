@@ -14,13 +14,13 @@ class Command_doc : public Command
     void run() override;
 
     auto get_id() const { return bsoncxx::oid{get_string("id")}; }
-    auto get_chain_source_names() const { return get("chain_source_names", false); }
+    auto get_chain_source_data() const { return get("chain_source_data", false); }
 
     static const char* description();
 
  private:
-    void chain_source_names(bsoncxx::document::value& doc);
-    std::string make_source_name(bsoncxx::oid&& id);
+    void chain_source_data(bsoncxx::document::value& doc);
+    void append_source_data(bsoncxx::oid&& id, bsoncxx::builder::basic::array& container);
 
 }; // class Command_chart
 
