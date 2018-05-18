@@ -314,17 +314,7 @@ class Chain {
         cell.find("span.chart-id").empty().append(message.doc._id).on("click", evt => acv_toolkit.movable_window_with_json(message.doc, evt.target, message.doc.name || message.doc.description || message.doc._id));
         if (message.doc.stresses && message.doc.stresses.length) {
             // cell.find("div").append(" " + message.doc.stresses[0].toFixed(2));
-            this.dispatcher.send_receive({C: "ace", id: message.doc._id}, message => {
-                import("../map-draw/ace-view-1/ace-view.js").then(mod => {
-                    const widget_options = {
-                        view_mode: "best-projection",
-                        coloring: "default",
-                        canvas_size: {width: 400, height: 400},
-                        title_fields: ["stress", "antigens", "sera", "date", "tables"]
-                    };
-                    new mod.AntigenicMapWidget($("<div></div>").appendTo(cell), message, widget_options);
-                });;
-            });
+            antigenic_map_widget(cell, message.doc._id, this.dispatcher);
         }
     }
 
@@ -406,17 +396,7 @@ class ChainStep {
         cell.find("span.chart-id").empty().append(message.doc._id).on("click", evt => acv_toolkit.movable_window_with_json(message.doc, evt.target, message.doc.name || message.doc.description || message.doc._id));
         if (message.doc.stresses && message.doc.stresses.length) {
             // cell.find("div").append(" " + message.doc.stresses[0].toFixed(2));
-            this.dispatcher.send_receive({C: "ace", id: message.doc._id}, message => {
-                import("../map-draw/ace-view-1/ace-view.js").then(mod => {
-                    const widget_options = {
-                        view_mode: "best-projection",
-                        coloring: "default",
-                        canvas_size: {width: 400, height: 400},
-                        title_fields: ["stress", "antigens", "sera", "date", "tables"]
-                    };
-                    new mod.AntigenicMapWidget($("<div></div>").appendTo(cell), message, widget_options);
-                });;
-            });
+            antigenic_map_widget(cell, message.doc._id, this.dispatcher);
         }
     }
 
@@ -438,6 +418,22 @@ function acmacs_web_title(text, replace=false) {
     if (replace)
         node.empty();
     node.append(text);
+}
+
+// ----------------------------------------------------------------------
+
+function antigenic_map_widget(parent, id, dispatcher) {
+    dispatcher.send_receive({C: "ace", id: id}, message => {
+        import("../map-draw/ace-view-1/ace-view.js").then(mod => {
+            const widget_options = {
+                view_mode: "best-projection",
+                coloring: "default",
+                canvas_size: {width: 400, height: 400},
+                title_fields: ["stress", "antigens", "sera", "date", "tables"]
+            };
+            new mod.AntigenicMapWidget($("<div></div>").appendTo(parent), message, widget_options);
+        });
+    });
 }
 
 // ----------------------------------------------------------------------
