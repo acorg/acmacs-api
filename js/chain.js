@@ -329,7 +329,7 @@ class Chain {
         const source_data = data.ad_api_source_data && data.ad_api_source_data[step_no];
         const name = (source_data && source_data.name) || "Table";
         node.find(".chain-step-title").empty().append(name).attr("href", api_utils.url_prefix() + "chain-step/" + data._id + "/" + step_no);
-        node.find(".chain-step-id").on("click", evt => movable_window_with_json_for_id(data._id, evt.target, this.dispatcher));
+        node.find(".chain-step-id").on("click", evt => movable_window_with_json_for_id(data.sources[step_no], evt.target, this.dispatcher));
         if (step_no === 0 && source_data && source_data.date)
             $("body .acmacs-web-header .acmacs-web-title .chain-begin-date").empty().append(source_data.date);
         else if (step_no === (data.sources.length - 1) && source_data && source_data.date) {
