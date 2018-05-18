@@ -216,9 +216,8 @@ const Chain_default_options = {steps_with_initial_maps: 2};
 const Chain_cell_type_to_name = {i: "incremental", s: "from scratch", "1": "individual", "1m": "merge col bases"};
 
 const Chain_acmacs_web_title_html = "\
-<span class='chain-date'>\
-  <span class='chain-begin-date'></span><span class='chain-date-dash'>-</span><span class='chain-end-date'></span>\
-</span>\
+<span class='chain-min-col-basis'>&gt;=${min_col_basis}</span>\
+<span class='chain-date'><span class='chain-begin-date'></span><span class='chain-date-dash'>-</span><span class='chain-end-date'></span></span>\
 <span class='chain-id ads-id-popup'>${id}</span>\
 ";
 
@@ -240,7 +239,7 @@ class Chain {
         this.node = node;
         this.dispatcher = dispatcher;
         this.options = Object.assign({}, Chain_default_options, options);
-        acmacs_web_title(acv_utils.format(Chain_acmacs_web_title_html, {id: data._id}), false);
+        acmacs_web_title(acv_utils.format(Chain_acmacs_web_title_html, {id: data._id, min_col_basis: data.minimum_column_basis || "none"}), false);
         $("body .acmacs-web-header .acmacs-web-title .chain-id").on("click", evt => acv_toolkit.movable_window_with_json(data, evt.target, data.name || data.description || data._id));
         this.show(data);
     }
@@ -270,20 +269,6 @@ class Chain {
         }
     }
 
-    // make_results_old(node, step_no, data) {
-    //     const cell_maker = (step_no >= (data.sources.length - this.options.steps_with_initial_maps))
-    //           ? {cell: cell_type => this.make_map_cell(node, cell_type), content: (cell_type, cell, message) => this.cell_map_add_content(cell, cell_type, message)}
-    //           : {cell: cell_type => this.make_text_cell(node, cell_type), content: (cell_type, cell, message) => this.cell_text_add_content(cell, cell_type, message)};
-    //     for (let cell_type of ["i", "s", "1", "1m"]) {
-    //         if (data.results[step_no][cell_type]) {
-    //             let cell = cell_maker.cell(cell_type);
-    //             // this.dispatcher.send_receive({C: "doc", id: data.results[step_no][cell_type]}, message => {
-    //             //     cell_maker.content(cell_type, cell, message);
-    //             // });
-    //         }
-    //     }
-    // }
-
     make_map_cell(node, cell_type) {
         return $(`<td><div class='map-cell-title'>${Chain_cell_type_to_name[cell_type]}<span class='chart-id ads-id-popup'></span></div></td>`).appendTo(node);
     }
@@ -301,7 +286,13 @@ class Chain {
             // cell.find("div").append(" " + message.doc.stresses[0].toFixed(2));
             this.dispatcher.send_receive({C: "ace", id: message.doc._id}, message => {
                 import("../map-draw/ace-view-1/ace-view.js").then(mod => {
-                    new mod.AntigenicMapWidget($("<div></div>").appendTo(cell), message, {view_mode: "best-projection", coloring: "default", canvas_size: {width: 400, height: 400}});
+                    const widget_options = {
+                        view_mode: "best-projection",
+                        coloring: "default",
+                        canvas_size: {width: 400, height: 400},
+                        title_fields: ["stress", "antigens", "sera", "date", "tables"]
+                    };
+                    new mod.AntigenicMapWidget($("<div></div>").appendTo(cell), message, widget_options);
                 });;
             });
         }
@@ -324,7 +315,6 @@ class Chain {
             $("body .acmacs-web-header .acmacs-web-title .chain-date-dash").show();
         }
     }
-
 }
 
 // ----------------------------------------------------------------------

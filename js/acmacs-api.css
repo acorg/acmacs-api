@@ -232,6 +232,11 @@ div.acmacs-web-header .acmacs-web-user {
 /* ---------------------------------------------------------------------- */
 /* Chain */
 
+.acmacs-web-title .chain-min-col-basis {
+    padding-left: 0.5em;
+    font-weight: normal;
+}
+
 .acmacs-web-title .chain-date {
     padding-left: 1em;
     color: #004000;
