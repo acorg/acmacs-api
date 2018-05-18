@@ -301,7 +301,7 @@ class Chain {
             // cell.find("div").append(" " + message.doc.stresses[0].toFixed(2));
             this.dispatcher.send_receive({C: "ace", id: message.doc._id}, message => {
                 import("../map-draw/ace-view-1/ace-view.js").then(mod => {
-                    new mod.AntigenicMapWidget($("<div></div>").appendTo(cell), message, {view_mode: "best-projection", coloring: "default", canvas_size: {width: 500, height: 500}});
+                    new mod.AntigenicMapWidget($("<div></div>").appendTo(cell), message, {view_mode: "best-projection", coloring: "default", canvas_size: {width: 400, height: 400}});
                 });;
             });
         }
@@ -313,34 +313,25 @@ class Chain {
     }
 
     make_source(node, step_no, data) {
-        node.find(".chain-step-title").empty().append((data.source_names && data.source_names[step_no]) || "Table").attr("href", api_utils.url_prefix() + "chain-step/" + data._id + "/" + step_no);
-        //node.find(".chain-step-id").on("click", evt => acv_toolkit.movable_window_with_json(message.doc, evt.target, message.doc.name || message.doc.description || message.doc._id));
+        const source_data = data.ad_api_source_data && data.ad_api_source_data[step_no];
+        const name = (source_data && source_data.name) || "Table";
+        node.find(".chain-step-title").empty().append(name).attr("href", api_utils.url_prefix() + "chain-step/" + data._id + "/" + step_no);
+        node.find(".chain-step-id").on("click", evt => movable_window_with_json_for_id(data._id, evt.target, this.dispatcher));
+        if (step_no === 0 && source_data && source_data.date)
+            $("body .acmacs-web-header .acmacs-web-title .chain-begin-date").empty().append(source_data.date);
+        else if (step_no === (data.sources.length - 1) && source_data && source_data.date) {
+            $("body .acmacs-web-header .acmacs-web-title .chain-end-date").empty().append(source_data.date);
+            $("body .acmacs-web-header .acmacs-web-title .chain-date-dash").show();
+        }
     }
 
-    // make_source_old(node, step_no, data) {
-    //     this.dispatcher.send_receive({C: "doc", id: data.sources[step_no]}, (message, dispatcher) => {
-    //         // console.log("make_source received", message);
-    //         node.find(".chain-step-title").empty().append(message.doc.name || "Table").attr("href", api_utils.url_prefix() + "chain-step/" + data._id + "/" + step_no);
-    //         node.find(".chain-step-id").on("click", evt => acv_toolkit.movable_window_with_json(message.doc, evt.target, message.doc.name || message.doc.description || message.doc._id));
-    //         if (step_no === 0) {
-    //             if (message.doc.date)
-    //                 $("body .acmacs-web-header .acmacs-web-title .chain-begin-date").empty().append(message.doc.date);
-    //         }
-    //         else if (step_no === (data.sources.length - 1)) {
-    //             if (message.doc.date) {
-    //                 $("body .acmacs-web-header .acmacs-web-title .chain-end-date").empty().append(message.doc.date);
-    //                 $("body .acmacs-web-header .acmacs-web-title .chain-date-dash").show();
-    //             }
-    //         }
-    //     });
-    // }
 }
 
 // ----------------------------------------------------------------------
 
-// function popup_with_json_for_id(id, invoking_node, dispatcher) {
-//     dispatcher.send_receive({C: "doc", id: id}, (message, dispatcher) => acv_toolkit.movable_window_with_json(message.doc, invoking_node, message.doc.name || message.doc.description || message.doc._id));
-// }
+function movable_window_with_json_for_id(id, invoking_node, dispatcher) {
+    dispatcher.send_receive({C: "doc", id: id}, (message, dispatcher) => acv_toolkit.movable_window_with_json(message.doc, invoking_node, message.doc.name || message.doc.description || message.doc._id));
+}
 
 // ----------------------------------------------------------------------
 
