@@ -215,13 +215,31 @@ class Chains {
 const Chain_default_options = {steps_with_initial_maps: 2};
 const Chain_cell_type_to_name = {i: "incremental", s: "from scratch", "1": "individual", "1m": "merge col bases"};
 
+const Chain_acmacs_web_title_html = "\
+<span class='chain-date'>\
+  <span class='chain-begin-date'></span><span class='chain-date-dash'>-</span><span class='chain-end-date'></span>\
+</span>\
+<span class='chain-id ads-id-popup'>${id}</span>\
+";
+
+const Chain_source_row_html = "\
+<tr>\
+ <td class='adt-shadow'>\
+  <div class='chain-title-row'>\
+   <span class='chain-step-no'>${src_no}</span><a class='chain-step-title' target='_blank'>Step</a><span class='chain-step-id ads-id-popup'>${id}</span>\
+  </div>\
+  <table><tr></tr></table>\
+ </td>\
+</tr>\
+";
+
 class Chain {
 
     constructor(node, data, dispatcher, options={}) {
         this.node = node;
         this.dispatcher = dispatcher;
         this.options = Object.assign({}, Chain_default_options, options);
-        acmacs_web_title(`<span class='chain-date'><span class='chain-begin-date'></span><span class='chain-date-dash'>-</span><span class='chain-end-date'></span></span><span class='chain-id ads-id-popup'>${data._id}</span>`, false);
+        acmacs_web_title(acv_utils.format(Chain_acmacs_web_title_html, {id: data._id}), false);
         $("body .acmacs-web-header .acmacs-web-title .chain-id").on("click", evt => acv_toolkit.movable_window_with_json(data, evt.target, data.name || data.description || data._id));
         this.show(data);
     }
@@ -229,7 +247,7 @@ class Chain {
     show(data) {
         const ul = $("<table class='chain'></table>").appendTo(this.node);
         for (let src_no = data.sources.length - 1; src_no >= 0; --src_no) {
-            let li = $(`<tr><td class='adt-shadow'><div class='chain-title-row'><span class='chain-step-no'>${src_no}</span><a class='chain-step-title' target="_blank">Step</a><span class='chain-step-id ads-id-popup'>${data.sources[src_no]}</span></div><table><tr></tr></table></td></tr>`).appendTo(ul);
+            let li = $(acv_utils.format(Chain_source_row_html, {src_no: src_no, id: data.sources[src_no]})).appendTo(ul);
             if (data.sources[src_no])
                 this.make_source(li, src_no, data);
             if (data.results[src_no])
