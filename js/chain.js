@@ -234,13 +234,19 @@ const Chain_source_row_html = "\
  <td>\
   <div>\
    <div class='chain-title-row'>\
+    <div class='chain-step-expand-place'>\
+      <a class='chain-step-expand' title='show maps'>&#x21CA;</a>\
+    </div>\
     <div class='chain-step-no'>${src_no}</div>\
     <a class='chain-step-title' target='_blank'>Step</a>\
     <span class='chain-step-id ads-id-popup'>${id}</span>\
-    <a class='chain-step-expand' title='show maps'>&#10550;</a>\
-    <a class='chain-step-collapse' title='hide maps'>&#10548;</a>\
    </div>\
-   <table><tr></tr></table>\
+   <table class='chain-row'>\
+     <tr>\
+     <td class='chain-step-collapse'><div class='chain-step-collapse-place'><a class='chain-step-collapse' title='hide maps'>&#x21C8;</a></div></td>\
+     <td><table class='chain-step-maps'><tr><td></td></tr></table></td>\
+     </tr>\
+   </table>\
   </div>\
  </td>\
 </tr>\
@@ -281,22 +287,20 @@ class Chain {
     expand_results(row, step_no, data) {
         for (let cell_type of ["i", "s", "1", "1m"]) {
             if (data.results[step_no][cell_type]) {
-                const cell = this.make_map_cell(row.find("tr"), cell_type);
+                const cell = this.make_map_cell(row.find("table.chain-step-maps tr"), cell_type);
                 this.dispatcher.send_receive({C: "doc", id: data.results[step_no][cell_type]}, message => this.cell_map_add_content(cell, cell_type, message));
             }
         }
         row.find(">td>div").addClass("adt-shadow");
-        row.addClass("chain-row-expanded");
-        row.find(".chain-step-expand").hide();
-        row.find(".chain-step-collapse").show();
+        row.addClass("chain-row-expanded").removeClass("chain-row-collapsed");
+        row.find("table.chain-row").show();
     }
 
     collapse_results(row, step_no, data) {
-        row.find(".chain-step-expand").show();
-        row.find(".chain-step-collapse").hide();
         row.find(">td>div").removeClass("adt-shadow");
-        row.removeClass("chain-row-expanded");
-        row.find("tr").empty();
+        row.removeClass("chain-row-expanded").addClass("chain-row-collapsed");
+        row.find("table.chain-row").hide();
+        row.find("table.chain-step-maps tr").empty();
     }
 
     make_map_cell(node, cell_type) {
@@ -440,7 +444,7 @@ function antigenic_map_widget(parent, id, dispatcher) {
 // ----------------------------------------------------------------------
 
 function show_point_info(name) {
-    console.log("show_point_info", name);
+    console.log("chain.js/show_point_info", name);
 }
 
 // ----------------------------------------------------------------------

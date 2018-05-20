@@ -288,18 +288,52 @@ table.chain > tr > td {
     color: black;
 }
 
+.chain .chain-step-expand-place {
+    width: 0.7em;
+    height: 1em;
+    float: left;
+    margin-left: -0.4em;
+}
+
 .chain .chain-title-row .chain-step-expand {
     display: none;
+    cursor: pointer;
+    font-weight: normal;
+}
+
+table.chain > tr.chain-row-collapsed:hover .chain-step-expand {
+    display: block;
+}
+
+.chain .chain-row {
     position: relative;
-    top: 0.5em;
+}
+
+.chain .chain-row td.chain-step-collapse {
+    vertical-align: bottom;
+}
+
+.chain .chain-row .chain-step-collapse-place {
+    position: relative;
+    float: left;
+    bottom: 0;
+    left: 0;
+}
+
+.chain .chain-step-collapse-place {
+    width: 0.7em;
+    height: 1em;
+    padding-bottom: 0.7em;
+    /* font-weight: bold; */
+}
+
+.chain a.chain-step-collapse {
+    display: none;
     cursor: pointer;
 }
 
-.chain .chain-title-row .chain-step-collapse {
-    display: none;
-    position: relative;
-    top: 0.5em;
-    cursor: pointer;
+table.chain > tr.chain-row-expanded:hover a.chain-step-collapse {
+    display: block;
 }
 
 .chain .chain-title-row .chain-step-no {
