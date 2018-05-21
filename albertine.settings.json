@@ -1,23 +1,20 @@
 {
     "host": "localhost",
     "port": 10067,
-    "mongodb_uri": "mongodb://localhost:37017/",
-    "?acmacs_c2_uri": "https://albertine:1168/api",
-    "acmacs_c2_uri": "https://acmacs-web.antigenic-cartography.org/api",
-    "number_of_threads": 3,
+    "mongodb_uri": "mongodb://localhost:27017/",
+    "acmacs_c2_uri": "https://localhost:1168/api",
+    "number_of_threads": 16,
 
-    "certificate_chain_file": "ssl/self-signed.crt",
-    "private_key_file": "ssl/self-signed.key",
-    "tmp_dh_file": "ssl/dh.pem",
+    "certificate_chain_file": "fullchain.pem",
+    "private_key_file": "privkey.pem",
+    "tmp_dh_file": "dh.pem",
+    "?make tmp_dh_file": "openssl dhparam -out dh.pem 2048",
 
-    "log_access": "/tmp/acmacs-api-server.access.log",
-    "log_error": "/tmp/acmacs-api-server.error.log",
+    "log_access": "log/access.log",
+    "log_error": "log/error.log",
 
-    "root_page": "js/acmacs-api.html",
+    "?root_page": "js/acmacs-api.html",
     "locations": [
         {"location": "/favicon.ico", "files": ["favicon.ico"]},
-        {"location": "/js/ad/acmacs-api/", "dirs": ["js/"]},
-        {"location": "/js/ad/draw/", "dirs": ["/Library/WebServer/Documents/js/ad/draw/"]},
-        {"location": "/js/ad/map-draw/", "dirs": ["/Library/WebServer/Documents/js/ad/map-draw/"]}
         ]
 }
