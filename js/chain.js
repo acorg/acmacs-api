@@ -254,7 +254,7 @@ const Chain_source_row_html = "\
     <span class='chain-step-id ads-id-popup'>${id}</span>\
    </div>\
    <table class='chain-step-maps'>\
-    <tr><td></td></tr>\
+    <tr class='chain-step-maps'></tr>\
    </table>\
   </div>\
  </td>\

@@ -284,6 +284,27 @@ ul.chain > li.chain-row-expanded {
     width: 1.5em;
 }
 
+.chain .chain-row .chain-row-content .chain-step-maps {
+    padding-bottom: 0.3em;
+}
+
+.chain .chain-row .chain-row-content table.chain-step-maps tr.chain-step-maps > td {
+    padding-right: 1em;
+    vertical-align: top;
+}
+
+.chain .chain-row .chain-row-content .chain-step-maps .chart-id {
+    margin-left: 1em;
+}
+
+.chain .chain-row .chain-row-content .chain-step-maps .amw201805 {
+    padding: 0;
+}
+
+.chain .chain-row .chain-row-content .chain-step-maps .amw201805 table {
+    border-collapse: collapse;
+}
+
 .chain .chain-row td.chain-row-step-no {
     vertical-align: top;
     height: 1px;
