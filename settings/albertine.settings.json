@@ -2,7 +2,8 @@
     "host": "localhost",
     "port": 10067,
     "mongodb_uri": "mongodb://localhost:27017/",
-    "acmacs_c2_uri": "https://localhost:1168/api",
+    "?acmacs_c2_uri": "https://localhost:1168/api",
+    "acmacs_c2_uri": "https://acmacs-web.antigenic-cartography.org/api",
     "number_of_threads": 16,
 
     "certificate_chain_file": "fullchain.pem",
