@@ -33,3 +33,7 @@ for log in "access.log" "error.log"; do
         rm "log/${log}"
     fi
 done
+
+if [[ ! -f "dh.pem" ]]; then
+    openssl dhparam -out dh.pem 2048
+fi
