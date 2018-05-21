@@ -257,112 +257,72 @@ div.acmacs-web-header .acmacs-web-user {
     padding-left: 0.5em;
 }
 
-/* ul.chain { */
-/*     list-style-type: none; */
-/*     margin: 0 0.5em; */
-/*     padding: 0; */
+/* table.chain { */
+/*     border-spacing: 0 5em; */
+/*     /\* border-collapse: collapse; *\/ */
+/*     /\* box-sizing: border-box; *\/ */
+/*     margin-left: 2em; */
 /* } */
 
-table.chain {
-    border-spacing: 0.5em 0;
+
+ul.chain {
+    list-style: none;
+    padding: 0;
+    margin: 0 1em;
 }
 
-table.chain > tr > td {
+    /* ---------------------------------------------------------------------- */
+
+ul.chain > li.chain-row-expanded {
+    display: inline-block;
+    padding-top: 0.5em;
+    box-shadow: 0 2px 2px 0 rgba(0,0,0,0.14),0 3px 1px -2px rgba(0,0,0,0.12),0 1px 5px 0 rgba(0,0,0,0.2);
+    margin: 1em 0;
 }
 
-.chain .chain-title-row {
-    white-space: nowrap;
-    font-size: 1.2em;
+.chain .chain-row .chain-row-step-no div {
+    width: 1.5em;
+}
+
+.chain .chain-row td.chain-row-step-no {
+    vertical-align: top;
+    height: 1px;
+}
+
+.chain .chain-row td.chain-row-step-no div.chain-row-step-no {
+    position: relative;
+    height: 100%;
+}
+
+.chain .chain-row td.chain-row-step-no div.chain-row-step-no .a-top .a-number {
+    text-align: right;
+}
+
+.chain .chain-row td.chain-row-step-no div.chain-row-step-no .a-bottom {
+    position: absolute;
+    bottom: 0.5em;
+}
+
+.chain .chain-row .chain-row-step-no .a-icon {
+    display: none;
+    cursor: pointer;
     font-weight: bold;
 }
 
-.chain .chain-row-expanded > td > div {
-    margin-bottom: 1em;
-}
-
-.chain .chain-row-expanded .chain-title-row {
-    padding: 0.5em 0;
-}
-
-.chain .chain-title-row a {
-    color: black;
-}
-
-.chain .chain-step-expand-place {
-    width: 0.7em;
-    height: 1em;
-    float: left;
-    margin-left: -0.4em;
-}
-
-.chain .chain-title-row .chain-step-expand {
-    display: none;
-    cursor: pointer;
-    font-weight: normal;
-}
-
-table.chain > tr.chain-row-collapsed:hover .chain-step-expand {
+.chain .chain-row-expanded:hover td.chain-row-step-no .a-collapse-icon {
     display: block;
-}
-
-.chain .chain-row {
-    position: relative;
-}
-
-.chain .chain-row td.chain-step-collapse {
-    vertical-align: bottom;
-}
-
-.chain .chain-row .chain-step-collapse-place {
-    position: relative;
-    float: left;
-    bottom: 0;
-    left: 0;
-}
-
-.chain .chain-step-collapse-place {
-    width: 0.7em;
-    height: 1em;
-    padding-bottom: 0.7em;
-    /* font-weight: bold; */
-}
-
-.chain a.chain-step-collapse {
-    display: none;
-    cursor: pointer;
-}
-
-table.chain > tr.chain-row-expanded:hover a.chain-step-collapse {
-    display: block;
-}
-
-.chain .chain-title-row .chain-step-no {
-    width: 1.5em;
     text-align: right;
-    float: left;
 }
 
-.chain .chain-title-row .chain-step-title {
-    padding-left: 0.5em;
+.chain .chain-row-collapsed:hover td.chain-row-step-no .a-expand-icon {
+    display: block;
+    text-align: right;
 }
 
-.chain .chain-title-row .chain-step-id {
-    padding-left: 0.5em;
+.chain .chain-row-collapsed:hover td.chain-row-step-no .a-number {
+    display: none;
 }
 
-.chain .map-cell-title {
-    text-align: center;
-}
-
-.chain .map-cell-title .chart-id {
-    padding-left: 1em;
-}
-
-/* ul.chain > li { */
-/*     margin: 0.5em 0; */
-/*     padding: 0.3em; */
-/*     display: inline-block; */
-/* } */
 
 /* ---------------------------------------------------------------------- */
 

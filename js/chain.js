@@ -229,27 +229,37 @@ const Chain_acmacs_web_title_html = "\
 <span class='chain-id ads-id-popup'>${id}</span>\
 ";
 
+const Chain_html = "<ul class='chain'></ul>";
+
 const Chain_source_row_html = "\
-<tr>\
- <td>\
+<li class='chain-row'>\
+ <table><tr>\
+ <td class='chain-row-step-no'>\
+  <div class='chain-row-step-no'>\
+   <div class='a-top'>\
+    <div class='a-number'>${src_no}</div>\
+    <div class='a-icon a-expand-icon' title='show maps'>&#x21CA;</div>\
+   </div>\
+   <div class='a-middle'>\
+   </div>\
+   <div class='a-bottom'>\
+    <div class='a-icon a-collapse-icon' title='show maps'>&#x21C8;</div>\
+   </div>\
+  </div>\
+ </td>\
+ <td class='chain-row-content'>\
   <div>\
    <div class='chain-title-row'>\
-    <div class='chain-step-expand-place'>\
-      <a class='chain-step-expand' title='show maps'>&#x21CA;</a>\
-    </div>\
-    <div class='chain-step-no'>${src_no}</div>\
     <a class='chain-step-title' target='_blank'>Step</a>\
     <span class='chain-step-id ads-id-popup'>${id}</span>\
    </div>\
-   <table class='chain-row'>\
-     <tr>\
-     <td class='chain-step-collapse'><div class='chain-step-collapse-place'><a class='chain-step-collapse' title='hide maps'>&#x21C8;</a></div></td>\
-     <td><table class='chain-step-maps'><tr><td></td></tr></table></td>\
-     </tr>\
+   <table class='chain-step-maps'>\
+    <tr><td></td></tr>\
    </table>\
   </div>\
  </td>\
-</tr>\
+ </tr></table>\
+</li>\
 ";
 
 class Chain {
@@ -265,7 +275,7 @@ class Chain {
     }
 
     show(data) {
-        const table = $("<table class='chain'></table>").appendTo(this.node);
+        const table = $(Chain_html).appendTo(this.node);
         for (let src_no = data.sources.length - 1; src_no >= 0; --src_no) {
             const row = $(acv_utils.format(Chain_source_row_html, {src_no: src_no + 1, id: data.sources[src_no]})).appendTo(table);
             if (data.sources[src_no])
@@ -276,8 +286,8 @@ class Chain {
     }
 
     make_results(row, step_no, data) {
-        row.find(".chain-step-expand").on("click", () => this.expand_results(row, step_no, data));
-        row.find(".chain-step-collapse").on("click", () => this.collapse_results(row, step_no, data));
+        row.find(".a-expand-icon").on("click", () => this.expand_results(row, step_no, data));
+        row.find(".a-collapse-icon").on("click", () => this.collapse_results(row, step_no, data));
         if (step_no >= (data.sources.length - this.options.steps_with_initial_maps))
             this.expand_results(row, step_no, data);
         else
@@ -291,13 +301,11 @@ class Chain {
                 this.dispatcher.send_receive({C: "doc", id: data.results[step_no][cell_type]}, message => this.cell_map_add_content(cell, cell_type, message));
             }
         }
-        row.find(">td>div").addClass("adt-shadow");
         row.addClass("chain-row-expanded").removeClass("chain-row-collapsed");
         row.find("table.chain-row").show();
     }
 
     collapse_results(row, step_no, data) {
-        row.find(">td>div").removeClass("adt-shadow");
         row.removeClass("chain-row-expanded").addClass("chain-row-collapsed");
         row.find("table.chain-row").hide();
         row.find("table.chain-step-maps tr").empty();
