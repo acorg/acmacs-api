@@ -1,0 +1,35 @@
+#! /bin/bash
+
+fail()
+{
+    echo ERROR: "$@" >&2
+    exit 1
+}
+
+trap fail EXIT
+
+# ----------------------------------------------------------------------
+
+if [[ ! -d "${ACMACSD_ROOT}" || ! -d "${ACMACSD_ROOT}/sources/acmacs-api/settings" ]]; then
+    fail "ACMACSD_ROOT not set or invalid"
+fi
+
+if [[ "$(hostname)" == "i19" ]]; then
+    SETTINGS="albertine.settings.json"
+    CERT_SOURCE="/etc/letsencrypt/live/notebooks.antigenic-cartography.org/"
+else
+    fail "Usupported host: $(hostname)"
+fi
+
+# ----------------------------------------------------------------------
+
+ln -sf "${ACMACSD_ROOT}/sources/acmacs-api/settings/${SETTINGS}" settings.json
+sudo cp "${CERT_SOURCE}/fullchain.pem" "${CERT_SOURCE}/privkey.pem" . && sudo chown eu:eu *.pem
+mkdir -p log log/old
+NOW=$(date "+%Y-%m%d-%H%M")
+for log in "access.log" "error.log"; do
+    if [[ -f "log/${log}" ]]; then
+        xz -9ec "log/${log}" "log/old/${NOW}.${log}.xz"
+        rm "log/${log}"
+    fi
+done
