@@ -1,0 +1,27 @@
+#! /bin/bash
+
+fail()
+{
+    echo ERROR: "$@" >&2
+    exit 1
+}
+
+trap fail ERR
+
+# ----------------------------------------------------------------------
+
+if [[ ! -d "${ACMACSD_ROOT}" || ! -d "${ACMACSD_ROOT}/sources/acmacs-api/settings" ]]; then
+    fail "ACMACSD_ROOT not set or invalid"
+fi
+
+if [[ "$(hostname)" == "i19" ]]; then
+    pkill -f 'acmacs-api-server settings.json' || true
+    for log in log/*.log; do
+        bn=$(basename "${log}")
+        /usr/bin/xz -9ec "log/${bn}" > "log/old/${NOW}.${bn}.xz"
+        /bin/rm "log/${bn}"
+    done
+    ${ACMACSD_ROOT}/bin/acmacs-api-server settings.json >log/stdout.log 2>log/stderr.log </dev/null &
+else
+    fail "Usupported host: $(hostname)"
+fi
