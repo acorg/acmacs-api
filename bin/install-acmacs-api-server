@@ -24,12 +24,13 @@ fi
 # ----------------------------------------------------------------------
 
 ln -sf "${ACMACSD_ROOT}/sources/acmacs-api/settings/${SETTINGS}" settings.json
+ln -sf "${ACMACSD_ROOT}/share/js/acmacs-api/acmacs-api.html" root.html
 sudo cp "${CERT_SOURCE}/fullchain.pem" "${CERT_SOURCE}/privkey.pem" . && sudo chown eu:eu *.pem
 mkdir -p log log/old
 NOW=$(date "+%Y-%m%d-%H%M")
 for log in "access.log" "error.log"; do
     if [[ -f "log/${log}" ]]; then
-        xz -9ec "log/${log}" "log/old/${NOW}.${log}.xz"
+        xz -9ec "log/${log}" > "log/old/${NOW}.${log}.xz"
         rm "log/${log}"
     fi
 done
@@ -37,3 +38,34 @@ done
 if [[ ! -f "dh.pem" ]]; then
     openssl dhparam -out dh.pem 2048
 fi
+
+cat <<EOF
+Add to apache2.conf:
+
+<IfModule proxy_wstunnel_module>
+  ProxyPass "/acmacs-api" "wss://localhost:10067/acmacs-api"
+</IfModule>
+
+<IfModule proxy_http_module>
+    SSLProxyEngine on
+    SSLProxyVerify none
+    SSLProxyCheckPeerCN off
+    SSLProxyCheckPeerName off
+    SSLProxyCheckPeerExpire off
+    ProxyPass /ads/ https://localhost:10067/
+    #ProxyPassReverse /ads https://localhost:10067/
+</IfModule>
+
+<Location "/js">
+    Require all granted
+</Location>
+
+<Location "/ads">
+    Require all granted
+</Location>
+
+<Location "/acmacs-api">
+    Require all granted
+</Location>
+
+EOF

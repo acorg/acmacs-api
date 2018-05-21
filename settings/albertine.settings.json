@@ -13,8 +13,8 @@
     "log_access": "log/access.log",
     "log_error": "log/error.log",
 
-    "?root_page": "js/acmacs-api.html",
+    "root_page": "root.html",
     "locations": [
-        {"location": "/favicon.ico", "files": ["favicon.ico"]},
+        {"location": "/favicon.ico", "files": ["favicon.ico"]}
         ]
 }
