@@ -102,6 +102,15 @@ export class Dispatcher {
         this.send(data);
     }
 
+    async send_receive_async(data) {
+        if (typeof(data) !== "object" || !data.C)
+            throw "invalid data passed to Dispatcher.send_receive: " + JSON.stringify(data);
+        this.make_D_(data);
+        const result = new Promise(resolve => this.handle(data.D, resolve));
+        this.send(data);
+        return result;
+    }
+
     make_D_(data) {
         if (typeof(data) === "object" && data.C && data.D === undefined) {
             data.D = data.C + "#" + this.command_id_;
