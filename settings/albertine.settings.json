@@ -13,6 +13,7 @@
 
     "log_access": "log/access.log",
     "log_error": "log/error.log",
+    "log_send_receive": "log/send-receive.log",
 
     "root_page": "root.html",
     "locations": [
