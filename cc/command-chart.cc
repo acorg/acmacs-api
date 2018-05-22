@@ -222,7 +222,9 @@ void Command_ace::run()
 
     const auto ace = c2().ace_uncompressed(session().id(), get_string("id"), projection_no + 1);
     acmacs::chart::ChartModify chart(acmacs::chart::import_from_data(ace, acmacs::chart::Verify::None, report_time::No));
-    chart.antigens_modify()->set_continent();
+    auto antigens = chart.antigens_modify();
+    antigens->set_continent();
+    seqdb::add_clades(chart);
     const auto exported = ace_export(chart, "mod_acmacs", 0);
     send(exported);
 
