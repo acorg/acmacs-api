@@ -148,7 +148,7 @@ void Session::create_session()
     const auto id = create();
     std::unique_lock<decltype(mAccess)> lock{mAccess};
     mId = id;
-    std::cout << "Session: " << mId << std::endl;
+    // std::cout << "Session: " << mId << std::endl;
 
         // history.SessionLog(session=session, user_agent=user_agent, changed_user=changed_user).save(session=None)
 

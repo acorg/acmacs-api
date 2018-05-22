@@ -60,6 +60,7 @@ div.acmacs-web-header .acmacs-web-user {
     left: 0;
     right: 0;
     margin: auto;
+    background: white;
 }
 
 #login .title {

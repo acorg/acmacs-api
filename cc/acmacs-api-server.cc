@@ -42,7 +42,7 @@ void WebsocketConnection::message(std::string aMessage, WsppThread& aThread)
 {
     auto& thread = dynamic_cast<WsppThreadWithMongoAccess&>(aThread);
 
-    print_cerr("MSG: ", aMessage.substr(0, 80));
+    print_receive(aMessage);
     auto command = mCommandFactory.find(aMessage, thread, *this);
     try {
         command->run();
@@ -66,7 +66,7 @@ void WebsocketConnection::send(std::string aMessage, send_message_type aMessageT
           op_code = websocketpp::frame::opcode::binary;
           break;
     }
-    print_cerr("SEND: ", aMessage.substr(0, 200));
+    print_send(aMessage);
     WsppWebsocketLocationHandler::send(aMessage, op_code);
 
 } // WebsocketConnection::send
@@ -81,6 +81,7 @@ class AcmacsAPISettings : public ServerSettings
     std::string mongodb_uri() const { return doc_.get_or_default("mongodb_uri", "mongodb://localhost:27017/"); }
     std::string acmacs_c2_uri() const { return doc_.get_or_default("acmacs_c2_uri", "https://localhost:1168/api"); }
     std::string root_page() const { return doc_.get_or_default("root_page", "/tmp/not-found"); }
+    std::string log_send_receive() const { return doc_.get_or_default("log_send_receive", "-"); }
 
 };
 
@@ -124,8 +125,8 @@ int main(int argc, char* const argv[])
         CommandFactory command_factory;
 
         AcmacsAPISettings settings{argv[1]};
-        std::cout << "mongodb_uri: [" << settings.mongodb_uri() << "]" << std::endl;
-        std::cout << "acmacs_c2_uri: [" << settings.acmacs_c2_uri() << "]" << std::endl;
+        // std::cout << "mongodb_uri: [" << settings.mongodb_uri() << "]" << std::endl;
+        // std::cout << "acmacs_c2_uri: [" << settings.acmacs_c2_uri() << "]" << std::endl;
         setup_dbs("", false);
         AcmacsC2 acmacs_c2;
         acmacs_c2.uri(settings.acmacs_c2_uri());

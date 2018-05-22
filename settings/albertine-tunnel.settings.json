@@ -10,8 +10,9 @@
     "private_key_file": "ssl/self-signed.key",
     "tmp_dh_file": "ssl/dh.pem",
 
-    "log_access": "/tmp/acmacs-api-server.access.log",
-    "log_error": "/tmp/acmacs-api-server.error.log",
+    "log_access": "/r/log/acmacs-api-server/access.log",
+    "log_error": "/r/log/acmacs-api-server/error.log",
+    "log_send_receive": "/r/log/acmacs-api-server/send-receive.log",
 
     "root_page": "js/acmacs-api.html",
     "locations": [
