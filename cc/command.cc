@@ -32,7 +32,7 @@ void Command::send(std::string aMessage, send_message_type aMessageType)
 void Command::send_error(std::string aMessage)
 {
     const auto message = to_json::object("C", command_name(), "CN", command_number(), "D", command_id(), "E", aMessage);
-    print_send_error(command_id(), aMessage);
+    print_send_error(log_send_receive(), command_id(), aMessage);
     mClientConnection.send(message, send_message_type::text);
 
 } // Command::send_error

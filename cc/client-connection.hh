@@ -25,6 +25,7 @@ class ClientConnection
     virtual ~ClientConnection() = default;
 
     virtual void send(std::string aMessage, send_message_type aMessageType = send_message_type::text) = 0;
+    virtual std::ostream& log_send_receive() = 0;
 
     Session& session()
         {

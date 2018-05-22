@@ -42,7 +42,7 @@ void WebsocketConnection::message(std::string aMessage, WsppThread& aThread)
 {
     auto& thread = dynamic_cast<WsppThreadWithMongoAccess&>(aThread);
 
-    print_receive(aMessage);
+    print_receive(log_send_receive(), aMessage);
     auto command = mCommandFactory.find(aMessage, thread, *this);
     try {
         command->run();
@@ -66,7 +66,7 @@ void WebsocketConnection::send(std::string aMessage, send_message_type aMessageT
           op_code = websocketpp::frame::opcode::binary;
           break;
     }
-    print_send(aMessage);
+    print_send(log_send_receive(), aMessage);
     WsppWebsocketLocationHandler::send(aMessage, op_code);
 
 } // WebsocketConnection::send
@@ -81,9 +81,8 @@ class AcmacsAPISettings : public ServerSettings
     std::string mongodb_uri() const { return doc_.get_or_default("mongodb_uri", "mongodb://localhost:27017/"); }
     std::string acmacs_c2_uri() const { return doc_.get_or_default("acmacs_c2_uri", "https://localhost:1168/api"); }
     std::string root_page() const { return doc_.get_or_default("root_page", "/tmp/not-found"); }
-    std::string log_send_receive() const { return doc_.get_or_default("log_send_receive", "-"); }
 
-};
+}; // class AcmacsAPISettings
 
 // ----------------------------------------------------------------------
 

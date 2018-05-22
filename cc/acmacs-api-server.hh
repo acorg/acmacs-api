@@ -33,6 +33,7 @@ class WebsocketConnection : public ClientConnection, public WsppWebsocketLocatio
         : ClientConnection{aSrc}, WsppWebsocketLocationHandler{aSrc}, mCommandFactory{aSrc.mCommandFactory} {}
 
     void send(std::string aMessage, send_message_type aMessageType = send_message_type::text) override;
+    std::ostream& log_send_receive() override { return WsppWebsocketLocationHandler::log_send_receive(); }
 
  protected:
     bool use(std::string aLocation) const override { return ClientConnection::use(aLocation); }

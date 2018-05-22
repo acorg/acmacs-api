@@ -44,6 +44,7 @@ class Command : public from_json::object
     void set_command_start() { mCommandStart = now(); }
     auto command_start() const { return mCommandStart; }
     double command_duration() const { return std::chrono::duration<double>{now() - command_start()}.count(); }
+    std::ostream& log_send_receive() { return mClientConnection.log_send_receive(); }
 
  private:
     mongocxx::database mDb;

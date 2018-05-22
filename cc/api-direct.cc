@@ -37,6 +37,8 @@ class SimulatedConnection : public ClientConnection
             print_cerr("SEND: ", aMessage);
         }
 
+    std::ostream& log_send_receive() override { return std::cerr; }
+
 }; // class SimulatedConnection
 
 // ----------------------------------------------------------------------
