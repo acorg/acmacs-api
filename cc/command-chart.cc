@@ -222,7 +222,7 @@ void Command_ace::run()
 
     const auto ace = c2().ace_uncompressed(session().id(), get_string("id"), projection_no + 1);
     acmacs::chart::ChartModify chart(acmacs::chart::import_from_data(ace, acmacs::chart::Verify::None, report_time::No));
-    const auto exported = ace_export(chart, "mod_acmacs");
+    const auto exported = ace_export(chart, "mod_acmacs", 0);
     send(exported);
 
 } // Command_ace::run
