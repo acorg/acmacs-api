@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "acmacs-base/from-json.hh"
+#include "acmacs-base/rjson.hh"
 
 // ----------------------------------------------------------------------
 
@@ -17,7 +17,7 @@ class AcmacsC2
 
     void uri(std::string aUri) { acmacs_uri = aUri; }
 
-    from_json::object command(const SessionId& aSession, std::string aCommand);
+    rjson::object command(const SessionId& aSession, std::string aCommand);
     void verbose(bool aVerbose) { mVerbose = aVerbose; }
 
     std::string ace_uncompressed(const SessionId& aSession, std::string aObjectId, size_t aMaxNumberOfProjections);

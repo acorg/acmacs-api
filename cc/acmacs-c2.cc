@@ -9,15 +9,14 @@
 #include "acmacs-base/string.hh"
 
 #include "acmacs-api/curl.hh"
-#include "acmacs-c2.hh"
-#include "session-id.hh"
+#include "acmacs-api/acmacs-c2.hh"
+#include "acmacs-api/session-id.hh"
 
 // ----------------------------------------------------------------------
 
-from_json::object AcmacsC2::command(const SessionId& aSession, std::string aCommand)
+rjson::object AcmacsC2::command(const SessionId& aSession, std::string aCommand)
 {
     return acmacs::curl().post(acmacs_uri, embed_session_in_command(aSession, aCommand), mVerbose);
-
 
 } // AcmacsC2::command
 
@@ -42,8 +41,8 @@ std::string AcmacsC2::ace_uncompressed(const SessionId& aSession, std::string aO
 {
     const auto projections = "[" + string::join(",", acmacs::index_iterator(0UL), acmacs::index_iterator(aMaxNumberOfProjections)) + "]";
     auto result = command(aSession, std::string{R"({"C":"chart_export","format":"ace_uncompressed","pretty":false,"id":")"} + aObjectId + R"(","projection":)" + projections + "}");
-      // "chart_json" is a string with embedded json
-    return result.get_string("chart_json");
+      // "chart_json" is a string with embedded json, all double-quotes are escaped
+    return string::replace(result.get_or_default("chart_json", "* C2 chart_export failed without error *"), "\\\"", "\"");
 
 } // AcmacsC2::ace_uncompressed
 

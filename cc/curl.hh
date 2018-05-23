@@ -2,19 +2,19 @@
 
 #include <string>
 
-#include "acmacs-base/from-json.hh"
+#include "acmacs-base/rjson.hh"
 
 // ----------------------------------------------------------------------
 
 namespace acmacs
 {
-      // singleton, do not instatiate
+      // singleton, do not instatiate!
     class Curl
     {
      public:
         class Error : public std::runtime_error { public: using std::runtime_error::runtime_error; };
 
-        from_json::object post(std::string url, std::string data, bool verbose);
+        rjson::object post(std::string url, std::string data, bool verbose);
 
      private:
         Curl();

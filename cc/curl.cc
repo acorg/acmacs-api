@@ -52,7 +52,7 @@ static size_t response_receiver(const char* contents, size_t memb_size, size_t n
 
 // ----------------------------------------------------------------------
 
-from_json::object acmacs::Curl::post(std::string url, std::string data, bool verbose)
+rjson::object acmacs::Curl::post(std::string url, std::string data, bool verbose)
 {
     auto curl = curl_easy_init();
     if (!curl)
@@ -85,18 +85,15 @@ from_json::object acmacs::Curl::post(std::string url, std::string data, bool ver
         throw;
     }
 
-    from_json::object doc{response};
-    try {
+    const auto doc = rjson::parse_string(response);
+    if (const auto& errors = doc.get_or_empty_array("E"); !errors.empty()) {
         std::string msg;
-        for (const auto& entry : doc.get_array("E")) {
+        for (const auto& entry : errors) {
             if (!msg.empty())
                 msg += "\n       ";
-            msg += from_json::get(entry, "code", std::string{}) + ": " + from_json::get(entry, "description", std::string{});
+            msg += entry.get_or_default("code", "") + ": " + entry.get_or_default("description", "");
         }
         throw Error{msg};
-    }
-    catch (from_json::rapidjson_assert&) {
-        // no "E" - no error
     }
 
     return doc;
