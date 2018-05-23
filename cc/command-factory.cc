@@ -5,6 +5,7 @@
 #include "command-admin.hh"
 #include "command-chart.hh"
 #include "command-chain.hh"
+#include "command-hidb.hh"
 
 // ----------------------------------------------------------------------
 
@@ -24,6 +25,8 @@ CommandFactory::CommandFactory()
     {"root_charts",    data<Command_root_charts>()},
     {"chart_keywords", data<Command_chart_keywords>()},
     {"chart_owners",   data<Command_chart_owners>()},
+    {"hidb_antigen",   data<Command_hidb_antigen>()},
+    {"hidb_serum",     data<Command_hidb_serum>()},
 
     {"users",          data<Command_users>()},
 

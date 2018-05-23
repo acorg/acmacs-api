@@ -21,7 +21,9 @@ ACMACS_C2_SOURCES = acmacs-c2.cc curl.cc acmacs-c2-main.cc
 
 # ----------------------------------------------------------------------
 
-COMMANDS_SOURCES = command.cc command-factory.cc command-info.cc command-session.cc command-admin.cc command-chart.cc command-chain.cc
+COMMANDS_SOURCES = \
+    command.cc command-factory.cc command-info.cc command-session.cc \
+    command-admin.cc command-chart.cc command-chain.cc command-hidb.cc
 
 # ----------------------------------------------------------------------
 

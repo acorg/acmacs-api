@@ -19,7 +19,7 @@ Command::Command(from_json::object&& aSrc, MongoAcmacsC2Access& aMongoAccess, Cl
 
 void Command::send(std::string aMessage, send_message_type aMessageType)
 {
-    auto message = to_json::object_prepend(aMessage, "C", command_name(), "CN", command_number(), "D", command_id(), "CT", command_duration());
+    auto message = to_json::object_prepend(aMessage, "C", command_name(), "CN", command_number(), "D", command_id(), "CT", static_cast<float>(command_duration()));
     if (const auto to_add = add_to_response(); !to_add.empty())
         message = to_json::object_append(message, "add_to_response", to_json::raw(to_add));
     mClientConnection.send(message, aMessageType);

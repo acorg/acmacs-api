@@ -442,7 +442,7 @@ function antigenic_map_widget(parent, id, dispatcher) {
             coloring: "default",
             canvas_size: {width: 400, height: 400},
             title_fields: ["stress", "antigens", "sera", "date", "tables"],
-            point_on_click: point => show_point_info(dispatcher, point)
+            point_on_click: (point, invoking_node) => show_point_info(dispatcher, point, invoking_node)
         };
         new mod.AntigenicMapWidget($("<div></div>").appendTo(parent), loader, widget_options);
     });
@@ -468,11 +468,11 @@ function antigenic_map_widget(parent, id, dispatcher) {
 function show_point_info(dispatcher, point, invoking_node) {
     if (point.antigen) {
         const show = (message, dispatcher) => acv_toolkit.movable_window_with_json(message, invoking_node, "AG " + point.antigen.N);
-        dispatcher.send_receive({C: "hidb_antigen", name: point.antigen.N, passage: point.antigen.P}, show);
+        dispatcher.send_receive({C: "hidb_antigen", name: point.antigen.N, passage: point.antigen.P, reassortant: point.antigen.R, annotations: point.antigen.a, lab_ids: point.antigen.l, virus_type: point.virus_type}, show);
     }
     else {
         const show = (message, dispatcher) => acv_toolkit.movable_window_with_json(message, invoking_node, "SR " + point.serum.N);
-        dispatcher.send_receive({C: "hidb_serum", name: point.serum.N, passage: point.serum.P}, show);
+        dispatcher.send_receive({C: "hidb_serum", name: point.serum.N, serum_id: point.serum.I, reassortant: point.serum.R, annotations: point.serum.a, virus_type: point.virus_type}, show);
     }
 }
 

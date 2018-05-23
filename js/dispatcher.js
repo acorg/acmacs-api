@@ -181,13 +181,12 @@ export class Dispatcher {
             }
         }
         catch (err) {
-            window.DDD = evt.data;
             console.error(err, evt, evt.data);
         }
     }
 
     onopen(evt) {
-        console.log("connected", evt);
+        // console.log("connected", evt);
     }
 
     onclose(evt) {
