@@ -27,9 +27,9 @@ void Command_root_charts::run()
 
     MongodbAccess::bld_doc criteria_bld;
     to_bson::append(criteria_bld, session().read_permissions(), MongodbAccess::field_null_or_absent("parent"), MongodbAccess::field_null_or_absent("backup_of"));
-    to_bson::in_for_optional_array_of_strings(criteria_bld, "p.o", "$in", std::bind(&Command_root_charts::get_owners, this));
-    to_bson::in_for_optional_array_of_strings(criteria_bld, "keywords", "$in", std::bind(&Command_root_charts::get_keywords, this));
-    to_bson::in_for_optional_array_of_strings(criteria_bld, "search", "$all", std::bind(&Command_root_charts::get_search, this), &from_json::get_string_uppercase);
+    to_bson::in_for_optional_array_of_strings(criteria_bld, "p.o", "$in", [this](){return this->get_owners();});
+    to_bson::in_for_optional_array_of_strings(criteria_bld, "keywords", "$in", [this](){return this->get_keywords();});
+    to_bson::in_for_optional_array_of_strings(criteria_bld, "search", "$all", [this](){return this->get_search();}, [](const auto& value){ return string::upper(static_cast<rjson::string>(value).str()); });
 
     auto criteria = criteria_bld.extract();
       // print_cerr("Command_root_charts::run ", bsoncxx::to_json(criteria));
@@ -183,7 +183,7 @@ const char* Command_doc::description()
 
 // ----------------------------------------------------------------------
 
-Command_with_c2_access::Command_with_c2_access(from_json::object&& aSrc, MongoAcmacsC2Access& aMongoAccess, ClientConnection& aClientConnection, size_t aCommandNumber)
+Command_with_c2_access::Command_with_c2_access(rjson::object&& aSrc, MongoAcmacsC2Access& aMongoAccess, ClientConnection& aClientConnection, size_t aCommandNumber)
     : Command{std::move(aSrc), aMongoAccess, aClientConnection, aCommandNumber}, acmacs_c2_{aMongoAccess.acmacs_c2()}
 {
 } // Command_with_c2_access::Command_with_c2_access

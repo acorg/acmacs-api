@@ -12,7 +12,7 @@ class Command_hidb_antigen_serum : public Command
     std::string get_virus_type() const { return get_string("virus_type"); }
     std::string get_name() const { return get_string("name"); }
     std::string get_reassortant() const { return get_string("reassortant"); }
-    from_json::ConstArray get_annotations() const { return get_array("annotations"); } // throws rapidjson_assert
+    const rjson::array& get_annotations() const { return get_array("annotations"); }
 
 }; // class Command_hidb_antigen_serum
 

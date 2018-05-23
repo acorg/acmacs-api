@@ -18,10 +18,10 @@ void Command_chains::run()
 
     MongodbAccess::bld_doc criteria_bld;
     to_bson::append(criteria_bld, session().read_permissions(), MongodbAccess::field_null_or_absent("parent"), MongodbAccess::field_null_or_absent("backup_of"));
-    to_bson::in_for_optional_array_of_strings(criteria_bld, "p.o", "$in", std::bind(&Command_chains::get_owners, this));
-    to_bson::in_for_optional_array_of_strings(criteria_bld, "keywords", "$in", std::bind(&Command_chains::get_keywords, this));
-    to_bson::in_for_optional_array_of_strings(criteria_bld, "_t", "$in", std::bind(&Command_chains::get_types, this));
-    // to_bson::in_for_optional_array_of_strings(criteria_bld, "search", "$all", std::bind(&Command_chains::get_search, this), &from_json::get_string_uppercase);
+    to_bson::in_for_optional_array_of_strings(criteria_bld, "p.o", "$in", [this](){return this->get_owners();});
+    to_bson::in_for_optional_array_of_strings(criteria_bld, "keywords", "$in", [this](){return this->get_keywords();});
+    to_bson::in_for_optional_array_of_strings(criteria_bld, "_t", "$in", [this](){return this->get_types();});
+    // to_bson::in_for_optional_array_of_strings(criteria_bld, "search", "$all", [this](){return this->get_search();}, [](const auto& value){ return string::upper(static_cast<rjson::string>(value).str()); });
 
     auto criteria = criteria_bld.extract();
       // print_cerr("Command_chains::run ", bsoncxx::to_json(criteria));

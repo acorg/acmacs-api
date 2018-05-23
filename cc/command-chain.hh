@@ -16,10 +16,10 @@ class Command_chains : public Command
     int get_chunk_size() const { return get("chunk_size", 0); }
     int get_skip() const { return get("skip", 0); }
     int get_limit() const { return get("limit", 0); }
-    from_json::ConstArray get_owners() const { return get_array("owners"); } // throws rapidjson_assert
-    from_json::ConstArray get_keywords() const { return get_array("keywords"); } // throws rapidjson_assert
-    // from_json::ConstArray get_search() const { return get_array("search"); } // throws rapidjson_assert
-    from_json::ConstArray get_types() const { return get_array("types"); } // throws rapidjson_assert
+    const rjson::array& get_owners() const { return get_array("owners"); }
+    const rjson::array& get_keywords() const { return get_array("keywords"); }
+    // const rjson::array& get_search() const { return get_array("search"); }
+    const rjson::array& get_types() const { return get_array("types"); }
 
     static const char* description();
 
@@ -34,7 +34,7 @@ class Command_chain_keywords : public Command
 
     void run() override;
 
-    bool include_rd_keywords() const { return get("include_rd_keywords", false); } // throws rapidjson_assert
+    bool include_rd_keywords() const { return get("include_rd_keywords", false); }
 
     static const char* description();
 

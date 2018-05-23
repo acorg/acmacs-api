@@ -8,7 +8,7 @@
 #include <bsoncxx/types/value.hpp>
 #pragma GCC diagnostic pop
 
-#include "acmacs-base/from-json.hh"
+#include "acmacs-base/rjson.hh"
 #include "acmacs-base/to-json.hh"
 
 // ----------------------------------------------------------------------
@@ -73,15 +73,15 @@ namespace to_bson
 // ----------------------------------------------------------------------
 
       // mongo_operator: $in, $all
-    inline void in_for_optional_array_of_strings(bsoncxx::builder::basic::document& append_to, const char* key, const char* mongo_operator, std::function<from_json::ConstArray()> getter, std::function<std::string(const rapidjson::Value&)> transformer = &from_json::get_string)
+    template <typename Getter, typename Transformer> inline void in_for_optional_array_of_strings(bsoncxx::builder::basic::document& append_to, const char* key, const char* mongo_operator, Getter getter, Transformer transformer)
     {
-        try {
-            const auto array = getter();
-            if (!array.Empty())
-                to_bson::append(append_to, key, to_bson::object(mongo_operator, to_bson::array(std::begin(array), std::end(array), transformer)));
-        }
-        catch (from_json::rapidjson_assert&) {
-        }
+        if (const auto array = getter(); !array.empty())
+            to_bson::append(append_to, key, to_bson::object(mongo_operator, to_bson::array(std::begin(array), std::end(array), transformer)));
+    }
+
+    template <typename Getter> inline void in_for_optional_array_of_strings(bsoncxx::builder::basic::document& append_to, const char* key, const char* mongo_operator, Getter&& getter)
+    {
+        in_for_optional_array_of_strings(append_to, key, mongo_operator, std::forward<Getter>(getter), [](const auto& value) -> std::string { return static_cast<rjson::string>(value).str(); });
     }
 
 } // namespace to_bson
