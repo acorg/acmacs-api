@@ -221,7 +221,6 @@ void Command_ace::run()
     const size_t projection_no = 0;
 
     const auto ace = c2().ace_uncompressed(session().id(), get_string("id"), projection_no + 1);
-    std::cerr << "ace_uncompressed:\n" << ace << '\n';
     acmacs::chart::ChartModify chart(acmacs::chart::import_from_data(ace, acmacs::chart::Verify::None, report_time::No));
     auto antigens = chart.antigens_modify();
     antigens->set_continent();
