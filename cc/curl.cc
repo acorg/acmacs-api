@@ -1,4 +1,5 @@
 #include <numeric>
+
 #include <curl/curl.h>
 
 #include "acmacs-api/curl.hh"
@@ -88,7 +89,7 @@ rjson::object acmacs::Curl::post(std::string url, std::string data, bool verbose
 
     const auto doc = rjson::parse_string(response);
     if (const auto& errors = doc.get_or_empty_array("E"); !errors.empty()) {
-        const auto msg = std::reduce(errors.begin(), errors.end(), std::string{}, [](const std::string& target, const auto& err) -> std::string {
+        const auto msg = std::accumulate(errors.begin(), errors.end(), std::string{}, [](const std::string& target, const auto& err) -> std::string {
             return (target.empty() ? target : target + "\n       ") + err.get_or_default("code", "") + ": " + err.get_or_default("description", "");
         });
         throw Error{msg};
