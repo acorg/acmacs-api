@@ -32,12 +32,20 @@ void Command_hidb_antigen::run()
 
 std::string Command_hidb_antigen::make_entry(const hidb::Antigen& antigen)
 {
+    const auto lab_ids = antigen.lab_ids();
+    const auto annotations = antigen.annotations();
+    const auto table_indexes = antigen.tables();
     return to_json::object(
+        to_json::ignore_empty_values,
         "name", static_cast<std::string>(antigen.name()),
         "date", static_cast<std::string>(antigen.date()),
         "passage", static_cast<std::string>(antigen.passage()),
-        "lineage", static_cast<std::string>(antigen.lineage())
-                           );
+        "reassortant", static_cast<std::string>(antigen.reassortant()),
+        "annotations", to_json::raw(to_json::array(annotations.begin(), annotations.end())),
+        "lineage", static_cast<std::string>(antigen.lineage()),
+        "lab_ids", to_json::raw(to_json::array(lab_ids.begin(), lab_ids.end())),
+        "tables", to_json::raw(to_json::array(table_indexes.begin(), table_indexes.end()))
+        );
 
 } // Command_hidb_antigen::make_entry
 
