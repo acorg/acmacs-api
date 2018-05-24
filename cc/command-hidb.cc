@@ -78,7 +78,6 @@ std::string Command_hidb_antigen::make_entry(const hidb::Tables& tables, const h
         "annotations", to_json::raw(to_json::array(annotations.begin(), annotations.end())),
         "lineage", static_cast<std::string>(antigen.lineage()),
         "lab_ids", to_json::raw(to_json::array(lab_ids.begin(), lab_ids.end())),
-          // "tables", to_json::raw(to_json::array(table_indexes.begin(), table_indexes.end()))
         "tables", to_json::raw(make_tables(tables, antigen.tables()))
         );
 
@@ -102,9 +101,44 @@ const char* Command_hidb_antigen::description()
 
 void Command_hidb_serum::run()
 {
-    send(to_json::object("virus_type", get_virus_type(), "name", get_name()));
+    try {
+        const auto& hidb = hidb::get(get_virus_type(), report_time::No);
+        auto hidb_sera = hidb.sera();
+        auto hidb_tables = hidb.tables();
+        hidb::SerumPList found;
+        if (const auto indexes = hidb_sera->find(get_name(), hidb::FixLocation::No, hidb::FindFuzzy::No); !indexes.empty()) {
+            std::transform(indexes.begin(), indexes.end(), std::back_inserter(found), [](const auto& serum_index) -> hidb::SerumP { return serum_index.first; });
+        }
+        if (found.empty())
+            send_error("No data for serum \"" + get_name() + "\"");
+
+        send(to_json::object("virus_type", get_virus_type(), "name", get_name(), "sera",
+                             to_json::raw(to_json::array(found.begin(), found.end(), [this,&hidb_tables](auto serum) -> to_json::raw { return this->make_entry(*hidb_tables, *serum); }))));
+    }
+    catch (hidb::get_error& err) {
+        send_error("No HiDb for \"" + get_virus_type() + "\": " + err.what());
+    }
 
 } // Command_hidb_serum::run
+
+// ----------------------------------------------------------------------
+
+std::string Command_hidb_serum::make_entry(const hidb::Tables& tables, const hidb::Serum& serum)
+{
+    const auto annotations = serum.annotations();
+    return to_json::object(
+        to_json::ignore_empty_values,
+        "name", static_cast<std::string>(serum.name()),
+        "passage", static_cast<std::string>(serum.passage()),
+        "reassortant", static_cast<std::string>(serum.reassortant()),
+        "annotations", to_json::raw(to_json::array(annotations.begin(), annotations.end())),
+        "serum_id", static_cast<std::string>(serum.serum_id()),
+        "serum_species", static_cast<std::string>(serum.serum_species()),
+        "lineage", static_cast<std::string>(serum.lineage()),
+        "tables", to_json::raw(make_tables(tables, serum.tables()))
+        );
+
+} // Command_hidb_antigen::make_entry
 
 // ----------------------------------------------------------------------
 

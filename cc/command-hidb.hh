@@ -2,7 +2,7 @@
 
 #include "command.hh"
 
-namespace hidb { class Antigen; class Tables; class Table; using indexes_t = std::vector<size_t>; }
+namespace hidb { class Antigen; class Serum; class Tables; class Table; using indexes_t = std::vector<size_t>; }
 
 // ----------------------------------------------------------------------
 
@@ -46,6 +46,9 @@ class Command_hidb_serum : public Command_hidb_antigen_serum
 
     void run() override;
     static const char* description();
+
+ private:
+    std::string make_entry(const hidb::Tables& tables, const hidb::Serum& serum);
 
 }; // class Command_hidb_serum
 
