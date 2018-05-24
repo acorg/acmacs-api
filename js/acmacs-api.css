@@ -353,7 +353,7 @@ ul.chain > li.chain-row-expanded {
     margin: 0.5em 0 0 0.5em;
 }
 
-ul.point-info-antigens {
+ul.point-info-antigens, ul.point-info-sera {
     list-style-type: none;
     margin: 0 0.5em;
     padding: 0;

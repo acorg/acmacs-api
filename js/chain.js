@@ -517,6 +517,24 @@ function show_point_info(dispatcher, point, invoking_node) {
     };
 
     const make_window_serum = (message, point, content) => {
+        const ul = $("<ul class='point-info-sera'></ul>").appendTo(content);
+
+        const make_row = entry => {
+            const name = acv_utils.join_collapse([entry.name, entry.reassortant, acv_utils.join_collapse(entry.annotations), entry.serum_id]);
+            const data = `<ul class='point-info-data'>${make_tables(entry.tables)}</ul>`;
+            const li = $(`<li class='a-collapsed'><div class='a-expand a-icon'>&#9654;</div><div class='a-collapse a-icon'>&#9660;</div><div class='a-name'>${name}</div><div class='a-data'>${data}</div></li>`).appendTo(ul);
+            li.find(".a-expand").on("click", evt => acv_utils.forward_event(evt, evt2 => li.addClass("a-expanded").removeClass("a-collapsed")));
+            li.find(".a-collapse").on("click", evt => acv_utils.forward_event(evt, evt2 => li.addClass("a-collapsed").removeClass("a-expanded")));
+        };
+
+        const my_index = message.antigens.findIndex(elt => elt.serum_id === point.serum.I);
+        if (my_index >= 0) {
+            make_row(message.sera[my_index]);
+            message.sera.filter((entry, index) => index !== my_index).forEach(make_row);
+        }
+        else {
+            message.sera.forEach(make_row);
+        }
     };
 
     const make_window = (message, invoking_node, title, point, content_filler) => {
