@@ -19,13 +19,27 @@ void Command_hidb_antigen::run()
         if (found.empty())
             send_error("No data for antigen \"" + get_name() + "\"");
 
-        send(to_json::object("virus_type", get_virus_type(), "name", get_name(), "entries", found.size()));
+        send(to_json::object("virus_type", get_virus_type(), "name", get_name(), "antigens",
+                             to_json::raw(to_json::array(found.begin(), found.end(), [this](auto antigen) -> to_json::raw { return this->make_entry(*antigen); }))));
     }
     catch (hidb::get_error& err) {
         send_error("No HiDb for \"" + get_virus_type() + "\": " + err.what());
     }
 
 } // Command_hidb_antigen::run
+
+// ----------------------------------------------------------------------
+
+std::string Command_hidb_antigen::make_entry(const hidb::Antigen& antigen)
+{
+    return to_json::object(
+        "name", static_cast<std::string>(antigen.name()),
+        "date", static_cast<std::string>(antigen.date()),
+        "passage", static_cast<std::string>(antigen.passage()),
+        "lineage", static_cast<std::string>(antigen.lineage())
+                           );
+
+} // Command_hidb_antigen::make_entry
 
 // ----------------------------------------------------------------------
 

@@ -2,6 +2,8 @@
 
 #include "command.hh"
 
+namespace hidb { class Antigen; }
+
 // ----------------------------------------------------------------------
 
 class Command_hidb_antigen_serum : public Command
@@ -25,6 +27,9 @@ class Command_hidb_antigen : public Command_hidb_antigen_serum
 
     void run() override;
     static const char* description();
+
+ private:
+    std::string make_entry(const hidb::Antigen& antigen);
 
 }; // class Command_hidb_antigen
 
