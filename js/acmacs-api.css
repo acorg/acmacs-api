@@ -353,45 +353,45 @@ ul.chain > li.chain-row-expanded {
     margin: 0.5em 0 0 0.5em;
 }
 
-ul.point-info-antigens, ul.point-info-sera {
+ul.point-info-antigens-sera {
     list-style-type: none;
     margin: 0 0.5em;
     padding: 0;
 }
 
-ul.point-info-antigens > li {
+ul.point-info-antigens-sera > li {
     margin-top: 0.5em;
 }
 
-.point-info-antigens .a-icon {
+.point-info-antigens-sera .a-icon {
     float: left;
     cursor: pointer;
     width: 1.3em;
     text-align: left;
 }
 
-.point-info-antigens .a-collapse {
+.point-info-antigens-sera .a-collapse {
     margin-left: -0.2em;
     width: 1.5em;
 }
 
-.point-info-antigens .a-expanded .a-expand {
+.point-info-antigens-sera .a-expanded .a-expand {
     display: none;
 }
 
-.point-info-antigens .a-collapsed .a-collapse {
+.point-info-antigens-sera .a-collapsed .a-collapse {
     display: none;
 }
 
-.point-info-antigens .a-collapsed .a-data {
+.point-info-antigens-sera .a-collapsed .a-data {
     display: none;
 }
 
-.point-info-antigens .a-name {
+.point-info-antigens-sera .a-name {
     font-weight: bold;
 }
 
-.point-info-antigens .a-data {
+.point-info-antigens-sera .a-data {
     clear: both;
 }
 
