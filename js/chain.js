@@ -468,19 +468,22 @@ function antigenic_map_widget(parent, id, dispatcher) {
 function show_point_info(dispatcher, point, invoking_node) {
 
     const make_window_antigen = (message, point, content) => {
-        const make_row = (table, entry) => {
-            const lab_ids = entry.lab_ids ? acv_utils.join_collapse(entry.lab_ids, "<br>") : "";
-            const tables = entry.tables ? acv_utils.join_collapse(entry.tables.map(tbl => acv_utils.join_collapse([tbl.lab, tbl.assay, tbl.date, tbl.rbc], ":")), "<br>") : "";
-            table.append(`<tr><td class='a-name'>${entry.name} ${entry.annotations || ""} ${entry.reassortant || ""}</td><td class='a-passage'>${entry.passage || ""}</td><td class='a-lab-ids'>${lab_ids}</td><td class='a-tables'>${tables}</td></tr>`);
+        const ul = $("<ul class='point-info-antigens'></ul>").appendTo(content);
+
+        const make_row = (entry) => {
+            const name = acv_utils.join_collapse([entry.name, entry.reassortant, acv_utils.join_collapse(entry.annotations), entry.passage]);
+            const li = $(`<li><div class='a-expand'>&#9654;</div><div class='a-collapse'>&#9660;</div><div class='a-name'>${name}</div><div class='a-data'></div></li>`).appendTo(ul);
+            // const lab_ids = entry.lab_ids ? acv_utils.join_collapse(entry.lab_ids, "<br>") : "";
+            // const tables = entry.tables ? acv_utils.join_collapse(entry.tables.map(tbl => acv_utils.join_collapse([tbl.lab, tbl.assay, tbl.date, tbl.rbc], ":")), "<br>") : "";
+            // ul.append(`<tr><td class='a-name'>${entry.name} ${entry.annotations || ""} ${entry.reassortant || ""}</td><td class='a-passage'>${entry.passage || ""}</td><td class='a-lab-ids'>${lab_ids}</td><td class='a-tables'>${tables}</td></tr>`);
         };
 
-        content.append("<table></table>");
         const my_index = message.antigens.findIndex(elt => elt.reassortant === point.antigen.R && elt.passage === point.antigen.P && elt.annotations === point.antigen.a);
         if (my_index >= 0) {
-            make_row(content.find("table"), message.antigens[my_index]);
+            make_row(message.antigens[my_index]);
             message.antigens.forEach((entry, index) => {
                 if (index !== my_index)
-                    make_row(content.find("table"), entry);
+                    make_row(entry);
             });
         }
         else {
@@ -493,7 +496,7 @@ function show_point_info(dispatcher, point, invoking_node) {
 
     const make_window = (message, invoking_node, title, point, content_filler) => {
         console.log("show_point_info", message);
-        const win = new acv_toolkit.MovableWindow({title: title, parent: invoking_node, content_css: {width: "30em", height: "30em"}});
+        const win = new acv_toolkit.MovableWindow({title: title, parent: invoking_node, content_css: {width: "auto", height: "30em"}});
         content_filler(message, point, win.content());
     };
 
