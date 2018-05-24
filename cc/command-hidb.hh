@@ -2,7 +2,7 @@
 
 #include "command.hh"
 
-namespace hidb { class Antigen; }
+namespace hidb { class Antigen; class Tables; class Table; using indexes_t = std::vector<size_t>; }
 
 // ----------------------------------------------------------------------
 
@@ -15,6 +15,10 @@ class Command_hidb_antigen_serum : public Command
     std::string get_name() const { return get_string("name"); }
     std::string get_reassortant() const { return get_string("reassortant"); }
     const rjson::array& get_annotations() const { return get_array("annotations"); }
+
+ protected:
+    std::string make_tables(const hidb::Tables& tables, const hidb::indexes_t& indexes);
+    std::string make_table(const hidb::Table& table);
 
 }; // class Command_hidb_antigen_serum
 
@@ -29,7 +33,7 @@ class Command_hidb_antigen : public Command_hidb_antigen_serum
     static const char* description();
 
  private:
-    std::string make_entry(const hidb::Antigen& antigen);
+    std::string make_entry(const hidb::Tables& tables, const hidb::Antigen& antigen);
 
 }; // class Command_hidb_antigen
 

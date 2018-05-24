@@ -6,10 +6,45 @@
 
 // ----------------------------------------------------------------------
 
+std::string Command_hidb_antigen_serum::make_tables(const hidb::Tables& tables, const hidb::indexes_t& indexes)
+{
+    return to_json::array(indexes.begin(), indexes.end(), [this,&tables](size_t index) -> to_json::raw { return this->make_table(*tables[index]); });
+
+    // if (indexes.empty())
+    //     return "{}";
+
+    // return to_json::object(
+    //     "most_recent", to_json::raw(make_table(*tables.most_recent(indexes))),
+    //     "oldest", to_json::raw(make_table(*tables.oldest(indexes))),
+    //     "count", indexes.size(),
+    //     "all", to_json::raw(to_json::array(indexes.begin(), indexes.end(), [this,&tables](size_t index) -> to_json::raw { return this->make_table(*tables[index]); }))
+    //                        );
+
+} // Command_hidb_antigen_serum::make_tables
+
+// ----------------------------------------------------------------------
+
+std::string Command_hidb_antigen_serum::make_table(const hidb::Table& table)
+{
+    return to_json::object(
+        to_json::ignore_empty_values,
+          // "name", table.name(),
+        "assay", table.assay(),
+        "lab", table.lab(),
+        "date", table.date(),
+        "rbc", table.rbc()
+                           );
+
+} // Command_hidb_antigen_serum::make_table
+
+// ----------------------------------------------------------------------
+
 void Command_hidb_antigen::run()
 {
     try {
-        auto hidb_antigens = hidb::get(get_virus_type(), report_time::No).antigens();
+        const auto& hidb = hidb::get(get_virus_type(), report_time::No);
+        auto hidb_antigens = hidb.antigens();
+        auto hidb_tables = hidb.tables();
         hidb::AntigenPList found;
         if (const auto indexes = hidb_antigens->find(get_name(), hidb::FixLocation::No, hidb::FindFuzzy::No); !indexes.empty()) {
             std::transform(indexes.begin(), indexes.end(), std::back_inserter(found), [](const auto& antigen_index) -> hidb::AntigenP { return antigen_index.first; });
@@ -20,7 +55,7 @@ void Command_hidb_antigen::run()
             send_error("No data for antigen \"" + get_name() + "\"");
 
         send(to_json::object("virus_type", get_virus_type(), "name", get_name(), "antigens",
-                             to_json::raw(to_json::array(found.begin(), found.end(), [this](auto antigen) -> to_json::raw { return this->make_entry(*antigen); }))));
+                             to_json::raw(to_json::array(found.begin(), found.end(), [this,&hidb_tables](auto antigen) -> to_json::raw { return this->make_entry(*hidb_tables, *antigen); }))));
     }
     catch (hidb::get_error& err) {
         send_error("No HiDb for \"" + get_virus_type() + "\": " + err.what());
@@ -30,11 +65,10 @@ void Command_hidb_antigen::run()
 
 // ----------------------------------------------------------------------
 
-std::string Command_hidb_antigen::make_entry(const hidb::Antigen& antigen)
+std::string Command_hidb_antigen::make_entry(const hidb::Tables& tables, const hidb::Antigen& antigen)
 {
     const auto lab_ids = antigen.lab_ids();
     const auto annotations = antigen.annotations();
-    const auto table_indexes = antigen.tables();
     return to_json::object(
         to_json::ignore_empty_values,
         "name", static_cast<std::string>(antigen.name()),
@@ -44,7 +78,8 @@ std::string Command_hidb_antigen::make_entry(const hidb::Antigen& antigen)
         "annotations", to_json::raw(to_json::array(annotations.begin(), annotations.end())),
         "lineage", static_cast<std::string>(antigen.lineage()),
         "lab_ids", to_json::raw(to_json::array(lab_ids.begin(), lab_ids.end())),
-        "tables", to_json::raw(to_json::array(table_indexes.begin(), table_indexes.end()))
+          // "tables", to_json::raw(to_json::array(table_indexes.begin(), table_indexes.end()))
+        "tables", to_json::raw(make_tables(tables, antigen.tables()))
         );
 
 } // Command_hidb_antigen::make_entry
