@@ -466,12 +466,49 @@ function antigenic_map_widget(parent, id, dispatcher) {
 // ----------------------------------------------------------------------
 
 function show_point_info(dispatcher, point, invoking_node) {
+
+    const make_window_antigen = (message, point, content) => {
+        const make_row = (table, entry) => {
+            const lab_ids = entry.lab_ids ? acv_utils.join_collapse(entry.lab_ids, "<br>") : "";
+            const tables = entry.tables ? acv_utils.join_collapse(entry.tables.map(tbl => acv_utils.join_collapse([tbl.lab, tbl.assay, tbl.date, tbl.rbc], ":")), "<br>") : "";
+            table.append(`<tr><td class='a-name'>${entry.name} ${entry.annotations || ""} ${entry.reassortant || ""}</td><td class='a-passage'>${entry.passage || ""}</td><td class='a-lab-ids'>${lab_ids}</td><td class='a-tables'>${tables}</td></tr>`);
+        };
+
+        content.append("<table></table>");
+        const my_index = message.antigens.findIndex(elt => elt.reassortant === point.antigen.R && elt.passage === point.antigen.P && elt.annotations === point.antigen.a);
+        if (my_index >= 0) {
+            make_row(content.find("table"), message.antigens[my_index]);
+            message.antigens.forEach((entry, index) => {
+                if (index !== my_index)
+                    make_row(content.find("table"), entry);
+            });
+        }
+        else {
+            message.antigens.forEach(entry => make_row(content.find("table"), entry));
+        }
+    };
+
+    const make_window_serum = (message, point, content) => {
+    };
+
+    const make_window = (message, invoking_node, title, point, content_filler) => {
+        console.log("show_point_info", message);
+        const win = new acv_toolkit.MovableWindow({title: title, parent: invoking_node, content_css: {width: "30em", height: "30em"}});
+        content_filler(message, point, win.content());
+    };
+
     if (point.antigen) {
-        const show = (message, dispatcher) => acv_toolkit.movable_window_with_json(message, invoking_node, "AG " + point.antigen.N);
+        const show = (message, dispatcher) => {
+            const title = acv_utils.join_collapse(["AG", point.antigen.N, point.antigen.R, acv_utils.join_collapse(point.antigen.a), point.antigen.P]);
+            return make_window(message, invoking_node, title, point, make_window_antigen);
+        };
         dispatcher.send_receive({C: "hidb_antigen", name: point.antigen.N, passage: point.antigen.P, reassortant: point.antigen.R, annotations: point.antigen.a, lab_ids: point.antigen.l, virus_type: point.virus_type}, show);
     }
     else {
-        const show = (message, dispatcher) => acv_toolkit.movable_window_with_json(message, invoking_node, "SR " + point.serum.N);
+        const show = (message, dispatcher) => {
+            const title = acv_utils.join_collapse(["SR", point.serum.N, point.serum.R, acv_utils.join_collapse(point.serum.a), point.serum.I]);
+            return make_window(message, invoking_node, title, point, make_window_serum);
+        };
         dispatcher.send_receive({C: "hidb_serum", name: point.serum.N, serum_id: point.serum.I, reassortant: point.serum.R, annotations: point.serum.a, virus_type: point.virus_type}, show);
     }
 }
