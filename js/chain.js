@@ -470,24 +470,42 @@ function show_point_info(dispatcher, point, invoking_node) {
     const make_window_antigen = (message, point, content) => {
         const ul = $("<ul class='point-info-antigens'></ul>").appendTo(content);
 
-        const make_row = (entry) => {
-            const name = acv_utils.join_collapse([entry.name, entry.reassortant, acv_utils.join_collapse(entry.annotations), entry.passage]);
-            const li = $(`<li><div class='a-expand'>&#9654;</div><div class='a-collapse'>&#9660;</div><div class='a-name'>${name}</div><div class='a-data'></div></li>`).appendTo(ul);
-            // const lab_ids = entry.lab_ids ? acv_utils.join_collapse(entry.lab_ids, "<br>") : "";
-            // const tables = entry.tables ? acv_utils.join_collapse(entry.tables.map(tbl => acv_utils.join_collapse([tbl.lab, tbl.assay, tbl.date, tbl.rbc], ":")), "<br>") : "";
-            // ul.append(`<tr><td class='a-name'>${entry.name} ${entry.annotations || ""} ${entry.reassortant || ""}</td><td class='a-passage'>${entry.passage || ""}</td><td class='a-lab-ids'>${lab_ids}</td><td class='a-tables'>${tables}</td></tr>`);
+        const make_tables = tables => {
+            if (!tables)
+                return "";
+            let by_lab = {};
+            for (const tbl of tables) {
+                const key = acv_utils.join_collapse([acv_utils.whocc_lab_name(tbl.lab), tbl.assay, tbl.rbc]);
+                let ee = by_lab[key];
+                if (ee)
+                    ee.push(tbl.date);
+                else
+                    by_lab[key] = [tbl.date];
+            }
+            const make_for_lab = key => {
+                const dates = by_lab[key].join("</li><li>");
+                return `${key} (${by_lab[key].length})<ul class='a-tables-lab-date'><li>${dates}</li></ul>`;
+            };
+            const tbls = Object.keys(by_lab).sort().map(make_for_lab).join("</li><li>");
+            return `<li class='a-tables'><ul class='a-tables-lab'><li>${tbls}</li><ul></li>`;
         };
 
-        const my_index = message.antigens.findIndex(elt => elt.reassortant === point.antigen.R && elt.passage === point.antigen.P && elt.annotations === point.antigen.a);
+        const make_row = entry => {
+            const name = acv_utils.join_collapse([entry.name, entry.reassortant, acv_utils.join_collapse(entry.annotations), entry.passage]);
+            const lab_ids = entry.lab_ids ? "<li class='a-lab-ids'>" + acv_utils.join_collapse(entry.lab_ids, " ") +"</li>" : "";
+            const data = `<ul class='point-info-data'>${lab_ids}${make_tables(entry.tables)}</ul>`;
+            const li = $(`<li class='a-collapsed'><div class='a-expand a-icon'>&#9654;</div><div class='a-collapse a-icon'>&#9660;</div><div class='a-name'>${name}</div><div class='a-data'>${data}</div></li>`).appendTo(ul);
+            li.find(".a-expand").on("click", evt => acv_utils.forward_event(evt, evt2 => li.addClass("a-expanded").removeClass("a-collapsed")));
+            li.find(".a-collapse").on("click", evt => acv_utils.forward_event(evt, evt2 => li.addClass("a-collapsed").removeClass("a-expanded")));
+        };
+
+        const my_index = message.antigens.findIndex(elt => elt.reassortant === point.antigen.R && elt.passage === point.antigen.P && acv_utils.arrays_equal_simple(elt.annotations, point.antigen.a));
         if (my_index >= 0) {
             make_row(message.antigens[my_index]);
-            message.antigens.forEach((entry, index) => {
-                if (index !== my_index)
-                    make_row(entry);
-            });
+            message.antigens.filter((entry, index) => index !== my_index).forEach(make_row);
         }
         else {
-            message.antigens.forEach(entry => make_row(content.find("table"), entry));
+            message.antigens.forEach(make_row);
         }
     };
 

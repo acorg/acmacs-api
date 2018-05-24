@@ -349,23 +349,70 @@ ul.chain > li.chain-row-expanded {
 /* ---------------------------------------------------------------------- */
 /* show_point_info */
 
-.point-info-antigens {
+ul.point-info-antigens {
     list-style-type: none;
     margin: 0 0.5em;
     padding: 0;
 }
 
-.point-info-antigens .a-expand {
+ul.point-info-antigens > li {
+    margin-top: 0.5em;
+}
+
+.point-info-antigens .a-icon {
     float: left;
+    cursor: pointer;
+    width: 1.3em;
+    text-align: left;
 }
 
 .point-info-antigens .a-collapse {
-    float: left;
+    margin-left: -0.2em;
+    width: 1.5em;
+}
+
+.point-info-antigens .a-expanded .a-expand {
+    display: none;
+}
+
+.point-info-antigens .a-collapsed .a-collapse {
+    display: none;
+}
+
+.point-info-antigens .a-collapsed .a-data {
+    display: none;
+}
+
+.point-info-antigens .a-name {
+    font-weight: bold;
 }
 
 .point-info-antigens .a-data {
     clear: both;
 }
+
+ul.point-info-data {
+    list-style-type: none;
+    margin: 0 1em;
+    padding: 0;
+}
+
+.point-info-data ul.a-tables-lab {
+    list-style-type: none;
+    margin: 0 1em;
+    padding: 0;
+}
+
+.point-info-data ul.a-tables-lab > li {
+    margin-top: 0.3em;
+}
+
+.point-info-data ul.a-tables-lab-date {
+    list-style-type: none;
+    margin: 0 1em;
+    padding: 0;
+}
+
 
 /* ----------------------------------------------------------------------
 Local Variables:
