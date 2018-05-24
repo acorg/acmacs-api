@@ -349,6 +349,10 @@ ul.chain > li.chain-row-expanded {
 /* ---------------------------------------------------------------------- */
 /* show_point_info */
 
+.point-info-date {
+    margin: 0.5em 0 0 0.5em;
+}
+
 ul.point-info-antigens {
     list-style-type: none;
     margin: 0 0.5em;

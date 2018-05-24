@@ -467,28 +467,35 @@ function antigenic_map_widget(parent, id, dispatcher) {
 
 function show_point_info(dispatcher, point, invoking_node) {
 
-    const make_window_antigen = (message, point, content) => {
-        const ul = $("<ul class='point-info-antigens'></ul>").appendTo(content);
-
-        const make_tables = tables => {
-            if (!tables)
-                return "";
-            let by_lab = {};
-            for (const tbl of tables) {
-                const key = acv_utils.join_collapse([acv_utils.whocc_lab_name(tbl.lab), tbl.assay, tbl.rbc]);
-                let ee = by_lab[key];
-                if (ee)
-                    ee.push(tbl.date);
-                else
-                    by_lab[key] = [tbl.date];
-            }
-            const make_for_lab = key => {
-                const dates = by_lab[key].join("</li><li>");
-                return `${key} (${by_lab[key].length})<ul class='a-tables-lab-date'><li>${dates}</li></ul>`;
-            };
-            const tbls = Object.keys(by_lab).sort().map(make_for_lab).join("</li><li>");
-            return `<li class='a-tables'><ul class='a-tables-lab'><li>${tbls}</li><ul></li>`;
+    const make_tables = tables => {
+        if (!tables)
+            return "";
+        let by_lab = {};
+        for (const tbl of tables) {
+            const key = acv_utils.join_collapse([acv_utils.whocc_lab_name(tbl.lab), tbl.assay, tbl.rbc]);
+            let ee = by_lab[key];
+            if (ee)
+                ee.push(tbl.date);
+            else
+                by_lab[key] = [tbl.date];
+        }
+        const make_for_lab = key => {
+            const dates = by_lab[key].join("</li><li>");
+            return `${key} (${by_lab[key].length})<ul class='a-tables-lab-date'><li>${dates}</li></ul>`;
         };
+        const tbls = Object.keys(by_lab).sort().map(make_for_lab).join("</li><li>");
+        return `<li class='a-tables'><ul class='a-tables-lab'><li>${tbls}</li><ul></li>`;
+    };
+
+    const make_window_antigen = (message, point, content) => {
+        for (let antigen of message.antigens) {
+            if (antigen.date) {
+                content.append(`<div class='point-info-date'>Date: ${antigen.date}</div>`);
+                break;
+            }
+        }
+
+        const ul = $("<ul class='point-info-antigens'></ul>").appendTo(content);
 
         const make_row = entry => {
             const name = acv_utils.join_collapse([entry.name, entry.reassortant, acv_utils.join_collapse(entry.annotations), entry.passage]);
