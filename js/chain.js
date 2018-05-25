@@ -538,7 +538,7 @@ function show_point_info(dispatcher, point, invoking_node) {
     };
 
     const make_window = (message, invoking_node, title, point, content_filler) => {
-        console.log("show_point_info", message);
+        // console.log("show_point_info", message);
         const win = new acv_toolkit.MovableWindow({title: title, parent: invoking_node, content_css: {width: "auto", height: "30em"}});
         content_filler(message, point, win.content());
     };
