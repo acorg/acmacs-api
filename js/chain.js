@@ -436,12 +436,13 @@ function acmacs_web_title(text, replace=false) {
 
 class AntigenicMapApi
 {
-    constructor(source_id) {
-        this.source_id = source_id;
+    constructor(args) {         // {source_id, dispatcher}
+        this.source_id = args.source_id;
+        this.dispatcher = args.dispatcher;
     }
 
     download_pdf(args) {
-        console.log("download_pdf", this.source_id, args);
+        this.dispatcher.send(Object.assign({C: "pdf", id: this.source_id}, args));
     }
 }
 
@@ -456,7 +457,7 @@ function antigenic_map_widget(parent, id, dispatcher) {
             canvas_size: {width: 400, height: 400},
             title_fields: ["stress", "antigens", "sera", "date", "tables"],
             point_on_click: (point, invoking_node) => show_point_info(dispatcher, point, invoking_node),
-            api: new AntigenicMapApi(id)
+            api: new AntigenicMapApi({source_id: id, dispatcher: dispatcher})
         };
         new mod.AntigenicMapWidget($("<div></div>").appendTo(parent), loader, widget_options);
     });

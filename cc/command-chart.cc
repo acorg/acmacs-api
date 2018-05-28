@@ -242,6 +242,34 @@ const char* Command_ace::description()
 
 // ----------------------------------------------------------------------
 
+void Command_pdf::run()
+{
+    const size_t projection_no = 0;
+
+    // const auto ace = c2().ace_uncompressed(session().id(), get_string("id"), projection_no + 1);
+    // acmacs::chart::ChartModify chart(acmacs::chart::import_from_data(ace, acmacs::chart::Verify::None, report_time::No));
+    std::string message = "PDF-PDF-PDF";
+    send(message, send_message_type::binary);
+
+} // Command_pdf::run
+
+// ----------------------------------------------------------------------
+
+const char* Command_pdf::description()
+{
+    return R"(gets pdf (binary message) by id
+    id :id
+    drawing_order_background:
+    drawing_order:
+    projection_no:
+    styles:
+    point_scale:
+)";
+
+} // Command_pdf::description
+
+// ----------------------------------------------------------------------
+
 // void Command_map::run()
 // {
 //     const size_t projection_no = 0;

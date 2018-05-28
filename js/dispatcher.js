@@ -171,18 +171,29 @@ export class Dispatcher {
 
     onmessage(evt) {
         try {
-            const message = JSON.parse(evt.data);
-            if (!message.E) {
-                delete this.commands_sent_[message.D];
-                this.invoke_handler(message.D, message.C, message);
-            }
-            else {
-                this.invoke_handler(null, "ERROR#" + message.E, message);
-            }
+            if (evt.data instanceof Blob)
+                this.on_binary_message(evt.data);
+            else
+                this.on_text_message(evt.data);
         }
         catch (err) {
-            console.error(err, evt, evt.data);
+            console.error(err, evt, evt.data, typeof(evt.data));
         }
+    }
+
+    on_text_message(data) {
+        const message = JSON.parse(data);
+        if (!message.E) {
+            delete this.commands_sent_[message.D];
+            this.invoke_handler(message.D, message.C, message);
+        }
+        else {
+            this.invoke_handler(null, "ERROR#" + message.E, message);
+        }
+    }
+
+    on_binary_message(data) {
+        console.log("on_binary_message", data);
     }
 
     onopen(evt) {

@@ -21,6 +21,7 @@ CommandFactory::CommandFactory()
     {"doc",            data<Command_doc>()},
     // {"map",            data<Command_map>()},
     {"ace",            data<Command_ace>()},
+    {"pdf",            data<Command_pdf>()},
     {"chart",          data<Command_chart>()},
     {"root_charts",    data<Command_root_charts>()},
     {"chart_keywords", data<Command_chart_keywords>()},

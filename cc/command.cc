@@ -19,14 +19,18 @@ Command::Command(rjson::object&& aSrc, MongoAcmacsC2Access& aMongoAccess, Client
 
 void Command::send(std::string aMessage, send_message_type aMessageType)
 {
-    auto message = to_json::object_prepend(aMessage, "C", command_name(), "CN", command_number(), "D", command_id(), "CT", static_cast<float>(command_duration()));
-    try {
-        message = to_json::object_append(message, "add_to_response", to_json::raw(add_to_response().to_json()));
+    if (aMessageType == send_message_type::text) {
+        auto message = to_json::object_prepend(aMessage, "C", command_name(), "CN", command_number(), "D", command_id(), "CT", static_cast<float>(command_duration()));
+        try {
+            message = to_json::object_append(message, "add_to_response", to_json::raw(add_to_response().to_json()));
+        }
+        catch (rjson::field_not_found&) {
+        }
+        mClientConnection.send(message, aMessageType);
+        // std::cerr << "Command::send: " << aMessage.substr(0, 100) << std::endl;
     }
-    catch (rjson::field_not_found&) {
-    }
-    mClientConnection.send(message, aMessageType);
-      // std::cerr << "Command::send: " << aMessage.substr(0, 100) << std::endl;
+    else
+        mClientConnection.send(aMessage, aMessageType);
 
 } // Command::send
 
