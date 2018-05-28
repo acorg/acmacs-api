@@ -5,6 +5,7 @@
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/chart-modify.hh"
 #include "acmacs-chart-2/ace-export.hh"
+#include "acmacs-map-draw/draw.hh"
 #include "acmacs-webserver/print.hh"
 #include "command-chart.hh"
 #include "session.hh"
@@ -246,10 +247,15 @@ void Command_pdf::run()
 {
     const size_t projection_no = 0;
 
-    // const auto ace = c2().ace_uncompressed(session().id(), get_string("id"), projection_no + 1);
-    // acmacs::chart::ChartModify chart(acmacs::chart::import_from_data(ace, acmacs::chart::Verify::None, report_time::No));
-    std::string message = "PDF-PDF-PDF";
-    send(message, send_message_type::binary);
+    const auto ace = c2().ace_uncompressed(session().id(), get_string("id"), projection_no + 1);
+    ChartDraw chart_draw(std::make_shared<acmacs::chart::ChartModify>(acmacs::chart::import_from_data(ace, acmacs::chart::Verify::None, report_time::No)), get("projection_no", 0UL));
+    chart_draw.calculate_viewport();
+    const auto data = chart_draw.draw_pdf(800);
+    const std::string header = to_json::object("name", get_string("id") + ".pdf", "C", command_name(), "CN", command_number(), "D", command_id(), "CT", static_cast<float>(command_duration()));
+    std::string header_size = std::to_string(header.size());
+    header_size.append(4 - header_size.size(), ' ');
+    send(header_size + header + data, send_message_type::binary);
+    std::cerr << "Command_pdf::run [" << header_size << "] [" << header << "] " << data.size() << '\n';
 
 } // Command_pdf::run
 
