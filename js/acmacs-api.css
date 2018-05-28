@@ -349,6 +349,17 @@ ul.chain > li.chain-row-expanded {
 /* ---------------------------------------------------------------------- */
 /* show_point_info */
 
+.amw201805-movable-window.hidb-point-info {
+    background-color: #A0D0FF;
+}
+
+.amw201805-movable-window.hidb-point-info .a-window-title .a-title {
+    font-size: 1.1em;
+    white-space: no-wrap;
+    overflow: hidden;
+}
+
+
 .point-info-date {
     margin: 0.5em 0 0 0.5em;
 }
