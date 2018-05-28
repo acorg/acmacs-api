@@ -193,7 +193,17 @@ export class Dispatcher {
     }
 
     on_binary_message(data) {
-        console.log("on_binary_message", data);
+        let reader = new FileReader();
+        reader.onload = function() {
+            const buf = new Uint8Array(this.result);
+            window.bbb = buf;
+            console.log("on_binary_message onload", buf);
+        };
+        reader.readAsArrayBuffer(data);
+
+        // window.B = data;
+        // const header_size = data.slice(0, 4, "text/plain");
+        // console.log("on_binary_message", buffer, data);
     }
 
     onopen(evt) {

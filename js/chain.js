@@ -442,7 +442,9 @@ class AntigenicMapApi
     }
 
     download_pdf(args) {
-        this.dispatcher.send(Object.assign({C: "pdf", id: this.source_id}, args));
+        this.dispatcher.send_receive(Object.assign({C: "pdf", id: this.source_id}, args), data => {
+            console.log("download_pdf", data);
+        });
     }
 }
 
