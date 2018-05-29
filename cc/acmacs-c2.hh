@@ -20,7 +20,7 @@ class AcmacsC2
     rjson::object command(const SessionId& aSession, std::string aCommand);
     void verbose(bool aVerbose) { mVerbose = aVerbose; }
 
-    std::string ace_uncompressed(const SessionId& aSession, std::string aObjectId, size_t aMaxNumberOfProjections);
+    std::string ace_uncompressed(const SessionId& aSession, std::string aObjectId, size_t aMaxNumberOfProjections = static_cast<size_t>(-1));
 
  private:
     std::string acmacs_uri{"https://localhost:1168/api"};
