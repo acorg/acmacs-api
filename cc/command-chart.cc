@@ -1,10 +1,12 @@
 #include <limits>
 
+#include "acmacs-base/xz.hh"
 #include "locationdb/locdb.hh"
 #include "seqdb/seqdb.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/chart-modify.hh"
 #include "acmacs-chart-2/ace-export.hh"
+#include "acmacs-chart-2/lispmds-export.hh"
 #include "acmacs-map-draw/draw.hh"
 #include "acmacs-webserver/print.hh"
 #include "command-chart.hh"
@@ -255,7 +257,6 @@ void Command_pdf::run()
     std::string header_size = std::to_string(header.size());
     header_size.append(4 - header_size.size(), ' ');
     send(header_size + header + data, send_message_type::binary);
-    std::cerr << "Command_pdf::run [" << header_size << "] [" << header << "] " << data.size() << '\n';
 
 } // Command_pdf::run
 
@@ -273,6 +274,53 @@ const char* Command_pdf::description()
 )";
 
 } // Command_pdf::description
+
+// ----------------------------------------------------------------------
+
+void Command_download_ace::run()
+{
+    const auto ace = c2().ace_uncompressed(session().id(), get_string("id"));
+    const auto data = acmacs::file::xz_compress(ace);
+    const std::string header = to_json::object("name", get_string("id") + ".ace", "C", command_name(), "CN", command_number(), "D", command_id(), "CT", static_cast<float>(command_duration()));
+    std::string header_size = std::to_string(header.size());
+    header_size.append(4 - header_size.size(), ' ');
+    send(header_size + header + data, send_message_type::binary);
+
+} // Command_download_ace::run
+
+// ----------------------------------------------------------------------
+
+const char* Command_download_ace::description()
+{
+    return R"(gets original ace by id
+    id :id
+)";
+
+} // Command_download_ace::description
+
+// ----------------------------------------------------------------------
+
+void Command_download_lispmds_save::run()
+{
+    const auto ace = c2().ace_uncompressed(session().id(), get_string("id"));
+    acmacs::chart::ChartModify chart(acmacs::chart::import_from_data(ace, acmacs::chart::Verify::None, report_time::No));
+    const auto data = acmacs::chart::lispmds_export(chart, "acmacs-api");
+    const std::string header = to_json::object("name", get_string("id") + ".save", "C", command_name(), "CN", command_number(), "D", command_id(), "CT", static_cast<float>(command_duration()));
+    std::string header_size = std::to_string(header.size());
+    header_size.append(4 - header_size.size(), ' ');
+    send(header_size + header + data, send_message_type::binary);
+
+} // Command_download_lispmds_save::run
+
+// ----------------------------------------------------------------------
+
+const char* Command_download_lispmds_save::description()
+{
+    return R"(gets chart in the lispmds save format by id
+    id :id
+)";
+
+} // Command_download_lispmds_save::description
 
 // ----------------------------------------------------------------------
 

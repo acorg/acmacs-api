@@ -107,7 +107,7 @@ class Command_ace : public Command_with_c2_access
     void run() override;
     static const char* description();
 
-}; // class Command_map
+}; // class Command_ace
 
 // ----------------------------------------------------------------------
 
@@ -119,19 +119,31 @@ class Command_pdf : public Command_with_c2_access
     void run() override;
     static const char* description();
 
-}; // class Command_map
+}; // class Command_pdf
 
 // ----------------------------------------------------------------------
 
-// class Command_map : public Command_with_c2_access
-// {
-//  public:
-//     using Command_with_c2_access::Command_with_c2_access;
+class Command_download_ace : public Command_with_c2_access
+{
+ public:
+    using Command_with_c2_access::Command_with_c2_access;
 
-//     void run() override;
-//     static const char* description();
+    void run() override;
+    static const char* description();
 
-// }; // class Command_map
+}; // class Command_download_ace
+
+// ----------------------------------------------------------------------
+
+class Command_download_lispmds_save : public Command_with_c2_access
+{
+ public:
+    using Command_with_c2_access::Command_with_c2_access;
+
+    void run() override;
+    static const char* description();
+
+}; // class Command_download_lispmds_save
 
 // ----------------------------------------------------------------------
 /// Local Variables:
