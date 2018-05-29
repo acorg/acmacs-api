@@ -442,14 +442,49 @@ class AntigenicMapApi
     }
 
     download_pdf(args) {
-        this.dispatcher.send_receive(Object.assign({C: "pdf", id: this.source_id}, args), received => {
-            const pdf = new Blob([received.data], {type: "application/pdf"});
+        this._download({command: Object.assign({C: "pdf", id: this.source_id}, args), blob_type: "application/pdf"});
+    }
+
+    download_ace(args) {
+        this._download({command: Object.assign({C: "download_ace", id: this.source_id}, args), blob_type: "application/octet-stream"});
+    }
+
+    download_save(args) {
+        this._download({command: Object.assign({C: "download_lispmds_save", id: this.source_id}, args), blob_type: "application/octet-stream"});
+    }
+
+    // download_layout_plain(args) {
+    // }
+
+    // download_layout_csv(args) {
+    // }
+
+    // download_table_map_distances_plain(args) {
+    // }
+
+    // download_table_map_distances_csv(args) {
+    // }
+
+    // download_error_lines(args) {
+    // }
+
+    // download_distances_between_all_points_plain(args) {
+    // }
+
+    // download_distances_between_all_points_csv(args) {
+    // }
+
+    // {command:, blob_type:}
+    _download(args) {
+        this.dispatcher.send_receive(args.command, received => {
+            const pdf = new window.Blob([received.data], {type: args.blob_type});
             const url = window.URL.createObjectURL(pdf);
             const link = $(`<a href='${url}' download='${received.header.name}'></a>`).appendTo($("body"));
             link[0].click();
-            setTimeout(() => {    // For Firefox it is necessary to delay revoking the ObjectURL
+            link.remove();
+            window.setTimeout(() => {    // For Firefox it is necessary to delay revoking the ObjectURL
                 window.URL.revokeObjectURL(url);
-                link.remove();
+                // link.remove();
             }, 100);
         });
     }
