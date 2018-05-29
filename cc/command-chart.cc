@@ -228,7 +228,7 @@ void Command_ace::run()
     auto antigens = chart.antigens_modify();
     antigens->set_continent();
     seqdb::add_clades(chart, seqdb::ignore_errors::yes);
-    const auto exported = ace_export(chart, "mod_acmacs", 0);
+    const auto exported = export_ace(chart, "mod_acmacs", 0);
     send(exported);
 
 } // Command_ace::run
@@ -296,7 +296,7 @@ void Command_download_lispmds_save::run()
 {
     const auto ace = c2().ace_uncompressed(session().id(), get_string("id"));
     auto chart = acmacs::chart::import_from_data(ace, acmacs::chart::Verify::None, report_time::No);
-    send_binary(get_string("id") + ".save", acmacs::chart::lispmds_export(*chart, "acmacs-api"));
+    send_binary(get_string("id") + ".save", acmacs::chart::export_lispmds(*chart, "acmacs-api"));
 
 } // Command_download_lispmds_save::run
 
@@ -316,7 +316,7 @@ void Command_download_layout_plain::run()
 {
     const auto ace = c2().ace_uncompressed(session().id(), get_string("id"));
     auto chart = acmacs::chart::import_from_data(ace, acmacs::chart::Verify::None, report_time::No);
-    send_binary(get_string("id") + ".save", acmacs::chart::lispmds_export(*chart, "acmacs-api"));
+    send_binary(get_string("id") + ".layout.txt", acmacs::chart::export_layout(*chart, " ", "", get("projection_no", 0UL)));
 
 } // Command_download_layout_plain::run
 
@@ -334,6 +334,9 @@ const char* Command_download_layout_plain::description()
 
 void Command_download_layout_csv::run()
 {
+    const auto ace = c2().ace_uncompressed(session().id(), get_string("id"));
+    auto chart = acmacs::chart::import_from_data(ace, acmacs::chart::Verify::None, report_time::No);
+    send_binary(get_string("id") + ".layout.csv", acmacs::chart::export_layout(*chart, ",", "\"", get("projection_no", 0UL)));
 
 } // Command_download_layout_csv::run
 
