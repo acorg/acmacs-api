@@ -35,6 +35,7 @@ class Command
 
     void send(std::string aMessage, send_message_type aMessageType = send_message_type::text);
     void send_error(std::string aMessage);
+    void send_binary(std::string aName, std::string aData);
 
  protected:
     mongocxx::database& db() { return mDb; }

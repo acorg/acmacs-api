@@ -36,6 +36,17 @@ void Command::send(std::string aMessage, send_message_type aMessageType)
 
 // ----------------------------------------------------------------------
 
+void Command::send_binary(std::string aName, std::string aData)
+{
+    const std::string header = to_json::object("name", aName, "C", command_name(), "CN", command_number(), "D", command_id(), "CT", static_cast<float>(command_duration()));
+    std::string header_size = std::to_string(header.size());
+    header_size.append(4 - header_size.size(), ' ');
+    send(header_size + header + aData, send_message_type::binary);
+
+} // Command::send_binary
+
+// ----------------------------------------------------------------------
+
 void Command::send_error(std::string aMessage)
 {
     const auto message = to_json::object("C", command_name(), "CN", command_number(), "D", command_id(), "E", aMessage);

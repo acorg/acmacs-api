@@ -50,9 +50,7 @@ class Command_chart_keywords : public Command
 {
  public:
     using Command::Command;
-
     void run() override;
-
     static const char* description();
 
 }; // class Command_chart_keywords
@@ -63,9 +61,7 @@ class Command_chart_owners : public Command
 {
  public:
     using Command::Command;
-
     void run() override;
-
     static const char* description();
 
 }; // class Command_chart_owners
@@ -87,11 +83,12 @@ class Command_with_c2_access : public Command
 
 }; // class Command_with_c2_access
 
+// ----------------------------------------------------------------------
+
 class Command_chart : public Command_with_c2_access
 {
  public:
     using Command_with_c2_access::Command_with_c2_access;
-
     void run() override;
     static const char* description();
 
@@ -103,7 +100,6 @@ class Command_ace : public Command_with_c2_access
 {
  public:
     using Command_with_c2_access::Command_with_c2_access;
-
     void run() override;
     static const char* description();
 
@@ -115,7 +111,6 @@ class Command_pdf : public Command_with_c2_access
 {
  public:
     using Command_with_c2_access::Command_with_c2_access;
-
     void run() override;
     static const char* description();
 
@@ -139,11 +134,80 @@ class Command_download_lispmds_save : public Command_with_c2_access
 {
  public:
     using Command_with_c2_access::Command_with_c2_access;
-
     void run() override;
     static const char* description();
 
 }; // class Command_download_lispmds_save
+
+// ----------------------------------------------------------------------
+
+class Command_download_layout_plain : public Command_with_c2_access
+{
+ public:
+    using Command_with_c2_access::Command_with_c2_access;
+    void run() override;
+    static const char* description();
+};
+
+// ----------------------------------------------------------------------
+
+class Command_download_layout_csv : public Command_with_c2_access
+{
+ public:
+    using Command_with_c2_access::Command_with_c2_access;
+    void run() override;
+    static const char* description();
+};
+
+// ----------------------------------------------------------------------
+
+class Command_download_table_map_distances_plain : public Command_with_c2_access
+{
+ public:
+    using Command_with_c2_access::Command_with_c2_access;
+    void run() override;
+    static const char* description();
+};
+
+// ----------------------------------------------------------------------
+
+class Command_download_table_map_distances_csv : public Command_with_c2_access
+{
+ public:
+    using Command_with_c2_access::Command_with_c2_access;
+    void run() override;
+    static const char* description();
+};
+
+// ----------------------------------------------------------------------
+
+class Command_download_error_lines : public Command_with_c2_access
+{
+ public:
+    using Command_with_c2_access::Command_with_c2_access;
+    void run() override;
+    static const char* description();
+};
+
+// ----------------------------------------------------------------------
+
+class Command_download_distances_between_all_points_plain : public Command_with_c2_access
+{
+ public:
+    using Command_with_c2_access::Command_with_c2_access;
+    void run() override;
+    static const char* description();
+};
+
+// ----------------------------------------------------------------------
+
+class Command_download_distances_between_all_points_csv : public Command_with_c2_access
+{
+ public:
+    using Command_with_c2_access::Command_with_c2_access;
+    void run() override;
+    static const char* description();
+};
 
 // ----------------------------------------------------------------------
 /// Local Variables:

@@ -252,11 +252,7 @@ void Command_pdf::run()
     const auto ace = c2().ace_uncompressed(session().id(), get_string("id"), projection_no + 1);
     ChartDraw chart_draw(std::make_shared<acmacs::chart::ChartModify>(acmacs::chart::import_from_data(ace, acmacs::chart::Verify::None, report_time::No)), get("projection_no", 0UL));
     chart_draw.calculate_viewport();
-    const auto data = chart_draw.draw_pdf(800);
-    const std::string header = to_json::object("name", get_string("id") + ".pdf", "C", command_name(), "CN", command_number(), "D", command_id(), "CT", static_cast<float>(command_duration()));
-    std::string header_size = std::to_string(header.size());
-    header_size.append(4 - header_size.size(), ' ');
-    send(header_size + header + data, send_message_type::binary);
+    send_binary(get_string("id") + ".pdf", chart_draw.draw_pdf(800));
 
 } // Command_pdf::run
 
@@ -280,11 +276,7 @@ const char* Command_pdf::description()
 void Command_download_ace::run()
 {
     const auto ace = c2().ace_uncompressed(session().id(), get_string("id"));
-    const auto data = acmacs::file::xz_compress(ace);
-    const std::string header = to_json::object("name", get_string("id") + ".ace", "C", command_name(), "CN", command_number(), "D", command_id(), "CT", static_cast<float>(command_duration()));
-    std::string header_size = std::to_string(header.size());
-    header_size.append(4 - header_size.size(), ' ');
-    send(header_size + header + data, send_message_type::binary);
+    send_binary(get_string("id") + ".ace", acmacs::file::xz_compress(ace));
 
 } // Command_download_ace::run
 
@@ -303,12 +295,8 @@ const char* Command_download_ace::description()
 void Command_download_lispmds_save::run()
 {
     const auto ace = c2().ace_uncompressed(session().id(), get_string("id"));
-    acmacs::chart::ChartModify chart(acmacs::chart::import_from_data(ace, acmacs::chart::Verify::None, report_time::No));
-    const auto data = acmacs::chart::lispmds_export(chart, "acmacs-api");
-    const std::string header = to_json::object("name", get_string("id") + ".save", "C", command_name(), "CN", command_number(), "D", command_id(), "CT", static_cast<float>(command_duration()));
-    std::string header_size = std::to_string(header.size());
-    header_size.append(4 - header_size.size(), ' ');
-    send(header_size + header + data, send_message_type::binary);
+    auto chart = acmacs::chart::import_from_data(ace, acmacs::chart::Verify::None, report_time::No);
+    send_binary(get_string("id") + ".save", acmacs::chart::lispmds_export(*chart, "acmacs-api"));
 
 } // Command_download_lispmds_save::run
 
@@ -321,6 +309,128 @@ const char* Command_download_lispmds_save::description()
 )";
 
 } // Command_download_lispmds_save::description
+
+// ----------------------------------------------------------------------
+
+void Command_download_layout_plain::run()
+{
+    const auto ace = c2().ace_uncompressed(session().id(), get_string("id"));
+    auto chart = acmacs::chart::import_from_data(ace, acmacs::chart::Verify::None, report_time::No);
+    send_binary(get_string("id") + ".save", acmacs::chart::lispmds_export(*chart, "acmacs-api"));
+
+} // Command_download_layout_plain::run
+
+// ----------------------------------------------------------------------
+
+const char* Command_download_layout_plain::description()
+{
+    return R"(gets chart layout in the plain text format by id
+    id :id
+)";
+
+} // Command_download_layout_plain::description
+
+// ----------------------------------------------------------------------
+
+void Command_download_layout_csv::run()
+{
+
+} // Command_download_layout_csv::run
+
+// ----------------------------------------------------------------------
+
+const char* Command_download_layout_csv::description()
+{
+    return R"(gets chart layout in the csv format by id
+    id :id
+)";
+
+} // Command_download_layout_csv::description
+
+// ----------------------------------------------------------------------
+
+void Command_download_table_map_distances_plain::run()
+{
+
+} // Command_download_table_map_distances_plain::run
+
+// ----------------------------------------------------------------------
+
+const char* Command_download_table_map_distances_plain::description()
+{
+    return R"(gets chart map distances in the plain text format by id
+    id :id
+)";
+
+} // Command_download_table_map_distances_plain::description
+
+// ----------------------------------------------------------------------
+
+void Command_download_table_map_distances_csv::run()
+{
+
+} // Command_download_table_map_distances_csv::run
+
+// ----------------------------------------------------------------------
+
+const char* Command_download_table_map_distances_csv::description()
+{
+    return R"(gets chart map distances in the csv format by id
+    id :id
+)";
+
+} // Command_download_table_map_distances_csv::description
+
+// ----------------------------------------------------------------------
+
+void Command_download_error_lines::run()
+{
+
+} // Command_download_error_lines::run
+
+// ----------------------------------------------------------------------
+
+const char* Command_download_error_lines::description()
+{
+    return R"(gets chart error lines in the plain text format by id
+    id :id
+)";
+
+} // Command_download_error_lines::description
+
+// ----------------------------------------------------------------------
+
+void Command_download_distances_between_all_points_plain::run()
+{
+
+} // Command_download_distances_between_all_points_plain::run
+
+// ----------------------------------------------------------------------
+
+const char* Command_download_distances_between_all_points_plain::description()
+{
+    return R"(gets chart distances between all points in the plain text format by id
+    id :id
+)";
+
+} // Command_download_distances_between_all_points_plain::description
+
+// ----------------------------------------------------------------------
+
+void Command_download_distances_between_all_points_csv::run()
+{
+
+} // Command_download_distances_between_all_points_csv::run
+
+// ----------------------------------------------------------------------
+
+const char* Command_download_distances_between_all_points_csv::description()
+{
+    return R"(gets chart distances between all points in the csv format by id
+    id :id
+)";
+
+} // Command_download_distances_between_all_points_csv::description
 
 // ----------------------------------------------------------------------
 
