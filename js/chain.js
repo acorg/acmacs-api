@@ -453,26 +453,33 @@ class AntigenicMapApi
         this._download({command: Object.assign({C: "download_lispmds_save", id: this.source_id}, args), blob_type: "application/octet-stream"});
     }
 
-    // download_layout_plain(args) {
-    // }
+    download_layout_plain(args) {
+        this._download({command: Object.assign({C: "download_layout_plain", id: this.source_id}, args), blob_type: "application/octet-stream"});
+    }
 
-    // download_layout_csv(args) {
-    // }
+    download_layout_csv(args) {
+        this._download({command: Object.assign({C: "download_layout_csv", id: this.source_id}, args), blob_type: "application/octet-stream"});
+    }
 
-    // download_table_map_distances_plain(args) {
-    // }
+    download_table_map_distances_plain(args) {
+        this._download({command: Object.assign({C: "download_table_map_distances_plain", id: this.source_id}, args), blob_type: "application/octet-stream"});
+    }
 
-    // download_table_map_distances_csv(args) {
-    // }
+    download_table_map_distances_csv(args) {
+        this._download({command: Object.assign({C: "download_table_map_distances_csv", id: this.source_id}, args), blob_type: "application/octet-stream"});
+    }
 
-    // download_error_lines(args) {
-    // }
+    download_error_lines(args) {
+        this._download({command: Object.assign({C: "download_error_lines", id: this.source_id}, args), blob_type: "application/octet-stream"});
+    }
 
-    // download_distances_between_all_points_plain(args) {
-    // }
+    download_distances_between_all_points_plain(args) {
+        this._download({command: Object.assign({C: "download_distances_between_all_points_plain", id: this.source_id}, args), blob_type: "application/octet-stream"});
+    }
 
-    // download_distances_between_all_points_csv(args) {
-    // }
+    download_distances_between_all_points_csv(args) {
+        this._download({command: Object.assign({C: "download_distances_between_all_points_csv", id: this.source_id}, args), blob_type: "application/octet-stream"});
+    }
 
     // {command:, blob_type:}
     _download(args) {
