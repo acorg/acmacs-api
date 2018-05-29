@@ -193,17 +193,21 @@ export class Dispatcher {
     }
 
     on_binary_message(data) {
+        let dispatcher = this;
         let reader = new FileReader();
         reader.onload = function() {
             const buf = new Uint8Array(this.result);
-            window.bbb = buf;
-            console.log("on_binary_message onload", buf);
+            const header_size = parseInt(String.fromCharCode.apply(null, buf.slice(0, 4)));
+            const header = JSON.parse(String.fromCharCode.apply(null, buf.slice(4, 4 + header_size)));
+            if (!header.E) {
+                delete dispatcher.commands_sent_[header.D];
+                dispatcher.invoke_handler(header.D, header.C, {header: header, data: data.slice(4 + header_size)});
+            }
+            else {
+                dispatcher.invoke_handler(null, "ERROR#" + header.E, header);
+            }
         };
         reader.readAsArrayBuffer(data);
-
-        // window.B = data;
-        // const header_size = data.slice(0, 4, "text/plain");
-        // console.log("on_binary_message", buffer, data);
     }
 
     onopen(evt) {
