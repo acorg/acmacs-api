@@ -442,8 +442,16 @@ class AntigenicMapApi
     }
 
     download_pdf(args) {
-        this.dispatcher.send_receive(Object.assign({C: "pdf", id: this.source_id}, args), data => {
-            console.log("download_pdf", data);
+        this.dispatcher.send_receive(Object.assign({C: "pdf", id: this.source_id}, args), received => {
+            const pdf = new Blob([received.data], {type: "application/pdf"});
+            const url = window.URL.createObjectURL(pdf);
+            const id = "AntigenicMapApi_download_pdf_" + received.header.name;
+            const link = $(`<a id='${id}' href='${url}' download='${received.header.name}'></a>`).appendTo($("body"));
+            link[0].click();
+            setTimeout(() => {    // For Firefox it is necessary to delay revoking the ObjectURL
+                window.URL.revokeObjectURL(url);
+                link.remove();
+            }, 1000);
         });
     }
 }
