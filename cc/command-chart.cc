@@ -312,77 +312,53 @@ const char* Command_download_lispmds_save::description()
 
 // ----------------------------------------------------------------------
 
-void Command_download_layout_plain::run()
+void Command_download_layout::run()
 {
     const auto ace = c2().ace_uncompressed(session().id(), get_string("id"));
     auto chart = acmacs::chart::import_from_data(ace, acmacs::chart::Verify::None, report_time::No);
-    send_binary(get_string("id") + ".layout.txt", acmacs::chart::export_layout(*chart, " ", "", get("projection_no", 0UL)));
+    std::string field_separator, field_encloser, suffix;
+    if (get_string("format") == "csv") {
+        field_separator = ",";
+        field_encloser = "\"";
+        suffix = "csv";
+    }
+    else {
+        field_separator = " ";
+        field_encloser = "";
+        suffix = "txt";
+    }
+    send_binary(get_string("id") + ".layout." + suffix, acmacs::chart::export_layout(*chart, field_separator, field_encloser, get("projection_no", 0UL)));
 
-} // Command_download_layout_plain::run
+} // Command_download_layout::run
 
 // ----------------------------------------------------------------------
 
-const char* Command_download_layout_plain::description()
+const char* Command_download_layout::description()
 {
-    return R"(gets chart layout in the plain text format by id
+    return R"(gets chart layout by id
     id :id
+    format :string "text" (default), "csv"
 )";
 
-} // Command_download_layout_plain::description
+} // Command_download_layout::description
 
 // ----------------------------------------------------------------------
 
-void Command_download_layout_csv::run()
-{
-    const auto ace = c2().ace_uncompressed(session().id(), get_string("id"));
-    auto chart = acmacs::chart::import_from_data(ace, acmacs::chart::Verify::None, report_time::No);
-    send_binary(get_string("id") + ".layout.csv", acmacs::chart::export_layout(*chart, ",", "\"", get("projection_no", 0UL)));
-
-} // Command_download_layout_csv::run
-
-// ----------------------------------------------------------------------
-
-const char* Command_download_layout_csv::description()
-{
-    return R"(gets chart layout in the csv format by id
-    id :id
-)";
-
-} // Command_download_layout_csv::description
-
-// ----------------------------------------------------------------------
-
-void Command_download_table_map_distances_plain::run()
+void Command_download_table_map_distances::run()
 {
 
-} // Command_download_table_map_distances_plain::run
+} // Command_download_table_map_distances::run
 
 // ----------------------------------------------------------------------
 
-const char* Command_download_table_map_distances_plain::description()
+const char* Command_download_table_map_distances::description()
 {
     return R"(gets chart map distances in the plain text format by id
     id :id
+    format :string "text" (default), "csv"
 )";
 
-} // Command_download_table_map_distances_plain::description
-
-// ----------------------------------------------------------------------
-
-void Command_download_table_map_distances_csv::run()
-{
-
-} // Command_download_table_map_distances_csv::run
-
-// ----------------------------------------------------------------------
-
-const char* Command_download_table_map_distances_csv::description()
-{
-    return R"(gets chart map distances in the csv format by id
-    id :id
-)";
-
-} // Command_download_table_map_distances_csv::description
+} // Command_download_table_map_distances::description
 
 // ----------------------------------------------------------------------
 
@@ -403,37 +379,21 @@ const char* Command_download_error_lines::description()
 
 // ----------------------------------------------------------------------
 
-void Command_download_distances_between_all_points_plain::run()
+void Command_download_distances_between_all_points::run()
 {
 
-} // Command_download_distances_between_all_points_plain::run
+} // Command_download_distances_between_all_points::run
 
 // ----------------------------------------------------------------------
 
-const char* Command_download_distances_between_all_points_plain::description()
+const char* Command_download_distances_between_all_points::description()
 {
     return R"(gets chart distances between all points in the plain text format by id
     id :id
+    format :string "text" (default), "csv"
 )";
 
-} // Command_download_distances_between_all_points_plain::description
-
-// ----------------------------------------------------------------------
-
-void Command_download_distances_between_all_points_csv::run()
-{
-
-} // Command_download_distances_between_all_points_csv::run
-
-// ----------------------------------------------------------------------
-
-const char* Command_download_distances_between_all_points_csv::description()
-{
-    return R"(gets chart distances between all points in the csv format by id
-    id :id
-)";
-
-} // Command_download_distances_between_all_points_csv::description
+} // Command_download_distances_between_all_points::description
 
 // ----------------------------------------------------------------------
 

@@ -29,15 +29,12 @@ CommandFactory::CommandFactory()
     {"hidb_antigen",          data<Command_hidb_antigen>()},
     {"hidb_serum",            data<Command_hidb_serum>()},
 
-    {"download_ace",                                data<Command_download_ace>()},
-    {"download_lispmds_save",                       data<Command_download_lispmds_save>()},
-    {"download_layout_plain",                       data<Command_download_layout_plain>()},
-    {"download_layout_csv",                         data<Command_download_layout_csv>()},
-    {"download_table_map_distances_plain",          data<Command_download_table_map_distances_plain>()},
-    {"download_table_map_distances_csv",            data<Command_download_table_map_distances_csv>()},
-    {"download_error_lines",                        data<Command_download_error_lines>()},
-    {"download_distances_between_all_points_plain", data<Command_download_distances_between_all_points_plain>()},
-    {"download_distances_between_all_points_csv",   data<Command_download_distances_between_all_points_csv>()},
+    {"download_ace",                          data<Command_download_ace>()},
+    {"download_lispmds_save",                 data<Command_download_lispmds_save>()},
+    {"download_layout",                       data<Command_download_layout>()},
+    {"download_table_map_distances",          data<Command_download_table_map_distances>()},
+    {"download_error_lines",                  data<Command_download_error_lines>()},
+    {"download_distances_between_all_points", data<Command_download_distances_between_all_points>()},
 
     {"users",                 data<Command_users>()},
 

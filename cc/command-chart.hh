@@ -141,7 +141,7 @@ class Command_download_lispmds_save : public Command_with_c2_access
 
 // ----------------------------------------------------------------------
 
-class Command_download_layout_plain : public Command_with_c2_access
+class Command_download_layout : public Command_with_c2_access
 {
  public:
     using Command_with_c2_access::Command_with_c2_access;
@@ -151,27 +151,7 @@ class Command_download_layout_plain : public Command_with_c2_access
 
 // ----------------------------------------------------------------------
 
-class Command_download_layout_csv : public Command_with_c2_access
-{
- public:
-    using Command_with_c2_access::Command_with_c2_access;
-    void run() override;
-    static const char* description();
-};
-
-// ----------------------------------------------------------------------
-
-class Command_download_table_map_distances_plain : public Command_with_c2_access
-{
- public:
-    using Command_with_c2_access::Command_with_c2_access;
-    void run() override;
-    static const char* description();
-};
-
-// ----------------------------------------------------------------------
-
-class Command_download_table_map_distances_csv : public Command_with_c2_access
+class Command_download_table_map_distances : public Command_with_c2_access
 {
  public:
     using Command_with_c2_access::Command_with_c2_access;
@@ -191,17 +171,7 @@ class Command_download_error_lines : public Command_with_c2_access
 
 // ----------------------------------------------------------------------
 
-class Command_download_distances_between_all_points_plain : public Command_with_c2_access
-{
- public:
-    using Command_with_c2_access::Command_with_c2_access;
-    void run() override;
-    static const char* description();
-};
-
-// ----------------------------------------------------------------------
-
-class Command_download_distances_between_all_points_csv : public Command_with_c2_access
+class Command_download_distances_between_all_points : public Command_with_c2_access
 {
  public:
     using Command_with_c2_access::Command_with_c2_access;
