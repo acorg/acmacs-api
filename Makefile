@@ -51,7 +51,8 @@ LDLIBS = \
   $(AD_LIB)/$(call shared_lib_name,libacmacsdraw,1,0) \
   $(AD_LIB)/$(call shared_lib_name,libacmacsmapdraw,2,0) \
   -L$(AD_LIB) -lboost_system \
-  -lpthread $$(pkg-config --libs liblzma) -lcurl $(FS_LIB)
+  -lpthread $$(pkg-config --libs liblzma) -lcurl \
+  $(CXX_LIB)
 
 PKG_INCLUDES = -I$(AD_INCLUDE)/mongocxx/v_noabi -I$(AD_INCLUDE)/bsoncxx/v_noabi $$(pkg-config --cflags liblzma) $$(pkg-config --cflags libcrypto)
 
