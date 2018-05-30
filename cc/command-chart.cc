@@ -316,18 +316,16 @@ void Command_download_layout::run()
 {
     const auto ace = c2().ace_uncompressed(session().id(), get_string("id"));
     auto chart = acmacs::chart::import_from_data(ace, acmacs::chart::Verify::None, report_time::No);
-    std::string field_separator, field_encloser, suffix;
+    std::string layout, suffix;
     if (get_string("format") == "csv") {
-        field_separator = ",";
-        field_encloser = "\"";
+        layout = acmacs::chart::export_layout<acmacs::DataFormatterCSV>(*chart, get("projection_no", 0UL));
         suffix = "csv";
     }
     else {
-        field_separator = " ";
-        field_encloser = "";
+        layout = acmacs::chart::export_layout<acmacs::DataFormatterSpaceSeparated>(*chart, get("projection_no", 0UL));
         suffix = "txt";
     }
-    send_binary(get_string("id") + ".layout." + suffix, acmacs::chart::export_layout(*chart, field_separator, field_encloser, get("projection_no", 0UL)));
+    send_binary(get_string("id") + ".layout." + suffix, layout);
 
 } // Command_download_layout::run
 
