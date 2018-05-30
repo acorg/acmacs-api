@@ -461,13 +461,13 @@ class AntigenicMapApi
         this._download({command: Object.assign({C: "download_layout", id: this.source_id, format: "csv"}, args), blob_type: "application/octet-stream"});
     }
 
-    // download_table_map_distances_plain(args) {
-    //     this._download({command: Object.assign({C: "download_table_map_distances", id: this.source_id, format: "text"}, args), blob_type: "application/octet-stream"});
-    // }
+    download_table_map_distances_plain(args) {
+        this._download({command: Object.assign({C: "download_table_map_distances", id: this.source_id, format: "text"}, args), blob_type: "application/octet-stream"});
+    }
 
-    // download_table_map_distances_csv(args) {
-    //     this._download({command: Object.assign({C: "download_table_map_distances", id: this.source_id, format: "csv"}, args), blob_type: "application/octet-stream"});
-    // }
+    download_table_map_distances_csv(args) {
+        this._download({command: Object.assign({C: "download_table_map_distances", id: this.source_id, format: "csv"}, args), blob_type: "application/octet-stream"});
+    }
 
     // download_error_lines(args) {
     //     this._download({command: Object.assign({C: "download_error_lines", id: this.source_id}, args), blob_type: "application/octet-stream"});
