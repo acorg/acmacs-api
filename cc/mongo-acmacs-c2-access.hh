@@ -17,7 +17,7 @@ class MongoAcmacsC2Access
 
     void create_client()
         {
-            mClient = mongocxx::client{mMongoURI.empty() ? mongocxx::uri{} : mongocxx::uri{mMongoURI}};
+            mClient = mongocxx::client(mMongoURI.empty() ? mongocxx::uri{} : mongocxx::uri{mMongoURI});
         }
 
  private:
