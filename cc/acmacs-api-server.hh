@@ -3,20 +3,24 @@
 #include <thread>
 
 #include "acmacs-webserver/server.hh"
-
-#include "client-connection.hh"
-#include "mongo-acmacs-c2-access.hh"
+#include "acmacs-api/client-connection.hh"
+#include "acmacs-api/mongo-acmacs-c2-access.hh"
 
 // ----------------------------------------------------------------------
 
-class WsppThreadWithMongoAccess : public WsppThread, public MongoAcmacsC2Access
+class WsppThreadWithMongoAccess : public WsppThread
 {
  public:
     WsppThreadWithMongoAccess(Wspp& aWspp, std::string aMongoURI, AcmacsC2& aAcmacsC2)
-        : WsppThread{aWspp}, MongoAcmacsC2Access{aMongoURI, aAcmacsC2} {}
+        : WsppThread{aWspp}, mongo_access_(aMongoURI, aAcmacsC2) {}
+
+    auto& mongo_access() { return mongo_access_; }
 
  protected:
     void initialize() override;
+
+ private:
+    MongoAcmacsC2Access mongo_access_;
 
 }; // class WsppThreadWithMongoAccess
 

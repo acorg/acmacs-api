@@ -24,7 +24,7 @@ static std::atomic<Wspp*> sWspp;
 void WsppThreadWithMongoAccess::initialize()
 {
     WsppThread::initialize();
-    create_client();
+    mongo_access().create_client();
 
 } // WsppThreadWithMongoAccess::initialize
 
@@ -43,7 +43,7 @@ void WebsocketConnection::message(std::string aMessage, WsppThread& aThread)
     auto& thread = dynamic_cast<WsppThreadWithMongoAccess&>(aThread);
 
     print_receive(log_send_receive(), aMessage);
-    auto command = mCommandFactory.find(aMessage, thread, *this);
+    auto command = mCommandFactory.find(aMessage, thread.mongo_access(), *this);
     try {
         command->run();
     }
