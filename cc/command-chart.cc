@@ -391,6 +391,18 @@ const char* Command_download_error_lines::description()
 
 void Command_download_distances_between_all_points::run()
 {
+    const auto ace = c2().ace_uncompressed(session().id(), get_string("id"));
+    auto chart = acmacs::chart::import_from_data(ace, acmacs::chart::Verify::None, report_time::No);
+    std::string distances, suffix;
+    if (get_string("format") == "csv") {
+        distances = acmacs::chart::export_distances_between_all_points<acmacs::DataFormatterCSV>(*chart, get("projection_no", 0UL));
+        suffix = "csv";
+    }
+    else {
+        distances = acmacs::chart::export_distances_between_all_points<acmacs::DataFormatterSpaceSeparated>(*chart, get("projection_no", 0UL));
+        suffix = "txt";
+    }
+    send_binary(get_string("id") + ".map-distances." + suffix, distances);
 
 } // Command_download_distances_between_all_points::run
 
