@@ -2,6 +2,7 @@
 
 #include "acmacs-base/xz.hh"
 #include "locationdb/locdb.hh"
+#include "hidb-5/vaccines.hh"
 #include "seqdb/seqdb.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/chart-modify.hh"
@@ -227,6 +228,7 @@ void Command_ace::run()
     acmacs::chart::ChartModify chart(acmacs::chart::import_from_data(ace, acmacs::chart::Verify::None, report_time::No));
     auto antigens = chart.antigens_modify();
     antigens->set_continent();
+    hidb::update_vaccines(chart, true);
     seqdb::add_clades(chart, seqdb::ignore_errors::yes);
     const auto exported = export_ace(chart, "mod_acmacs", 0);
     send(exported);
