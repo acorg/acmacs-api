@@ -46,7 +46,7 @@ void Command_hidb_antigen::run()
         auto hidb_antigens = hidb.antigens();
         auto hidb_tables = hidb.tables();
         hidb::AntigenPList found;
-        if (const auto indexes = hidb_antigens->find(get_name(), hidb::FixLocation::No, hidb::FindFuzzy::No); !indexes.empty()) {
+        if (const auto indexes = hidb_antigens->find(get_name(), hidb::fix_location::no, hidb::find_fuzzy::no); !indexes.empty()) {
             std::transform(indexes.begin(), indexes.end(), std::back_inserter(found), [](const auto& antigen_index) -> hidb::AntigenP { return antigen_index.first; });
         }
         // else if (const auto lab_ids = get_lab_ids(); !lab_ids.empty()) {
@@ -106,7 +106,7 @@ void Command_hidb_serum::run()
         auto hidb_sera = hidb.sera();
         auto hidb_tables = hidb.tables();
         hidb::SerumPList found;
-        if (const auto indexes = hidb_sera->find(get_name(), hidb::FixLocation::No, hidb::FindFuzzy::No); !indexes.empty()) {
+        if (const auto indexes = hidb_sera->find(get_name(), hidb::fix_location::no, hidb::find_fuzzy::no); !indexes.empty()) {
             std::transform(indexes.begin(), indexes.end(), std::back_inserter(found), [](const auto& serum_index) -> hidb::SerumP { return serum_index.first; });
         }
         if (found.empty())
