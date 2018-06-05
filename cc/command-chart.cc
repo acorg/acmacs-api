@@ -229,7 +229,7 @@ void Command_ace::run()
     auto antigens = chart.antigens_modify();
     antigens->set_continent();
     hidb::update_vaccines(chart, true);
-    seqdb::add_clades(chart, seqdb::ignore_errors::yes);
+    seqdb::add_clades(chart, seqdb::ignore_errors::yes, seqdb::report::yes);
     const auto exported = export_ace(chart, "mod_acmacs", 0);
     send(exported);
 
