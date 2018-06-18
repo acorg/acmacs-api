@@ -14,6 +14,7 @@ class Command_doc : public Command
     void run() override;
 
     auto get_id() const { return bsoncxx::oid{get_string("id")}; }
+    auto get_id_str() const { return get_string("id"); }
     auto get_chain_source_data() const { return get("chain_source_data", false); }
 
     static const char* description();
@@ -74,6 +75,7 @@ class Command_with_c2_access : public Command
     Command_with_c2_access(rjson::object&& aSrc, MongoAcmacsC2Access& aMongoAccess, ClientConnection& aClientConnection, size_t aCommandNumber);
 
     auto get_id() const { return bsoncxx::oid{get_string("id")}; }
+    auto get_id_str() const { return get_string("id"); }
 
  protected:
     auto& c2() { return acmacs_c2_; }

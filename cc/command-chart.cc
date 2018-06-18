@@ -133,7 +133,7 @@ void Command_doc::run()
         }
     }
     if (!found)
-        throw Error{"not found"};
+        throw Error{"not found: " + get_id_str()};
 
 } // Command_doc::run
 
