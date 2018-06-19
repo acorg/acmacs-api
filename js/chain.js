@@ -481,6 +481,10 @@ class AntigenicMapApi
         this._download({command: Object.assign({C: "download_distances_between_all_points", id: this.source_id, format: "csv"}, args), blob_type: "application/octet-stream"});
     }
 
+    async get_sequences() {
+        return this.dispatcher.send_receive_async({C: "sequences", id: this.source_id});
+    }
+
     // {command:, blob_type:}
     _download(args) {
         this.dispatcher.send_receive(args.command, received => {
