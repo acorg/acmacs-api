@@ -1,6 +1,8 @@
 #include <limits>
 
 #include "acmacs-base/xz.hh"
+#include "acmacs-base/enumerate.hh"
+#include "acmacs-base/rjson.hh"
 #include "locationdb/locdb.hh"
 #include "hidb-5/vaccines.hh"
 #include "seqdb/seqdb.hh"
@@ -437,7 +439,15 @@ void Command_sequences_of_chart::run()
 {
     const auto ace = c2().ace_uncompressed(session().id(), get_string("id"));
     auto chart = acmacs::chart::import_from_data(ace, acmacs::chart::Verify::None, report_time::No);
-    send("{\"sequences\": {}}");
+    const auto matches = seqdb::get().match(*chart->antigens(), chart->info()->virus_type());
+    rjson::object result{{"antigens", rjson::object{}}};
+    for (auto [ag_no, entry_seq] : acmacs::enumerate(matches)) {
+        if (entry_seq) {
+            const auto aa = entry_seq.seq().amino_acids(true);
+            static_cast<rjson::object&>(result["antigens"]).set_field(std::to_string(ag_no), rjson::string(aa));
+        }
+    }
+    send("{\"sequences\": " + result.to_json() + "}");
 
 } // Command_sequences_of_chart::run
 
