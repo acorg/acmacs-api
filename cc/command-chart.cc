@@ -2,7 +2,7 @@
 
 #include "acmacs-base/xz.hh"
 #include "acmacs-base/enumerate.hh"
-#include "acmacs-base/rjson.hh"
+#include "acmacs-base/to-json.hh"
 #include "locationdb/locdb.hh"
 #include "hidb-5/vaccines.hh"
 #include "seqdb/seqdb.hh"
@@ -442,20 +442,21 @@ void Command_sequences_of_chart::run()
     const auto matches = seqdb::get().match(*chart->antigens(), chart->info()->virus_type());
     constexpr size_t max_num_pos = 1000;
     std::vector<std::map<char, size_t>> stat_per_pos(max_num_pos);
-    rjson::object result{{"antigens", rjson::object{}}, {"per_pos", rjson::object{}}};
+    auto json_antigens = to_json::object();
     for (auto [ag_no, entry_seq] : acmacs::enumerate(matches)) {
         if (entry_seq) {
             const auto sequence = entry_seq.seq().amino_acids(true);
-            static_cast<rjson::object&>(result["antigens"]).set_field(std::to_string(ag_no), rjson::string(sequence));
+            json_antigens = to_json::object_append(json_antigens, ag_no, sequence);
             for (auto [pos, aa] : acmacs::enumerate(sequence, 1))
                 ++stat_per_pos[pos][aa];
         }
     }
+    auto json_per_pos = to_json::object();
     for (auto [pos, entry] : acmacs::enumerate(stat_per_pos)) {
         if (entry.size() > 1 && (entry.find('X') == entry.end() || entry.size() > 2))
-            static_cast<rjson::object&>(result["per_pos"]).set_field(std::to_string(pos), rjson::object{});
+            json_per_pos = to_json::object_append(json_per_pos, pos, to_json::raw(to_json::object(entry)));
     }
-    send("{\"sequences\": " + result.to_json() + "}");
+    send(to_json::object("sequences", to_json::raw(to_json::object("antigens", to_json::raw(json_antigens), "per_pos", to_json::raw(json_per_pos)))));
 
 } // Command_sequences_of_chart::run
 
