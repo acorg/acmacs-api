@@ -373,7 +373,7 @@ const ChainStep_results_html = "\
 class ChainStep {
 
     constructor(node, data, step_no, dispatcher, options={}) {
-        console.log("Chain.data", data, step_no);
+        // console.log("Chain.data", data, step_no);
         this.node = node;
         this.dispatcher = dispatcher;
         this.options = Object.assign({}, Chain_default_options, options);
@@ -482,7 +482,7 @@ class AntigenicMapApi
     }
 
     async get_sequences() {
-        return this.dispatcher.send_receive_async({C: "sequences", id: this.source_id});
+        return this.dispatcher.send_receive_async({C: "sequences_of_chart", id: this.source_id});
     }
 
     // {command:, blob_type:}

@@ -433,6 +433,25 @@ const char* Command_download_distances_between_all_points::description()
 
 // ----------------------------------------------------------------------
 
+void Command_sequences_of_chart::run()
+{
+    const auto ace = c2().ace_uncompressed(session().id(), get_string("id"));
+    auto chart = acmacs::chart::import_from_data(ace, acmacs::chart::Verify::None, report_time::No);
+    send("{\"sequences\": {}}");
+
+} // Command_sequences_of_chart::run
+
+// ----------------------------------------------------------------------
+
+const char* Command_sequences_of_chart::description()
+{
+    return R"(gets sequences for antigens in the chart
+    id :id
+)";
+
+// ----------------------------------------------------------------------
+
+} // Command_download_distances_between_all_points::description
 // void Command_map::run()
 // {
 //     const size_t projection_no = 0;

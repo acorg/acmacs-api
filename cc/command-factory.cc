@@ -26,6 +26,7 @@ CommandFactory::CommandFactory()
     {"root_charts",           data<Command_root_charts>()},
     {"chart_keywords",        data<Command_chart_keywords>()},
     {"chart_owners",          data<Command_chart_owners>()},
+    {"sequences_of_chart",    data<Command_sequences_of_chart>()},
     {"hidb_antigen",          data<Command_hidb_antigen>()},
     {"hidb_serum",            data<Command_hidb_serum>()},
 

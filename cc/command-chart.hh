@@ -182,6 +182,16 @@ class Command_download_distances_between_all_points : public Command_with_c2_acc
 };
 
 // ----------------------------------------------------------------------
+
+class Command_sequences_of_chart : public Command_with_c2_access
+{
+ public:
+    using Command_with_c2_access::Command_with_c2_access;
+    void run() override;
+    static const char* description();
+};
+
+// ----------------------------------------------------------------------
 /// Local Variables:
 /// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
 /// End:
