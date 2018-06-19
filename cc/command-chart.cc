@@ -440,12 +440,20 @@ void Command_sequences_of_chart::run()
     const auto ace = c2().ace_uncompressed(session().id(), get_string("id"));
     auto chart = acmacs::chart::import_from_data(ace, acmacs::chart::Verify::None, report_time::No);
     const auto matches = seqdb::get().match(*chart->antigens(), chart->info()->virus_type());
-    rjson::object result{{"antigens", rjson::object{}}};
+    constexpr size_t max_num_pos = 1000;
+    std::vector<std::map<char, size_t>> stat_per_pos(max_num_pos);
+    rjson::object result{{"antigens", rjson::object{}}, {"per_pos", rjson::object{}}};
     for (auto [ag_no, entry_seq] : acmacs::enumerate(matches)) {
         if (entry_seq) {
-            const auto aa = entry_seq.seq().amino_acids(true);
-            static_cast<rjson::object&>(result["antigens"]).set_field(std::to_string(ag_no), rjson::string(aa));
+            const auto sequence = entry_seq.seq().amino_acids(true);
+            static_cast<rjson::object&>(result["antigens"]).set_field(std::to_string(ag_no), rjson::string(sequence));
+            for (auto [pos, aa] : acmacs::enumerate(sequence, 1))
+                ++stat_per_pos[pos][aa];
         }
+    }
+    for (auto [pos, entry] : acmacs::enumerate(stat_per_pos)) {
+        if (entry.size() > 1 && (entry.find('X') == entry.end() || entry.size() > 2))
+            static_cast<rjson::object&>(result["per_pos"]).set_field(std::to_string(pos), rjson::object{});
     }
     send("{\"sequences\": " + result.to_json() + "}");
 
