@@ -453,8 +453,8 @@ void Command_sequences_of_chart::run()
     }
     auto json_per_pos = to_json::object();
     for (auto [pos, entry] : acmacs::enumerate(stat_per_pos)) {
-        if (entry.size() > 1 && (entry.find('X') == entry.end() || entry.size() > 2))
-            json_per_pos = to_json::object_append(json_per_pos, pos, to_json::raw(to_json::object(entry)));
+        // if (entry.size() > 1) // && (entry.find('X') == entry.end() || entry.size() > 2))
+        json_per_pos = to_json::object_append(json_per_pos, pos, to_json::raw(to_json::object(entry)));
     }
     send(to_json::object("sequences", to_json::raw(to_json::object("antigens", to_json::raw(json_antigens), "per_pos", to_json::raw(json_per_pos)))));
 
