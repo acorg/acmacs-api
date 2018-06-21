@@ -437,26 +437,8 @@ const char* Command_download_distances_between_all_points::description()
 
 void Command_sequences_of_chart::run()
 {
-    const auto ace = c2().ace_uncompressed(session().id(), get_string("id"));
-    auto chart = acmacs::chart::import_from_data(ace, acmacs::chart::Verify::None, report_time::No);
-    const auto matches = seqdb::get().match(*chart->antigens(), chart->info()->virus_type());
-    constexpr size_t max_num_pos = 1000;
-    std::vector<std::map<char, size_t>> stat_per_pos(max_num_pos);
-    auto json_antigens = to_json::object();
-    for (auto [ag_no, entry_seq] : acmacs::enumerate(matches)) {
-        if (entry_seq) {
-            const auto sequence = entry_seq.seq().amino_acids(true);
-            json_antigens = to_json::object_append(json_antigens, ag_no, sequence);
-            for (auto [pos, aa] : acmacs::enumerate(sequence, 1))
-                ++stat_per_pos[pos][aa];
-        }
-    }
-    auto json_per_pos = to_json::object();
-    for (auto [pos, entry] : acmacs::enumerate(stat_per_pos)) {
-        // if (entry.size() > 1) // && (entry.find('X') == entry.end() || entry.size() > 2))
-        json_per_pos = to_json::object_append(json_per_pos, pos, to_json::raw(to_json::object(entry)));
-    }
-    send(to_json::object("sequences", to_json::raw(to_json::object("antigens", to_json::raw(json_antigens), "per_pos", to_json::raw(json_per_pos)))));
+    auto chart = acmacs::chart::import_from_data(c2().ace_uncompressed(session().id(), get_string("id")), acmacs::chart::Verify::None, report_time::No);
+    send(seqdb::sequences_of_chart_for_ace_view_1(*chart));
 
 } // Command_sequences_of_chart::run
 
