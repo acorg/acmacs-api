@@ -487,17 +487,7 @@ class AntigenicMapApi
 
     // {command:, blob_type:}
     _download(args) {
-        this.dispatcher.send_receive(args.command, received => {
-            const pdf = new window.Blob([received.data], {type: args.blob_type});
-            const url = window.URL.createObjectURL(pdf);
-            const link = $(`<a href='${url}' download='${received.header.name}'></a>`).appendTo($("body"));
-            link[0].click();
-            link.remove();
-            window.setTimeout(() => {    // For Firefox it is necessary to delay revoking the ObjectURL
-                window.URL.revokeObjectURL(url);
-                // link.remove();
-            }, 100);
-        });
+        this.dispatcher.send_receive(args.command, received => acv_utils.download_blob({data: received.data, blob_type: args.blob_type, filename: received.header.name}));
     }
 }
 
