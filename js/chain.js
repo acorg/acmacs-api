@@ -1,5 +1,5 @@
-import * as acv_utils from "../map-draw/ace-view-1/utils.js";
-import * as acv_toolkit from "../map-draw/ace-view-1/toolkit.js";
+import * as acv_utils from "../map-draw/ace-view/201805/utils.js";
+import * as acv_toolkit from "../map-draw/ace-view/201805/toolkit.js";
 import * as api_utils from "./utils.js";
 
 // ----------------------------------------------------------------------
@@ -495,7 +495,7 @@ class AntigenicMapApi
 
 function antigenic_map_widget(parent, id, dispatcher) {
     const loader = async function() { return dispatcher.send_receive_async({C: "ace", id: id}); };
-    import("../map-draw/ace-view-1/ace-view.js").then(mod => {
+    import("../map-draw/ace-view/201805/ace-view.js").then(mod => {
         const widget_options = {
             view_mode: {mode: "best-projection"},
             coloring: "default",
