@@ -495,17 +495,30 @@ class AntigenicMapApi
 
 function antigenic_map_widget(parent, id, dispatcher) {
     const loader = async function() { return dispatcher.send_receive_async({C: "ace", id: id}); };
-    import("../map-draw/ace-view/201805/ace-view.js").then(mod => {
+
+    import("../map-draw/ace-view/201807/ace-view.js").then(mod => {
         const widget_options = {
-            view_mode: {mode: "best-projection"},
-            coloring: "default",
-            canvas_size: {width: 400, height: 400},
+            // view_mode: {mode: "best-projection"},
+            // coloring: "default",
+            canvas_size: 400,
             title_fields: ["stress", "antigens", "sera", "date", "tables"],
             point_on_click: (point, invoking_node) => show_point_info(dispatcher, point, invoking_node),
             api: new AntigenicMapApi({source_id: id, dispatcher: dispatcher})
         };
         new mod.AntigenicMapWidget($("<div></div>").appendTo(parent), loader, widget_options);
     });
+    
+    // import("../map-draw/ace-view/201805/ace-view.js").then(mod => {
+    //     const widget_options = {
+    //         view_mode: {mode: "best-projection"},
+    //         coloring: "default",
+    //         canvas_size: {width: 400, height: 400},
+    //         title_fields: ["stress", "antigens", "sera", "date", "tables"],
+    //         point_on_click: (point, invoking_node) => show_point_info(dispatcher, point, invoking_node),
+    //         api: new AntigenicMapApi({source_id: id, dispatcher: dispatcher})
+    //     };
+    //     new mod.AntigenicMapWidget($("<div></div>").appendTo(parent), loader, widget_options);
+    // });
 }
 
 // ----------------------------------------------------------------------
