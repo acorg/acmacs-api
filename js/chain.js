@@ -1,5 +1,5 @@
-import * as acv_utils from "../map-draw/ace-view/201805/utils.js";
-import * as acv_toolkit from "../map-draw/ace-view/201805/toolkit.js";
+import * as av_utils from "../map-draw/ace-view/201807/utils.js";
+import * as av_toolkit from "../map-draw/ace-view/201807/toolkit.js";
 import * as api_utils from "./utils.js";
 
 // ----------------------------------------------------------------------
@@ -89,7 +89,7 @@ class Chains {
         const title = (chain.keywords && chain.keywords.length) ? "keywords: " + JSON.stringify(chain.keywords) : "";
 
         const chain_row = $(`<span class='${classes}' title='${title}'>${this.span_state_(chain)}${span_name}${this.span_modification_time_(chain)}${span_id}</span>`).appendTo(node);
-        chain_row.find(".chains-chain-id").on("click", evt => acv_toolkit.movable_window_with_json(chain, evt.target, chain.name || chain.description || chain._id));
+        chain_row.find(".chains-chain-id").on("click", evt => av_toolkit.movable_window_with_json(chain, evt.target, chain.name || chain.description || chain._id));
         if (chain.forked_parent) {
             const sp = $(`<div class='chains-chain-fork-of'><span class='chains-chain-fork-of-prefix'>fork at <span class='chains-chain-fork-at'>${chain.forked_step}</span> of </span></div>`).appendTo(chain_row);
             this.show_chain_(sp, chain.forked_parent);
@@ -269,15 +269,15 @@ class Chain {
         this.node = node;
         this.dispatcher = dispatcher;
         this.options = Object.assign({}, Chain_default_options, options);
-        acmacs_web_title(acv_utils.format(Chain_acmacs_web_title_html, {id: data._id, min_col_basis: data.minimum_column_basis || "none"}), false);
-        $("body .acmacs-web-header .acmacs-web-title .chain-id").on("click", evt => acv_toolkit.movable_window_with_json(data, evt.target, data.name || data.description || data._id));
+        acmacs_web_title(av_utils.format(Chain_acmacs_web_title_html, {id: data._id, min_col_basis: data.minimum_column_basis || "none"}), false);
+        $("body .acmacs-web-header .acmacs-web-title .chain-id").on("click", evt => av_toolkit.movable_window_with_json(data, evt.target, data.name || data.description || data._id));
         this.show(data);
     }
 
     show(data) {
         const table = $(Chain_html).appendTo(this.node);
         for (let src_no = data.sources.length - 1; src_no >= 0; --src_no) {
-            const row = $(acv_utils.format(Chain_source_row_html, {src_no: src_no + 1, id: data.sources[src_no]})).appendTo(table);
+            const row = $(av_utils.format(Chain_source_row_html, {src_no: src_no + 1, id: data.sources[src_no]})).appendTo(table);
             if (data.sources[src_no])
                 this.make_source(row, src_no, data);
             if (data.results[src_no])
@@ -323,7 +323,7 @@ class Chain {
     }
 
     cell_map_add_content(cell, cell_type, message) {
-        cell.find("span.chart-id").empty().append(message.doc._id).on("click", evt => acv_toolkit.movable_window_with_json(message.doc, evt.target, message.doc.name || message.doc.description || message.doc._id));
+        cell.find("span.chart-id").empty().append(message.doc._id).on("click", evt => av_toolkit.movable_window_with_json(message.doc, evt.target, message.doc.name || message.doc.description || message.doc._id));
         if (message.doc.stresses && message.doc.stresses.length) {
             // cell.find("div").append(" " + message.doc.stresses[0].toFixed(2));
             antigenic_map_widget(cell, message.doc._id, this.dispatcher);
@@ -377,8 +377,8 @@ class ChainStep {
         this.node = node;
         this.dispatcher = dispatcher;
         this.options = Object.assign({}, Chain_default_options, options);
-        acmacs_web_title(acv_utils.format(Chain_acmacs_web_title_html, {id: data._id, min_col_basis: data.minimum_column_basis || "none"}), false);
-        $("body .acmacs-web-header .acmacs-web-title .chain-id").on("click", evt => acv_toolkit.movable_window_with_json(data, evt.target, data.name || data.description || data._id));
+        acmacs_web_title(av_utils.format(Chain_acmacs_web_title_html, {id: data._id, min_col_basis: data.minimum_column_basis || "none"}), false);
+        $("body .acmacs-web-header .acmacs-web-title .chain-id").on("click", evt => av_toolkit.movable_window_with_json(data, evt.target, data.name || data.description || data._id));
         this.show(data, step_no);
     }
 
@@ -391,7 +391,7 @@ class ChainStep {
     }
 
     show_results(table, results, source_id) {
-        table.append(acv_utils.format(ChainStep_results_html, {id: source_id}));
+        table.append(av_utils.format(ChainStep_results_html, {id: source_id}));
         for (let [cell_type, tr_class] of [["i", "merge-incremental"], ["s", "merge-scratch"], ["1", "individual"], ["1m", "individual-col-bases"]]) {
             if (results[cell_type]) {
                 const cell = this.make_map_cell(table.find(`tr.${tr_class} table tr`), cell_type);
@@ -405,7 +405,7 @@ class ChainStep {
     }
 
     cell_map_add_content(cell, cell_type, message) {
-        cell.find("span.chart-id").empty().append(message.doc._id).on("click", evt => acv_toolkit.movable_window_with_json(message.doc, evt.target, message.doc.name || message.doc.description || message.doc._id));
+        cell.find("span.chart-id").empty().append(message.doc._id).on("click", evt => av_toolkit.movable_window_with_json(message.doc, evt.target, message.doc.name || message.doc.description || message.doc._id));
         if (message.doc.stresses && message.doc.stresses.length) {
             // cell.find("div").append(" " + message.doc.stresses[0].toFixed(2));
             antigenic_map_widget(cell, message.doc._id, this.dispatcher);
@@ -413,14 +413,14 @@ class ChainStep {
     }
 
     show_sources(table, source_id) {
-        $(acv_utils.format(ChainStep_source_html, {id: source_id})).appendTo(table);
+        $(av_utils.format(ChainStep_source_html, {id: source_id})).appendTo(table);
     }
 }
 
 // ----------------------------------------------------------------------
 
 function movable_window_with_json_for_id(id, invoking_node, dispatcher) {
-    dispatcher.send_receive({C: "doc", id: id}, (message, dispatcher) => acv_toolkit.movable_window_with_json(message.doc, invoking_node, message.doc.name || message.doc.description || message.doc._id));
+    dispatcher.send_receive({C: "doc", id: id}, (message, dispatcher) => av_toolkit.movable_window_with_json(message.doc, invoking_node, message.doc.name || message.doc.description || message.doc._id));
 }
 
 // ----------------------------------------------------------------------
@@ -487,7 +487,7 @@ class AntigenicMapApi
 
     // {command:, blob_type:}
     _download(args) {
-        this.dispatcher.send_receive(args.command, received => acv_utils.download_blob({data: received.data, blob_type: args.blob_type, filename: received.header.name}));
+        this.dispatcher.send_receive(args.command, received => av_utils.download_blob({data: received.data, blob_type: args.blob_type, filename: received.header.name}));
     }
 }
 
@@ -507,7 +507,7 @@ function antigenic_map_widget(parent, id, dispatcher) {
         };
         new mod.AntigenicMapWidget($("<div></div>").appendTo(parent), loader, widget_options);
     });
-    
+
     // import("../map-draw/ace-view/201805/ace-view.js").then(mod => {
     //     const widget_options = {
     //         view_mode: {mode: "best-projection"},
@@ -530,7 +530,7 @@ function show_point_info(dispatcher, point, invoking_node) {
             return "";
         let by_lab = {};
         for (const tbl of tables) {
-            const key = acv_utils.join_collapse([acv_utils.whocc_lab_name(tbl.lab), tbl.assay, tbl.rbc]);
+            const key = av_utils.join_collapse([av_utils.whocc_lab_name(tbl.lab), tbl.assay, tbl.rbc]);
             let ee = by_lab[key];
             if (ee)
                 ee.push(tbl.date);
@@ -556,16 +556,16 @@ function show_point_info(dispatcher, point, invoking_node) {
         const ul = $("<ul class='point-info-antigens point-info-antigens-sera'></ul>").appendTo(content);
 
         const make_row = (entry, expand=false) => {
-            const name = acv_utils.join_collapse([entry.name, entry.reassortant, acv_utils.join_collapse(entry.annotations), entry.passage]);
-            const lab_ids = entry.lab_ids ? "<li class='a-lab-ids'>" + acv_utils.join_collapse(entry.lab_ids, " ") +"</li>" : "";
+            const name = av_utils.join_collapse([entry.name, entry.reassortant, av_utils.join_collapse(entry.annotations), entry.passage]);
+            const lab_ids = entry.lab_ids ? "<li class='a-lab-ids'>" + av_utils.join_collapse(entry.lab_ids, " ") +"</li>" : "";
             const data = `<ul class='point-info-data'>${lab_ids}${make_tables(entry.tables)}</ul>`;
             const li_class = expand ? "a-expanded" : "a-collapsed";
             const li = $(`<li class='${li_class}'><div class='a-expand a-icon'>&#9654;</div><div class='a-collapse a-icon'>&#9660;</div><div class='a-name'>${name}</div><div class='a-data'>${data}</div></li>`).appendTo(ul);
-            li.find(".a-expand").on("click", evt => acv_utils.forward_event(evt, evt2 => li.addClass("a-expanded").removeClass("a-collapsed")));
-            li.find(".a-collapse").on("click", evt => acv_utils.forward_event(evt, evt2 => li.addClass("a-collapsed").removeClass("a-expanded")));
+            li.find(".a-expand").on("click", evt => av_utils.forward_event(evt, evt2 => li.addClass("a-expanded").removeClass("a-collapsed")));
+            li.find(".a-collapse").on("click", evt => av_utils.forward_event(evt, evt2 => li.addClass("a-collapsed").removeClass("a-expanded")));
         };
 
-        const my_index = message.antigens.findIndex(elt => elt.reassortant === point.antigen.R && elt.passage === point.antigen.P && acv_utils.arrays_equal_simple(elt.annotations, point.antigen.a));
+        const my_index = message.antigens.findIndex(elt => elt.reassortant === point.antigen.R && elt.passage === point.antigen.P && av_utils.arrays_equal_simple(elt.annotations, point.antigen.a));
         if (my_index >= 0) {
             make_row(message.antigens[my_index], true);
             message.antigens.filter((entry, index) => index !== my_index).forEach(entry => make_row(entry));
@@ -579,11 +579,11 @@ function show_point_info(dispatcher, point, invoking_node) {
         const ul = $("<ul class='point-info-sera point-info-antigens-sera'></ul>").appendTo(content);
 
         const make_row = entry => {
-            const name = acv_utils.join_collapse([entry.name, entry.reassortant, acv_utils.join_collapse(entry.annotations), entry.serum_id]);
+            const name = av_utils.join_collapse([entry.name, entry.reassortant, av_utils.join_collapse(entry.annotations), entry.serum_id]);
             const data = `<ul class='point-info-data'>${make_tables(entry.tables)}</ul>`;
             const li = $(`<li class='a-collapsed'><div class='a-expand a-icon'>&#9654;</div><div class='a-collapse a-icon'>&#9660;</div><div class='a-name'>${name}</div><div class='a-data'>${data}</div></li>`).appendTo(ul);
-            li.find(".a-expand").on("click", evt => acv_utils.forward_event(evt, evt2 => li.addClass("a-expanded").removeClass("a-collapsed")));
-            li.find(".a-collapse").on("click", evt => acv_utils.forward_event(evt, evt2 => li.addClass("a-collapsed").removeClass("a-expanded")));
+            li.find(".a-expand").on("click", evt => av_utils.forward_event(evt, evt2 => li.addClass("a-expanded").removeClass("a-collapsed")));
+            li.find(".a-collapse").on("click", evt => av_utils.forward_event(evt, evt2 => li.addClass("a-collapsed").removeClass("a-expanded")));
         };
 
         const my_index = message.sera.findIndex(elt => elt.serum_id === point.serum.I);
@@ -599,7 +599,7 @@ function show_point_info(dispatcher, point, invoking_node) {
     const make_window = (message, invoking_node, title, point, content_filler) => {
         // console.log("show_point_info", message);
         const max_win_content_height = 300;
-        const win = new acv_toolkit.MovableWindow({title: title, parent: invoking_node, classes: "hidb-point-info", content_css: {width: "auto", height: "30em"}});
+        const win = new av_toolkit.MovableWindow({title: title, parent: invoking_node, classes: "hidb-point-info", content_css: {width: "auto", height: "30em"}});
         content_filler(message, point, win.content());
         win.content().css("height", "auto");
         if (win.content().height() > max_win_content_height)
@@ -608,14 +608,14 @@ function show_point_info(dispatcher, point, invoking_node) {
 
     if (point.antigen) {
         const show = (message, dispatcher) => {
-            const title = acv_utils.join_collapse(["AG", point.antigen.N, point.antigen.R, acv_utils.join_collapse(point.antigen.a), point.antigen.P]);
+            const title = av_utils.join_collapse(["AG", point.antigen.N, point.antigen.R, av_utils.join_collapse(point.antigen.a), point.antigen.P]);
             return make_window(message, invoking_node, title, point, make_window_antigen);
         };
         dispatcher.send_receive({C: "hidb_antigen", name: point.antigen.N, passage: point.antigen.P, reassortant: point.antigen.R, annotations: point.antigen.a, lab_ids: point.antigen.l, virus_type: point.virus_type}, show);
     }
     else {
         const show = (message, dispatcher) => {
-            const title = acv_utils.join_collapse(["SR", point.serum.N, point.serum.R, acv_utils.join_collapse(point.serum.a), point.serum.I]);
+            const title = av_utils.join_collapse(["SR", point.serum.N, point.serum.R, av_utils.join_collapse(point.serum.a), point.serum.I]);
             return make_window(message, invoking_node, title, point, make_window_serum);
         };
         dispatcher.send_receive({C: "hidb_serum", name: point.serum.N, serum_id: point.serum.I, reassortant: point.serum.R, annotations: point.serum.a, virus_type: point.virus_type}, show);
