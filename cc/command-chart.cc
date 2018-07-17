@@ -449,10 +449,28 @@ const char* Command_sequences_of_chart::description()
     return R"(gets sequences for antigens in the chart
     id :id
 )";
+}
 
 // ----------------------------------------------------------------------
 
-} // Command_download_distances_between_all_points::description
+void Command_download_sequences_of_chart_as_fasta::run()
+{
+    auto chart = acmacs::chart::import_from_data(c2().ace_uncompressed(session().id(), get_string("id")), acmacs::chart::Verify::None, report_time::No);
+    send(seqdb::sequences_of_chart_as_fasta(*chart));
+
+} // Command_download_sequences_of_chart_as_fasta::run
+
+// ----------------------------------------------------------------------
+
+const char* Command_download_sequences_of_chart_as_fasta::description()
+{
+    return R"(gets sequences in the fasta format for antigens in the chart
+    id :id
+)";
+}
+
+// ----------------------------------------------------------------------
+
 // void Command_map::run()
 // {
 //     const size_t projection_no = 0;
