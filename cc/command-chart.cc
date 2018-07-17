@@ -456,7 +456,7 @@ const char* Command_sequences_of_chart::description()
 void Command_download_sequences_of_chart_as_fasta::run()
 {
     auto chart = acmacs::chart::import_from_data(c2().ace_uncompressed(session().id(), get_string("id")), acmacs::chart::Verify::None, report_time::No);
-    send(seqdb::sequences_of_chart_as_fasta(*chart));
+    send_binary(get_string("id") + ".fasta", seqdb::sequences_of_chart_as_fasta(*chart));
 
 } // Command_download_sequences_of_chart_as_fasta::run
 
