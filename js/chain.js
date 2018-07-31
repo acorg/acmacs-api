@@ -485,6 +485,10 @@ class AntigenicMapApi
         this._download({command: Object.assign({C: "download_sequences_of_chart_as_fasta", id: this.source_id}, args), blob_type: "application/octet-stream"});
     }
 
+    download_layout_sequences_as_csv(args) {
+        this._download({command: Object.assign({C: "download_layout_sequences_as_csv", id: this.source_id}, args), blob_type: "application/octet-stream"});
+    }
+
     async get_sequences() {
         return this.dispatcher.send_receive_async({C: "sequences_of_chart", id: this.source_id});
     }

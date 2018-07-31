@@ -28,6 +28,7 @@ CommandFactory::CommandFactory()
     {"chart_owners",          data<Command_chart_owners>()},
     {"sequences_of_chart",    data<Command_sequences_of_chart>()},
     {"download_sequences_of_chart_as_fasta",    data<Command_download_sequences_of_chart_as_fasta>()},
+    {"download_layout_sequences_as_csv",        data<Command_download_layout_sequences_as_csv>()},
     {"hidb_antigen",          data<Command_hidb_antigen>()},
     {"hidb_serum",            data<Command_hidb_serum>()},
 

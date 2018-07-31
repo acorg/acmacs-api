@@ -11,6 +11,7 @@
 #include "acmacs-chart-2/ace-export.hh"
 #include "acmacs-chart-2/lispmds-export.hh"
 #include "acmacs-map-draw/draw.hh"
+#include "acmacs-map-draw/export.hh"
 #include "acmacs-webserver/print.hh"
 #include "command-chart.hh"
 #include "session.hh"
@@ -268,7 +269,7 @@ const char* Command_pdf::description()
     id :id
     drawing_order_background:
     drawing_order:
-    projection_no:
+    projection_no :number = 0
     styles:
     point_scale:
 )";
@@ -340,6 +341,7 @@ const char* Command_download_layout::description()
     return R"(gets chart layout by id
     id :id
     format :string "text" (default), "csv"
+    projection_no :number = 0
 )";
 
 } // Command_download_layout::description
@@ -370,6 +372,7 @@ const char* Command_download_table_map_distances::description()
     return R"(gets chart map distances in the plain text format by id
     id :id
     format :string "text" (default), "csv"
+    projection_no :number = 0
 )";
 
 } // Command_download_table_map_distances::description
@@ -399,6 +402,7 @@ const char* Command_download_error_lines::description()
 {
     return R"(gets chart error lines in the plain text format by id
     id :id
+    projection_no :number = 0
 )";
 
 } // Command_download_error_lines::description
@@ -429,6 +433,7 @@ const char* Command_download_distances_between_all_points::description()
     return R"(gets chart distances between all points in the plain text format by id
     id :id
     format :string "text" (default), "csv"
+    projection_no :number = 0
 )";
 
 } // Command_download_distances_between_all_points::description
@@ -466,6 +471,25 @@ const char* Command_download_sequences_of_chart_as_fasta::description()
 {
     return R"(gets sequences in the fasta format for antigens in the chart
     id :id
+)";
+}
+
+// ----------------------------------------------------------------------
+
+void Command_download_layout_sequences_as_csv::run()
+{
+    auto chart = acmacs::chart::import_from_data(c2().ace_uncompressed(session().id(), get_string("id")), acmacs::chart::Verify::None, report_time::No);
+    send_binary(get_string("id") + ".layeout-sequences.csv", export_layout_sequences_into_csv(std::string{}, *chart, get("projection_no", 0UL)));
+
+} // Command_download_layout_sequences_as_csv::run
+
+// ----------------------------------------------------------------------
+
+const char* Command_download_layout_sequences_as_csv::description()
+{
+    return R"(gets layout, sequences, location information in the csv format for antigens and sera in the chart
+    id :id
+    projection_no :number = 0
 )";
 }
 

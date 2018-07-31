@@ -202,6 +202,16 @@ class Command_download_sequences_of_chart_as_fasta : public Command_with_c2_acce
 };
 
 // ----------------------------------------------------------------------
+
+class Command_download_layout_sequences_as_csv : public Command_with_c2_access
+{
+ public:
+    using Command_with_c2_access::Command_with_c2_access;
+    void run() override;
+    static const char* description();
+};
+
+// ----------------------------------------------------------------------
 /// Local Variables:
 /// eval: (if (fboundp 'eu-rename-buffer) (eu-rename-buffer))
 /// End:
