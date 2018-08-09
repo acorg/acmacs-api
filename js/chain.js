@@ -42,7 +42,7 @@ const sChainType = {
 
 const sVirusTypes = {"H1pdm": "H1pdm", "A(H1N1)2009pdm": "H1pdm", "H1": "H1", "A(H3N2)": "H3", "H3": "H3", "B/Vic": "B/Vic", "B/Yam": "B/Yam"};
 const sVirusTypeOrder = ["H1pdm", "H1", "H3 HI", "H3 Neut", "B/Vic", "B/Yam", "Other"];
-const sLabs = {CDC: "CDC", MELB: "VIDRL", NIID: "NIID", NIMR: "Crick", CNIC: "CNIC"};
+const sLabs = {CDC: "CDC", MELB: "VIDRL", VIDRL: "VIDRL", NIID: "NIID", NIMR: "Crick", Crick: "Crick", CNIC: "CNIC"};
 const sLabsOrder = ["CDC", "Crick", "NIID", "VIDRL", "CNIC", "Other"];
 
 class Chains {
