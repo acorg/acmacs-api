@@ -23,7 +23,7 @@ fi
 LOG_DIR="${SERVER_ROOT}/log"
 
 if [[ "$(hostname)" == "i19" ]]; then
-    pkill -f 'acmacs-api-server' || true
+    pkill -f 'acmacs-api-server.+settings.json' || true
     for log in "${LOG_DIR}/"*.log; do
         bn=$(basename "${log}")
         /usr/bin/xz -9ec "${LOG_DIR}/${bn}" > "${LOG_DIR}/old/${NOW}.${bn}.xz"
