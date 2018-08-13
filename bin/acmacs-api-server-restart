@@ -31,6 +31,7 @@ if [[ "$(hostname)" == "i19" ]]; then
     done
     echo "log files are in ${LOG_DIR}"
     echo "using settings from ${SERVER_ROOT}/settings.json"
+    cd ${SERVER_ROOT}
     ${ACMACSD_ROOT}/bin/acmacs-api-server "${SERVER_ROOT}/settings.json" >"${LOG_DIR}/stdout.log" 2>"${LOG_DIR}/stderr.log" </dev/null &
 else
     fail "Usupported host: $(hostname)"
