@@ -1,7 +1,7 @@
 #include <iostream>
 #include <random>
 
-#include "acmacs-base/string.hh"
+#include "acmacs-base/to-string.hh"
 #include "md5.hh"
 #include "session.hh"
 
@@ -90,7 +90,7 @@ void Session::login(std::string aUser, std::string aPassword)
     find_user(aUser, true);
     const auto nonce = get_nonce();
     std::random_device rd;
-    const auto cnonce = string::to_hex_string(rd() & 0xFFFFFFFF, string::NotShowBase);
+    const auto cnonce = acmacs::to_hex_string(rd() & 0xFFFFFFFF, acmacs::NotShowBase);
     std::unique_lock<decltype(mAccess)> lock{mAccess};
     const auto digest = md5(mUser + ";acmacs-web;" + aPassword);
     lock.unlock();
@@ -114,7 +114,7 @@ std::string Session::get_nonce()
 {
     std::random_device rd;
     std::unique_lock<decltype(mAccess)> lock{mAccess};
-    mNonce = string::to_hex_string(rd() & 0xFFFFFFFF, string::NotShowBase);
+    mNonce = acmacs::to_hex_string(rd() & 0xFFFFFFFF, acmacs::NotShowBase);
     return mNonce;
 
 } // Session::get_nonce
