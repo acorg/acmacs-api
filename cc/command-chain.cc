@@ -21,7 +21,7 @@ void Command_chains::run()
     to_bson::in_for_optional_array_of_strings(criteria_bld, "p.o", "$in", [this](){return this->get_owners();});
     to_bson::in_for_optional_array_of_strings(criteria_bld, "keywords", "$in", [this](){return this->get_keywords();});
     to_bson::in_for_optional_array_of_strings(criteria_bld, "_t", "$in", [this](){return this->get_types();});
-    // to_bson::in_for_optional_array_of_strings(criteria_bld, "search", "$all", [this](){return this->get_search();}, [](const auto& value){ return string::upper(static_cast<rjson::string>(value).str()); });
+    // to_bson::in_for_optional_array_of_strings(criteria_bld, "search", "$all", [this](){return this->get_search();}, [](const auto& value){ return string::upper(static_cast<rjson::v1::string>(value).str()); });
 
     auto criteria = criteria_bld.extract();
       // print_cerr("Command_chains::run ", bsoncxx::to_json(criteria));

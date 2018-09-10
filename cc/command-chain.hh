@@ -16,10 +16,10 @@ class Command_chains : public Command
     int get_chunk_size() const { return get("chunk_size", 0); }
     int get_skip() const { return get("skip", 0); }
     int get_limit() const { return get("limit", 0); }
-    const rjson::array& get_owners() const { return get_array("owners"); }
-    const rjson::array& get_keywords() const { return get_array("keywords"); }
-    // const rjson::array& get_search() const { return get_array("search"); }
-    const rjson::array& get_types() const { return get_array("types"); }
+    const rjson::v1::array& get_owners() const { return get_array("owners"); }
+    const rjson::v1::array& get_keywords() const { return get_array("keywords"); }
+    // const rjson::v1::array& get_search() const { return get_array("search"); }
+    const rjson::v1::array& get_types() const { return get_array("types"); }
 
     static const char* description();
 

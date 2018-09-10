@@ -37,9 +37,9 @@ class Command_root_charts : public Command
     int get_chunk_size() const { return get("chunk_size", 0); }
     int get_skip() const { return get("skip", 0); }
     int get_limit() const { return get("limit", 0); }
-    const rjson::array& get_owners() const { return get_array("owners"); }
-    const rjson::array& get_keywords() const { return get_array("keywords"); }
-    const rjson::array& get_search() const { return get_array("search"); }
+    const rjson::v1::array& get_owners() const { return get_array("owners"); }
+    const rjson::v1::array& get_keywords() const { return get_array("keywords"); }
+    const rjson::v1::array& get_search() const { return get_array("search"); }
 
     static const char* description();
 
@@ -72,7 +72,7 @@ class Command_chart_owners : public Command
 class Command_with_c2_access : public Command
 {
  public:
-    Command_with_c2_access(rjson::object&& aSrc, MongoAcmacsC2Access& aMongoAccess, ClientConnection& aClientConnection, size_t aCommandNumber);
+    Command_with_c2_access(rjson::v1::object&& aSrc, MongoAcmacsC2Access& aMongoAccess, ClientConnection& aClientConnection, size_t aCommandNumber);
 
     auto get_id() const { return bsoncxx::oid{get_string("id")}; }
     auto get_id_str() const { return get_string("id"); }

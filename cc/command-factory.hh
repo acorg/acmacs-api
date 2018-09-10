@@ -32,7 +32,7 @@ class CommandFactory
     const auto& commands() const { return mFactory; }
 
  private:
-    using FactoryFunc = std::shared_ptr<Command> (CommandFactory::*)(rjson::object&&, MongoAcmacsC2Access&, ClientConnection&, size_t) const;
+    using FactoryFunc = std::shared_ptr<Command> (CommandFactory::*)(rjson::v1::object&&, MongoAcmacsC2Access&, ClientConnection&, size_t) const;
 
     struct Data
     {
@@ -41,7 +41,7 @@ class CommandFactory
         std::function<const char* ()> description;
     };
 
-    template <typename Cmd> std::shared_ptr<Command> make(rjson::object&& aSrc, MongoAcmacsC2Access& aMongoAccess, ClientConnection& aClientConnection, size_t aCommandNumber) const
+    template <typename Cmd> std::shared_ptr<Command> make(rjson::v1::object&& aSrc, MongoAcmacsC2Access& aMongoAccess, ClientConnection& aClientConnection, size_t aCommandNumber) const
         {
             return std::make_shared<Cmd>(std::move(aSrc), aMongoAccess, aClientConnection, aCommandNumber);
         }

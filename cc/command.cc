@@ -7,7 +7,7 @@
 
 // ----------------------------------------------------------------------
 
-Command::Command(rjson::object&& aSrc, MongoAcmacsC2Access& aMongoAccess, ClientConnection& aClientConnection, size_t aCommandNumber)
+Command::Command(rjson::v1::object&& aSrc, MongoAcmacsC2Access& aMongoAccess, ClientConnection& aClientConnection, size_t aCommandNumber)
     : data_{std::move(aSrc)}, mDb{aMongoAccess.client()["acmacs_web"]}, mClientConnection{aClientConnection}, mCommandNumber{aCommandNumber}
         //$ mSession{aMongoAccess.client()["acmacs_web"]},
 {
@@ -24,7 +24,7 @@ void Command::send(std::string aMessage, send_message_type aMessageType)
         try {
             message = to_json::object_append(message, "add_to_response", to_json::raw(add_to_response().to_json()));
         }
-        catch (rjson::field_not_found&) {
+        catch (rjson::v1::field_not_found&) {
         }
         mClientConnection.send(message, aMessageType);
         // std::cerr << "Command::send: " << aMessage.substr(0, 100) << std::endl;

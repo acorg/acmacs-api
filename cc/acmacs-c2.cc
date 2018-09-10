@@ -14,7 +14,7 @@
 
 // ----------------------------------------------------------------------
 
-rjson::object AcmacsC2::command(const SessionId& aSession, std::string aCommand)
+rjson::v1::object AcmacsC2::command(const SessionId& aSession, std::string aCommand)
 {
     return acmacs::curl().post(acmacs_uri, embed_session_in_command(aSession, aCommand), mVerbose);
 
