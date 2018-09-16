@@ -14,7 +14,7 @@
 
 // ----------------------------------------------------------------------
 
-rjson::v1::object AcmacsC2::command(const SessionId& aSession, std::string aCommand)
+rjson::value AcmacsC2::command(const SessionId& aSession, std::string aCommand)
 {
     return acmacs::curl().post(acmacs_uri, embed_session_in_command(aSession, aCommand), mVerbose);
 
@@ -42,7 +42,7 @@ std::string AcmacsC2::ace_uncompressed(const SessionId& aSession, std::string aO
     const auto projections = aMaxNumberOfProjections == static_cast<size_t>(-1) ? std::string{} : ",\"projection\":[" + string::join(",", acmacs::index_iterator(0UL), acmacs::index_iterator(aMaxNumberOfProjections)) + "]";
     auto result = command(aSession, std::string{R"({"C":"chart_export","format":"ace_uncompressed","pretty":false,"id":")"} + aObjectId + '"' + projections + "}");
       // "chart_json" is a string with embedded json, all double-quotes are escaped
-    return string::replace(result.get_or_default("chart_json", "* C2 chart_export failed without error *"), "\\\"", "\"");
+    return string::replace(rjson::get_or(result, "chart_json", "* C2 chart_export failed without error *"), "\\\"", "\"");
 
 } // AcmacsC2::ace_uncompressed
 

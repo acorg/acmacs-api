@@ -14,7 +14,7 @@ namespace acmacs
      public:
         class Error : public std::runtime_error { public: using std::runtime_error::runtime_error; };
 
-        rjson::v1::object post(std::string url, std::string data, bool verbose);
+        rjson::value post(std::string url, std::string data, bool verbose);
 
      private:
         Curl();

@@ -54,7 +54,7 @@ static size_t response_receiver(const char* contents, size_t memb_size, size_t n
 
 // ----------------------------------------------------------------------
 
-rjson::v1::object acmacs::Curl::post(std::string url, std::string data, bool verbose)
+rjson::value acmacs::Curl::post(std::string url, std::string data, bool verbose)
 {
     auto curl = curl_easy_init();
     if (!curl)
@@ -87,10 +87,15 @@ rjson::v1::object acmacs::Curl::post(std::string url, std::string data, bool ver
         throw;
     }
 
-    const auto doc = rjson::v1::parse_string(response);
-    if (const auto& errors = doc.get_or_empty_array("E"); !errors.empty()) {
-        const auto msg = std::accumulate(errors.begin(), errors.end(), std::string{}, [](const std::string& target, const auto& err) -> std::string {
-            return (target.empty() ? target : target + "\n       ") + err.get_or_default("code", "") + ": " + err.get_or_default("description", "");
+    const auto doc = rjson::parse_string(response);
+    if (const auto& errors = doc["E"]; !errors.empty()) {
+        std::string msg;
+        rjson::for_each(errors, [&msg](const rjson::value& err) {
+            if (!msg.empty())
+                msg.append("\n       ");
+            msg.append(rjson::get_or(err, "code", ""));
+            msg.append(": ");
+            msg.append(rjson::get_or(err, "description", ""));
         });
         throw Error{msg};
     }

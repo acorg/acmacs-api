@@ -11,10 +11,10 @@ class Command_hidb_antigen_serum : public Command
  public:
     using Command::Command;
 
-    std::string get_virus_type() const { return get_string("virus_type"); }
-    std::string get_name() const { return get_string("name"); }
-    std::string get_reassortant() const { return get_string("reassortant"); }
-    const rjson::v1::array& get_annotations() const { return get_array("annotations"); }
+    std::string get_virus_type() const { return data()["virus_type"]; }
+    std::string get_name() const { return data()["name"]; }
+    std::string get_reassortant() const { return data()["reassortant"]; }
+    const rjson::value& get_annotations() const { return data()["annotations"]; }
 
  protected:
     std::string make_tables(const hidb::Tables& tables, const hidb::indexes_t& indexes);

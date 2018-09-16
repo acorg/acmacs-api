@@ -13,9 +13,9 @@ class Command_doc : public Command
 
     void run() override;
 
-    auto get_id() const { return bsoncxx::oid{get_string("id")}; }
-    auto get_id_str() const { return get_string("id"); }
-    auto get_chain_source_data() const { return get("chain_source_data", false); }
+    std::string get_id_str() const { return data()["id"]; }
+    auto get_id() const { return bsoncxx::oid{get_id_str()}; }
+    auto get_chain_source_data() const { return rjson::get_or(data(), "chain_source_data", false); }
 
     static const char* description();
 
@@ -34,12 +34,12 @@ class Command_root_charts : public Command
 
     void run() override;
 
-    int get_chunk_size() const { return get("chunk_size", 0); }
-    int get_skip() const { return get("skip", 0); }
-    int get_limit() const { return get("limit", 0); }
-    const rjson::v1::array& get_owners() const { return get_array("owners"); }
-    const rjson::v1::array& get_keywords() const { return get_array("keywords"); }
-    const rjson::v1::array& get_search() const { return get_array("search"); }
+    int get_chunk_size() const { return rjson::get_or(data(), "chunk_size", 0); }
+    int get_skip() const { return rjson::get_or(data(), "skip", 0); }
+    int get_limit() const { return rjson::get_or(data(), "limit", 0); }
+    const rjson::value& get_owners() const { return data()["owners"]; }
+    const rjson::value& get_keywords() const { return data()["keywords"]; }
+    const rjson::value& get_search() const { return data()["search"]; }
 
     static const char* description();
 
@@ -72,10 +72,10 @@ class Command_chart_owners : public Command
 class Command_with_c2_access : public Command
 {
  public:
-    Command_with_c2_access(rjson::v1::object&& aSrc, MongoAcmacsC2Access& aMongoAccess, ClientConnection& aClientConnection, size_t aCommandNumber);
+    Command_with_c2_access(rjson::value&& aSrc, MongoAcmacsC2Access& aMongoAccess, ClientConnection& aClientConnection, size_t aCommandNumber);
 
-    auto get_id() const { return bsoncxx::oid{get_string("id")}; }
-    auto get_id_str() const { return get_string("id"); }
+    std::string get_id_str() const { return data()["id"]; }
+    auto get_id() const { return bsoncxx::oid{get_id_str()}; }
 
  protected:
     auto& c2() { return acmacs_c2_; }

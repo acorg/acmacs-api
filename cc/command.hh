@@ -23,12 +23,12 @@ class Command
     class Error : public std::runtime_error { public: using std::runtime_error::runtime_error; };
     using time_point = decltype(std::chrono::high_resolution_clock::now());
 
-    Command(rjson::v1::object&& aSrc, MongoAcmacsC2Access& aMongoAccess, ClientConnection& aClientConnection, size_t aCommandNumber);
+    Command(rjson::value&& aSrc, MongoAcmacsC2Access& aMongoAccess, ClientConnection& aClientConnection, size_t aCommandNumber);
     virtual ~Command() = default;
 
-    std::string command_name() const { return get_string("C"); }
-    std::string command_id() const { return get_string("D"); }
-    const rjson::v1::value& add_to_response() const { return data_["add_to_response"]; } // may throw rjson::v1::field_not_found
+    std::string command_name() const { return data()["C"]; }
+    std::string command_id() const { return data()["D"]; }
+    const rjson::value& add_to_response() const { return data_["add_to_response"]; } // may throw rjson::v1::field_not_found
     size_t command_number() const { return mCommandNumber; }
 
     virtual void run() = 0;
@@ -42,10 +42,10 @@ class Command
     Session& session() { return mClientConnection.session(); }
     void make_session() { return mClientConnection.make_session(db()); }
 
-    const rjson::v1::object& data() const { return data_; }
-    std::string get_string(const char* field_name) const { return data().get_string_or_throw(field_name); }
-    template <typename T> T get(const char* field_name, T&& aDefault) const { return data().get_or_default(field_name, std::forward<T>(aDefault)); }
-    const rjson::v1::array& get_array(const char* field_name) const { return data().get_or_empty_array(field_name); }
+    const rjson::value& data() const { return data_; }
+    // std::string get_string(const char* field_name) const { return data().get_string_or_throw(field_name); }
+    // template <typename T> T get(const char* field_name, T&& aDefault) const { return rjson::get_or(data(), field_name, std::forward<T>(aDefault)); }
+    // const rjson::value& get_array(const char* field_name) const { return data()[field_name]; }
 
     time_point now() const { return std::chrono::high_resolution_clock::now(); }
     void set_command_start() { mCommandStart = now(); }
@@ -54,7 +54,7 @@ class Command
     std::ostream& log_send_receive() { return mClientConnection.log_send_receive(); }
 
  private:
-    rjson::v1::object data_;
+    rjson::value data_;
     mongocxx::database mDb;
     ClientConnection& mClientConnection;
     const size_t mCommandNumber;

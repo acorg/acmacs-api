@@ -41,7 +41,7 @@ int main(int argc, char* const argv[])
                 response = acmacs.ace_uncompressed(session, command.substr(17, 24), std::stoul(command.substr(17 + 25)));
             }
             else {
-                response = acmacs.command(session, command).to_json();
+                response = rjson::to_string(acmacs.command(session, command));
             }
             std::cout << "<== " << response << std::endl;
         }

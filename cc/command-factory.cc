@@ -59,9 +59,9 @@ CommandFactory::CommandFactory()
 std::shared_ptr<Command> CommandFactory::find(std::string aMessage, MongoAcmacsC2Access& aMongoAccess, ClientConnection& aClientConnection) const
 {
     ++mCommandNumber;
-    rjson::v1::object msg = rjson::v1::parse_string(aMessage);
+    rjson::value msg = rjson::parse_string(aMessage);
     std::shared_ptr<Command> result;
-    const auto found = mFactory.find(msg.get_string_or_throw("C"));
+    const auto found = mFactory.find(msg["C"]);
     if (found != mFactory.end())
         result = (this->*found->second.maker)(std::move(msg), aMongoAccess, aClientConnection, mCommandNumber);
     else

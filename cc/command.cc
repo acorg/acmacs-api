@@ -7,7 +7,7 @@
 
 // ----------------------------------------------------------------------
 
-Command::Command(rjson::v1::object&& aSrc, MongoAcmacsC2Access& aMongoAccess, ClientConnection& aClientConnection, size_t aCommandNumber)
+Command::Command(rjson::value&& aSrc, MongoAcmacsC2Access& aMongoAccess, ClientConnection& aClientConnection, size_t aCommandNumber)
     : data_{std::move(aSrc)}, mDb{aMongoAccess.client()["acmacs_web"]}, mClientConnection{aClientConnection}, mCommandNumber{aCommandNumber}
         //$ mSession{aMongoAccess.client()["acmacs_web"]},
 {
@@ -21,11 +21,7 @@ void Command::send(std::string aMessage, send_message_type aMessageType)
 {
     if (aMessageType == send_message_type::text) {
         auto message = to_json::object_prepend(aMessage, "C", command_name(), "CN", command_number(), "D", command_id(), "CT", static_cast<float>(command_duration()));
-        try {
-            message = to_json::object_append(message, "add_to_response", to_json::raw(add_to_response().to_json()));
-        }
-        catch (rjson::v1::field_not_found&) {
-        }
+        message = to_json::object_append(message, "add_to_response", to_json::raw(rjson::to_string(add_to_response())));
         mClientConnection.send(message, aMessageType);
         // std::cerr << "Command::send: " << aMessage.substr(0, 100) << std::endl;
     }

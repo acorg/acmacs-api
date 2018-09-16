@@ -11,7 +11,7 @@ class Command_login_session : public Command
 
     void run() override;
 
-    std::string session_id() const { return get_string("S"); }
+    std::string session_id() const { return data()["S"]; }
 
     static const char* description();
 
@@ -26,7 +26,7 @@ class Command_login_nonce : public Command
 
     void run() override;
 
-    std::string user() const { return get_string("user"); }
+    std::string user() const { return data()["user"]; }
 
     static const char* description();
 
@@ -41,8 +41,8 @@ class Command_login_digest : public Command
 
     void run() override;
 
-    std::string cnonce() const { return get_string("cnonce"); }
-    std::string digest() const { return get_string("digest"); }
+    std::string cnonce() const { return data()["cnonce"]; }
+    std::string digest() const { return data()["digest"]; }
 
     static const char* description();
 
