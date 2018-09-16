@@ -56,6 +56,13 @@ namespace to_bson
         return array.extract();
     }
 
+    template <typename UnaryOperation> inline bsoncxx::array::value array(const rjson::value& val, UnaryOperation unary_op)
+    {
+        bsoncxx::builder::basic::array array;
+        rjson::for_each(val, [&array,&unary_op](const rjson::value& elt) { array.append(unary_op(elt)); });
+        return array.extract();
+    }
+
     template <typename ... Args> inline bsoncxx::array::value array(Args&& ... args)
     {
         bsoncxx::builder::basic::array array;
@@ -72,11 +79,16 @@ namespace to_bson
 
 // ----------------------------------------------------------------------
 
-      // mongo_operator: $in, $all
-    template <typename Getter, typename Transformer> inline void in_for_optional_array_of_strings(bsoncxx::builder::basic::document& append_to, const char* key, const char* mongo_operator, Getter getter, Transformer transformer)
+    // mongo_operator: $in, $all
+    template <typename Getter, typename Transformer>
+    inline void in_for_optional_array_of_strings(bsoncxx::builder::basic::document& append_to, const char* key, const char* mongo_operator, Getter getter, Transformer transformer)
     {
-        if (const auto array = getter(); !array.empty())
-            to_bson::append(append_to, key, to_bson::object(mongo_operator, to_bson::array(std::begin(array), std::end(array), transformer)));
+        if (const auto array = getter(); !array.empty()) {
+            if constexpr (std::is_same_v<std::decay_t<decltype(array)>, rjson::value>)
+                to_bson::append(append_to, key, to_bson::object(mongo_operator, to_bson::array(array, transformer)));
+            else
+                to_bson::append(append_to, key, to_bson::object(mongo_operator, to_bson::array(std::begin(array), std::end(array), transformer)));
+        }
     }
 
     template <typename Getter> inline void in_for_optional_array_of_strings(bsoncxx::builder::basic::document& append_to, const char* key, const char* mongo_operator, Getter&& getter)
