@@ -93,7 +93,7 @@ namespace to_bson
 
     template <typename Getter> inline void in_for_optional_array_of_strings(bsoncxx::builder::basic::document& append_to, const char* key, const char* mongo_operator, Getter&& getter)
     {
-        in_for_optional_array_of_strings(append_to, key, mongo_operator, std::forward<Getter>(getter), [](const auto& value) -> std::string { return value; });
+        in_for_optional_array_of_strings(append_to, key, mongo_operator, std::forward<Getter>(getter), [](const auto& value) -> std::string { return static_cast<std::string>(value); });
     }
 
 } // namespace to_bson

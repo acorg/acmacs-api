@@ -79,9 +79,9 @@ class AcmacsAPISettings : public ServerSettings
  public:
     using ServerSettings::ServerSettings;
 
-    std::string mongodb_uri() const { return rjson::get_or(doc_, "mongodb_uri", "mongodb://localhost:27017/"); }
-    std::string acmacs_c2_uri() const { return rjson::get_or(doc_, "acmacs_c2_uri", "https://localhost:1168/api"); }
-    std::string root_page() const { return rjson::get_or(doc_, "root_page", "/tmp/not-found"); }
+    std::string mongodb_uri() const { return std::string(rjson::get_or(doc_, "mongodb_uri", "mongodb://localhost:27017/")); }
+    std::string acmacs_c2_uri() const { return std::string(rjson::get_or(doc_, "acmacs_c2_uri", "https://localhost:1168/api")); }
+    std::string root_page() const { return std::string(rjson::get_or(doc_, "root_page", "/tmp/not-found")); }
 
 }; // class AcmacsAPISettings
 

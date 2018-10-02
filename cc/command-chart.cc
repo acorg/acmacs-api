@@ -206,7 +206,7 @@ void Command_chart::run()
         MongodbAccess::exclude("_id", "table", "projections", "conformance"));
     if (!chart)
         throw Error{"not found"};
-    const auto ace = c2().ace_uncompressed(session().id(), data()["id"], 5);
+    const auto ace = c2().ace_uncompressed(session().id(), static_cast<std::string>(data()["id"]), 5);
       // send(to_json::object("chart", to_json::raw{to_json::value(chart->view())}, "chart_ace", to_json::raw{ace}));
     send(to_json::object("chart", chart->view(), "chart_ace", to_json::raw{ace}));
 
@@ -227,7 +227,7 @@ void Command_ace::run()
 {
     const size_t projection_no = 0;
 
-    const auto ace = c2().ace_uncompressed(session().id(), data()["id"], projection_no + 1);
+    const auto ace = c2().ace_uncompressed(session().id(), static_cast<std::string>(data()["id"]), projection_no + 1);
     acmacs::chart::ChartModify chart(acmacs::chart::import_from_data(ace, acmacs::chart::Verify::None, report_time::No));
     auto antigens = chart.antigens_modify();
     antigens->set_continent();
@@ -254,7 +254,7 @@ void Command_pdf::run()
 {
     const size_t projection_no = 0;
 
-    const auto ace = c2().ace_uncompressed(session().id(), data()["id"], projection_no + 1);
+    const auto ace = c2().ace_uncompressed(session().id(), static_cast<std::string>(data()["id"]), projection_no + 1);
     ChartDraw chart_draw(std::make_shared<acmacs::chart::ChartModify>(acmacs::chart::import_from_data(ace, acmacs::chart::Verify::None, report_time::No)), rjson::get_or(data(), "projection_no", 0UL));
     chart_draw.calculate_viewport();
     send_binary(static_cast<std::string>(data()["id"]) + ".pdf", chart_draw.draw_pdf(800));
@@ -280,7 +280,7 @@ const char* Command_pdf::description()
 
 void Command_download_ace::run()
 {
-    const auto ace = c2().ace_uncompressed(session().id(), data()["id"]);
+    const auto ace = c2().ace_uncompressed(session().id(), static_cast<std::string>(data()["id"]));
     send_binary(static_cast<std::string>(data()["id"]) + ".ace", acmacs::file::xz_compress(ace));
 
 } // Command_download_ace::run
@@ -299,7 +299,7 @@ const char* Command_download_ace::description()
 
 void Command_download_lispmds_save::run()
 {
-    const auto ace = c2().ace_uncompressed(session().id(), data()["id"]);
+    const auto ace = c2().ace_uncompressed(session().id(), static_cast<std::string>(data()["id"]));
     auto chart = acmacs::chart::import_from_data(ace, acmacs::chart::Verify::None, report_time::No);
     send_binary(static_cast<std::string>(data()["id"]) + ".save", acmacs::chart::export_lispmds(*chart, "acmacs-api"));
 
@@ -319,7 +319,7 @@ const char* Command_download_lispmds_save::description()
 
 void Command_download_layout::run()
 {
-    const auto ace = c2().ace_uncompressed(session().id(), data()["id"]);
+    const auto ace = c2().ace_uncompressed(session().id(), static_cast<std::string>(data()["id"]));
     auto chart = acmacs::chart::import_from_data(ace, acmacs::chart::Verify::None, report_time::No);
     std::string layout, suffix;
     if (static_cast<std::string_view>(data()["format"]) == "csv") {
@@ -350,7 +350,7 @@ const char* Command_download_layout::description()
 
 void Command_download_table_map_distances::run()
 {
-    const auto ace = c2().ace_uncompressed(session().id(), data()["id"]);
+    const auto ace = c2().ace_uncompressed(session().id(), static_cast<std::string>(data()["id"]));
     auto chart = acmacs::chart::import_from_data(ace, acmacs::chart::Verify::None, report_time::No);
     std::string distances, suffix;
     if (static_cast<std::string_view>(data()["format"]) == "csv") {
@@ -381,7 +381,7 @@ const char* Command_download_table_map_distances::description()
 
 void Command_download_error_lines::run()
 {
-    const auto ace = c2().ace_uncompressed(session().id(), data()["id"]);
+    const auto ace = c2().ace_uncompressed(session().id(), static_cast<std::string>(data()["id"]));
     auto chart = acmacs::chart::import_from_data(ace, acmacs::chart::Verify::None, report_time::No);
     std::string error_lines, suffix;
     if (static_cast<std::string_view>(data()["format"]) == "csv") {
@@ -411,7 +411,7 @@ const char* Command_download_error_lines::description()
 
 void Command_download_distances_between_all_points::run()
 {
-    const auto ace = c2().ace_uncompressed(session().id(), data()["id"]);
+    const auto ace = c2().ace_uncompressed(session().id(), static_cast<std::string>(data()["id"]));
     auto chart = acmacs::chart::import_from_data(ace, acmacs::chart::Verify::None, report_time::No);
     std::string distances, suffix;
     if (static_cast<std::string_view>(data()["format"]) == "csv") {
@@ -442,7 +442,7 @@ const char* Command_download_distances_between_all_points::description()
 
 void Command_sequences_of_chart::run()
 {
-    auto chart = acmacs::chart::import_from_data(c2().ace_uncompressed(session().id(), data()["id"]), acmacs::chart::Verify::None, report_time::No);
+    auto chart = acmacs::chart::import_from_data(c2().ace_uncompressed(session().id(), static_cast<std::string>(data()["id"])), acmacs::chart::Verify::None, report_time::No);
     send(seqdb::sequences_of_chart_for_ace_view_1(*chart));
 
 } // Command_sequences_of_chart::run
@@ -460,7 +460,7 @@ const char* Command_sequences_of_chart::description()
 
 void Command_download_sequences_of_chart_as_fasta::run()
 {
-    auto chart = acmacs::chart::import_from_data(c2().ace_uncompressed(session().id(), data()["id"]), acmacs::chart::Verify::None, report_time::No);
+    auto chart = acmacs::chart::import_from_data(c2().ace_uncompressed(session().id(), static_cast<std::string>(data()["id"])), acmacs::chart::Verify::None, report_time::No);
     send_binary(static_cast<std::string>(data()["id"]) + ".fasta", seqdb::sequences_of_chart_as_fasta(*chart));
 
 } // Command_download_sequences_of_chart_as_fasta::run
@@ -478,7 +478,7 @@ const char* Command_download_sequences_of_chart_as_fasta::description()
 
 void Command_download_layout_sequences_as_csv::run()
 {
-    auto chart = acmacs::chart::import_from_data(c2().ace_uncompressed(session().id(), data()["id"]), acmacs::chart::Verify::None, report_time::No);
+    auto chart = acmacs::chart::import_from_data(c2().ace_uncompressed(session().id(), static_cast<std::string>(data()["id"])), acmacs::chart::Verify::None, report_time::No);
     send_binary(static_cast<std::string>(data()["id"]) + ".layeout-sequences.csv", export_layout_sequences_into_csv(std::string{}, *chart, rjson::get_or(data(), "projection_no", 0UL)));
 
 } // Command_download_layout_sequences_as_csv::run
@@ -499,7 +499,7 @@ const char* Command_download_layout_sequences_as_csv::description()
 // {
 //     const size_t projection_no = 0;
 
-//     const auto ace = c2().ace_uncompressed(session().id(), data()["id"], projection_no + 1);
+//     const auto ace = c2().ace_uncompressed(session().id(), static_cast<std::string>(data()["id"]), projection_no + 1);
 //     ChartDraw chart_draw(std::make_shared<acmacs::chart::ChartModify>(acmacs::chart::import_from_data(ace, acmacs::chart::Verify::None, report_time::No)), projection_no);
 //     auto settings = settings_default();
 //     settings.update(settings_builtin_mods());
