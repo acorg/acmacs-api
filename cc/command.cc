@@ -21,9 +21,9 @@ void Command::send(std::string aMessage, send_message_type aMessageType)
 {
     if (aMessageType == send_message_type::text) {
         auto message = to_json::object_prepend(aMessage, "C", command_name(), "CN", command_number(), "D", command_id(), "CT", static_cast<float>(command_duration()));
-        message = to_json::object_append(message, "add_to_response", to_json::raw(rjson::to_string(add_to_response())));
+        if (const auto& to_add = add_to_response(); !to_add.is_null())
+            message = to_json::object_append(message, "add_to_response", to_json::raw(rjson::to_string(to_add)));
         mClientConnection.send(message, aMessageType);
-        // std::cerr << "Command::send: " << aMessage.substr(0, 100) << std::endl;
     }
     else
         mClientConnection.send(aMessage, aMessageType);

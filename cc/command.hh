@@ -28,7 +28,7 @@ class Command
 
     std::string command_name() const { return static_cast<std::string>(data()["C"]); }
     std::string command_id() const { return static_cast<std::string>(data()["D"]); }
-    const rjson::value& add_to_response() const { return data_["add_to_response"]; } // may throw rjson::v1::field_not_found
+    const rjson::value& add_to_response() const { return data_["add_to_response"]; }
     size_t command_number() const { return mCommandNumber; }
 
     virtual void run() = 0;

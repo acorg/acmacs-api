@@ -18,7 +18,10 @@
     "locations": [
         {"location": "/favicon.ico", "files": ["favicon.ico"]},
         {"location": "/js/ad/acmacs-api/", "dirs": ["js/"]},
-        {"location": "/js/ad/draw/", "dirs": ["/Library/WebServer/Documents/js/ad/draw/"]},
-        {"location": "/js/ad/map-draw/", "dirs": ["/Library/WebServer/Documents/js/ad/map-draw/"]}
-        ]
+        {"location": "/js/ad/map-draw/ace-view/201805/", "dirs": ["/Library/WebServer/Documents/js/ad/map-draw/ace-view/201805/"]},
+        {"location": "/js/ad/map-draw/ace-view/201807/", "dirs": ["/Library/WebServer/Documents/js/ad/map-draw/ace-view/201807/"]}
+    ],
+    "?locations": [
+        {"location": "/js/ad/draw/", "dirs": ["/Library/WebServer/Documents/js/ad/draw/"]}
+    ]
 }
