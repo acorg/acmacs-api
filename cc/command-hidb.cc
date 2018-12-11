@@ -42,7 +42,7 @@ std::string Command_hidb_antigen_serum::make_table(const hidb::Table& table)
 void Command_hidb_antigen::run()
 {
     try {
-        const auto& hidb = hidb::get(get_virus_type(), report_time::No);
+        const auto& hidb = hidb::get(get_virus_type(), report_time::no);
         auto hidb_antigens = hidb.antigens();
         auto hidb_tables = hidb.tables();
         hidb::AntigenPList found;
@@ -102,7 +102,7 @@ const char* Command_hidb_antigen::description()
 void Command_hidb_serum::run()
 {
     try {
-        const auto& hidb = hidb::get(get_virus_type(), report_time::No);
+        const auto& hidb = hidb::get(get_virus_type(), report_time::no);
         auto hidb_sera = hidb.sera();
         auto hidb_tables = hidb.tables();
         hidb::SerumPList found;
