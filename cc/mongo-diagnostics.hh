@@ -9,6 +9,7 @@
 #pragma GCC diagnostic ignored "-Wnewline-eof"
 #pragma GCC diagnostic ignored "-Wredundant-parens"
 #pragma GCC diagnostic ignored "-Wshadow"
+#pragma GCC diagnostic ignored "-Wshadow-field"
 #pragma GCC diagnostic ignored "-Wshadow-field-in-constructor"
 #endif
 
