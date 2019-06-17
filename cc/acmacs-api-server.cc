@@ -33,7 +33,7 @@ void WsppThreadWithMongoAccess::initialize()
 
 void WebsocketConnection::opening(std::string, WsppThread& /*aThread*/)
 {
-    send(to_json::object("C", "hello", "server", "acmacs-api-server-v1"));
+    send(to_json::v1::object("C", "hello", "server", "acmacs-api-server-v1"));
 
 } // WebsocketConnection::opening
 

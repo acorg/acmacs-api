@@ -36,7 +36,7 @@ void Command_chains::run()
           // print_cerr("INFO: command_chains: ", results_json);
         if (chunk_no != 0 && results.count() == 0)
             break; // no more data but at least one chunk alreay reported
-        send(to_json::object("chain_count", results.count(), "chains", to_json::raw{results_json}));
+        send(to_json::v1::object("chain_count", results.count(), "chains", to_json::v1::raw{results_json}));
         if (chunk_size == 0)
             break;
     }
@@ -75,16 +75,16 @@ void Command_chain_keywords::run()
         std::string result;
         const auto& array = values.get_array().value;
         if (include_rd_keywords()) {
-            result = to_json::array(std::begin(array), std::end(array));
+            result = to_json::v1::array(std::begin(array), std::end(array));
         }
         else {
             for (const auto& element: array) {
                 const auto kw = element.get_utf8().value.to_string();
                 if (!std::regex_match(kw, sExludeRdKeywords))
-                    result = to_json::array_append(result, kw);
+                    result = to_json::v1::array_append(result, kw);
             }
         }
-        send(to_json::object("keywords", to_json::raw{result}));
+        send(to_json::v1::object("keywords", to_json::v1::raw{result}));
     }
     else {
         send_error("No data from server");
@@ -108,7 +108,7 @@ void Command_chain_owners::run()
     auto cursor = MongodbAccess{acmacs_web_db}.distinct("inspectors", "p.o", session().read_permissions());
     if (auto values = (*cursor.begin())["values"]; values) {
         const auto& val = values.get_array().value;
-        send(to_json::object("owners", to_json::raw{to_json::value(val)}));
+        send(to_json::v1::object("owners", to_json::v1::raw{to_json::v1::value(val)}));
     }
     else {
         send_error("No data from server");
@@ -132,7 +132,7 @@ void Command_chain_types::run()
     auto cursor = MongodbAccess{acmacs_web_db}.distinct("inspectors", "_t", session().read_permissions());
     if (auto values = (*cursor.begin())["values"]; values) {
         const auto& val = values.get_array().value;
-        send(to_json::object("types", to_json::raw{to_json::value(val)}));
+        send(to_json::v1::object("types", to_json::v1::raw{to_json::v1::value(val)}));
     }
     else {
         send_error("No data from server");

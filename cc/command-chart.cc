@@ -2,7 +2,7 @@
 
 #include "acmacs-base/xz.hh"
 #include "acmacs-base/enumerate.hh"
-#include "acmacs-base/to-json.hh"
+#include "acmacs-base/to-json-v1.hh"
 #include "locationdb/locdb.hh"
 #include "hidb-5/vaccines.hh"
 #include "seqdb/seqdb.hh"
@@ -51,7 +51,7 @@ void Command_root_charts::run()
         const auto results_json = results.json(); // results.count() is available only after calling results.json()
         if (chunk_no != 0 && results.count() == 0)
             break; // no more data but at least one chunk alreay reported
-        send(to_json::object("chart_count", results.count(), "charts", to_json::raw{results_json}));
+        send(to_json::v1::object("chart_count", results.count(), "charts", to_json::v1::raw{results_json}));
         if (chunk_size == 0)
             break;
     }
@@ -80,7 +80,7 @@ void Command_chart_keywords::run()
     auto cursor = MongodbAccess{acmacs_web_db}.distinct("charts", "keywords", session().read_permissions());
     if (auto values = (*cursor.begin())["values"]; values) {
         const auto& val = values.get_array().value;
-        send(to_json::object("keywords", to_json::raw{to_json::value(val)}));
+        send(to_json::v1::object("keywords", to_json::v1::raw{to_json::v1::value(val)}));
     }
     else {
         send_error("No data from server");
@@ -104,7 +104,7 @@ void Command_chart_owners::run()
     auto cursor = MongodbAccess{acmacs_web_db}.distinct("charts", "p.o", session().read_permissions());
     if (auto values = (*cursor.begin())["values"]; values) {
         const auto& val = values.get_array().value;
-        send(to_json::object("owners", to_json::raw{to_json::value(val)}));
+        send(to_json::v1::object("owners", to_json::v1::raw{to_json::v1::value(val)}));
     }
     else {
         send_error("No data from server");
@@ -130,7 +130,7 @@ void Command_doc::run()
         if (doc) {
             if (get_chain_source_data())
                 chain_source_data(*doc);
-            send(to_json::object("doc", doc->view()));
+            send(to_json::v1::object("doc", doc->view()));
             found = true;
             break;
         }
@@ -207,8 +207,8 @@ void Command_chart::run()
     if (!chart)
         throw Error{"not found"};
     const auto ace = c2().ace_uncompressed(session().id(), static_cast<std::string>(data()["id"]), 5);
-      // send(to_json::object("chart", to_json::raw{to_json::value(chart->view())}, "chart_ace", to_json::raw{ace}));
-    send(to_json::object("chart", chart->view(), "chart_ace", to_json::raw{ace}));
+      // send(to_json::v1::object("chart", to_json::v1::raw{to_json::v1::value(chart->view())}, "chart_ace", to_json::v1::raw{ace}));
+    send(to_json::v1::object("chart", chart->view(), "chart_ace", to_json::v1::raw{ace}));
 
 } // Command_chart::run
 
@@ -505,7 +505,7 @@ const char* Command_download_layout_sequences_as_csv::description()
 //     settings.update(settings_builtin_mods());
 //     chart_draw.calculate_viewport();
 //     const auto map_data = chart_draw.draw_json(report_time::yes);
-//     send(to_json::object("map", to_json::raw{map_data}));
+//     send(to_json::v1::object("map", to_json::v1::raw{map_data}));
 
 // } // Command_map::run
 

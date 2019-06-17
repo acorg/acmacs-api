@@ -3,7 +3,7 @@
 #include <vector>
 #include <getopt.h>
 
-#include "acmacs-base/to-json.hh"
+#include "acmacs-base/to-json-v1.hh"
 #include "acmacs-c2.hh"
 #include "session-id.hh"
 

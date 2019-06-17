@@ -2,7 +2,7 @@
 
 #include <functional>
 
-#include "acmacs-base/to-json.hh"
+#include "acmacs-base/to-json-v1.hh"
 
 #include "mongo-access.hh"
 

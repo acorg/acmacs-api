@@ -9,7 +9,7 @@
 #pragma GCC diagnostic pop
 
 #include "acmacs-base/rjson.hh"
-#include "acmacs-base/to-json.hh"
+#include "acmacs-base/to-json-v1.hh"
 
 // ----------------------------------------------------------------------
 
@@ -158,7 +158,7 @@ namespace to_json
           case bsoncxx::type::k_binary:
               return value(aV.get_binary());
           case bsoncxx::type::k_undefined:
-              return value(to_json::undefined);
+              return value(to_json::v1::undefined);
           case bsoncxx::type::k_oid:
               return value(aV.get_oid());
           case bsoncxx::type::k_bool:
@@ -166,7 +166,7 @@ namespace to_json
           case bsoncxx::type::k_date:
               return symbol_("date");
           case bsoncxx::type::k_null:
-              return value(to_json::null);
+              return value(to_json::v1::null);
           case bsoncxx::type::k_regex:
               return symbol_("regex");
           case bsoncxx::type::k_dbpointer:
@@ -190,7 +190,7 @@ namespace to_json
           case bsoncxx::type::k_minkey:
               return symbol_("minkey");
         }
-        return value(to_json::null); // to avoid gcc warning
+        return value(to_json::v1::null); // to avoid gcc warning
     }
 
 } // namespace to_json

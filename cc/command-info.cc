@@ -7,7 +7,7 @@
 
 void Command_version::run()
 {
-    send(to_json::object("version", "acmacs-d-20180426"));
+    send(to_json::v1::object("version", "acmacs-d-20180426"));
 
 } // Command_version::run
 
@@ -32,7 +32,7 @@ void Command_list_commands::run()
                << json_writer::end_object;
     }
     writer << json_writer::end_array;
-    send(to_json::object("commands", to_json::raw{writer << json_writer::finalize}));
+    send(to_json::v1::object("commands", to_json::v1::raw{writer << json_writer::finalize}));
 
 } // Command_list_commands::run
 
