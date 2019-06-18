@@ -34,7 +34,7 @@ inline std::string operator + (std::string left, const SessionId& aId)
     return left + aId.id();
 }
 
-namespace to_json
+namespace to_json::v1
 {
     template <> inline std::string value(SessionId&& aValue)
     {

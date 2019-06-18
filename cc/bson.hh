@@ -100,7 +100,7 @@ namespace to_bson
 
 // ======================================================================
 
-namespace to_json
+namespace to_json::v1
 {
     inline std::string symbol_(const char* tag) { return value(std::string{"*"} + tag + "*"); }
 

@@ -216,7 +216,7 @@ class DocumentFindResults : public MongodbAccess
 
 }; // class DocumentFindResults
 
-namespace to_json
+namespace to_json::v1
 {
     template <> inline std::string value(DocumentFindResults& aResults)
     {
