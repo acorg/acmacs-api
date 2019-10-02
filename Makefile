@@ -28,7 +28,6 @@ all: install
 CONFIGURE_OPENSSL = 1
 CONFIGURE_MONGO = 1
 CONFIGURE_LIBCURL = 1
-CONFIGURE_BOOST = 1
 include $(ACMACSD_ROOT)/share/Makefile.config
 
 MONGO_LDLIBS = -L$(AD_LIB) -lmongocxx -lbsoncxx $(OPENSSL_LIBS)
@@ -44,7 +43,7 @@ LDLIBS = \
   $(AD_LIB)/$(call shared_lib_name,libseqdb,2,0) \
   $(AD_LIB)/$(call shared_lib_name,libacmacsdraw,1,0) \
   $(AD_LIB)/$(call shared_lib_name,libacmacsmapdraw,2,0) \
-  $(L_BOOST) -lboost_system -lpthread $(XZ_LIBS) $(LIBCURL_LIBS) $(CXX_LIBS)
+  -lpthread $(XZ_LIBS) $(LIBCURL_LIBS) $(CXX_LIBS)
 
 PROGS = $(API_DIRECT) $(ACMACS_API_SERVER) $(ACMACS_C2)
 RTAGS_TARGET = $(PROGS)
