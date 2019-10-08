@@ -322,7 +322,7 @@ void Command_download_layout::run()
     const auto ace = c2().ace_uncompressed(session().id(), static_cast<std::string>(data()["id"]));
     auto chart = acmacs::chart::import_from_data(ace, acmacs::chart::Verify::None, report_time::no);
     std::string layout, suffix;
-    if (static_cast<std::string_view>(data()["format"]) == "csv") {
+    if (data()["format"].to_string_view() == "csv") {
         layout = acmacs::chart::export_layout<acmacs::DataFormatterCSV>(*chart, rjson::get_or(data(), "projection_no", 0UL));
         suffix = "csv";
     }
@@ -353,7 +353,7 @@ void Command_download_table_map_distances::run()
     const auto ace = c2().ace_uncompressed(session().id(), static_cast<std::string>(data()["id"]));
     auto chart = acmacs::chart::import_from_data(ace, acmacs::chart::Verify::None, report_time::no);
     std::string distances, suffix;
-    if (static_cast<std::string_view>(data()["format"]) == "csv") {
+    if (data()["format"].to_string_view() == "csv") {
         distances = acmacs::chart::export_table_map_distances<acmacs::DataFormatterCSV>(*chart, rjson::get_or(data(), "projection_no", 0UL));
         suffix = "csv";
     }
@@ -384,7 +384,7 @@ void Command_download_error_lines::run()
     const auto ace = c2().ace_uncompressed(session().id(), static_cast<std::string>(data()["id"]));
     auto chart = acmacs::chart::import_from_data(ace, acmacs::chart::Verify::None, report_time::no);
     std::string error_lines, suffix;
-    if (static_cast<std::string_view>(data()["format"]) == "csv") {
+    if (data()["format"].to_string_view() == "csv") {
         error_lines = acmacs::chart::export_error_lines<acmacs::DataFormatterCSV>(*chart, rjson::get_or(data(), "projection_no", 0UL));
         suffix = "csv";
     }
@@ -414,7 +414,7 @@ void Command_download_distances_between_all_points::run()
     const auto ace = c2().ace_uncompressed(session().id(), static_cast<std::string>(data()["id"]));
     auto chart = acmacs::chart::import_from_data(ace, acmacs::chart::Verify::None, report_time::no);
     std::string distances, suffix;
-    if (static_cast<std::string_view>(data()["format"]) == "csv") {
+    if (data()["format"].to_string_view() == "csv") {
         distances = acmacs::chart::export_distances_between_all_points<acmacs::DataFormatterCSV>(*chart, rjson::get_or(data(), "projection_no", 0UL));
         suffix = "csv";
     }
