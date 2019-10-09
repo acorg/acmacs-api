@@ -26,8 +26,8 @@ class Command
     Command(rjson::value&& aSrc, MongoAcmacsC2Access& aMongoAccess, ClientConnection& aClientConnection, size_t aCommandNumber);
     virtual ~Command() = default;
 
-    std::string command_name() const { return static_cast<std::string>(data()["C"]); }
-    std::string command_id() const { return static_cast<std::string>(data()["D"]); }
+    std::string command_name() const { return data()["C"].to<std::string>(); }
+    std::string command_id() const { return data()["D"].to<std::string>(); }
     const rjson::value& add_to_response() const { return data_["add_to_response"]; }
     size_t command_number() const { return mCommandNumber; }
 

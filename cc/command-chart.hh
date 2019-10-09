@@ -13,7 +13,7 @@ class Command_doc : public Command
 
     void run() override;
 
-    std::string get_id_str() const { return static_cast<std::string>(data()["id"]); }
+    std::string get_id_str() const { return data()["id"].to<std::string>(); }
     auto get_id() const { return bsoncxx::oid{get_id_str()}; }
     auto get_chain_source_data() const { return rjson::get_or(data(), "chain_source_data", false); }
 
@@ -74,7 +74,7 @@ class Command_with_c2_access : public Command
  public:
     Command_with_c2_access(rjson::value&& aSrc, MongoAcmacsC2Access& aMongoAccess, ClientConnection& aClientConnection, size_t aCommandNumber);
 
-    std::string get_id_str() const { return static_cast<std::string>(data()["id"]); }
+    std::string get_id_str() const { return data()["id"].to<std::string>(); }
     auto get_id() const { return bsoncxx::oid{get_id_str()}; }
 
  protected:

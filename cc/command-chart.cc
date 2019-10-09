@@ -36,7 +36,7 @@ void Command_root_charts::run()
     to_bson::append(criteria_bld, session().read_permissions(), MongodbAccess::field_null_or_absent("parent"), MongodbAccess::field_null_or_absent("backup_of"));
     to_bson::in_for_optional_array_of_strings(criteria_bld, "p.o", "$in", [this](){return this->get_owners();});
     to_bson::in_for_optional_array_of_strings(criteria_bld, "keywords", "$in", [this](){return this->get_keywords();});
-    to_bson::in_for_optional_array_of_strings(criteria_bld, "search", "$all", [this](){return this->get_search();}, [](const auto& value){ return string::upper(static_cast<std::string>(value)); });
+    to_bson::in_for_optional_array_of_strings(criteria_bld, "search", "$all", [this](){return this->get_search();}, [](const auto& value){ return string::upper(value.template to<std::string_view>()); });
 
     auto criteria = criteria_bld.extract();
       // print_cerr("Command_root_charts::run ", bsoncxx::to_json(criteria));
@@ -206,7 +206,7 @@ void Command_chart::run()
         MongodbAccess::exclude("_id", "table", "projections", "conformance"));
     if (!chart)
         throw Error{"not found"};
-    const auto ace = c2().ace_uncompressed(session().id(), static_cast<std::string>(data()["id"]), 5);
+    const auto ace = c2().ace_uncompressed(session().id(), data()["id"].to<std::string>(), 5);
       // send(to_json::v1::object("chart", to_json::v1::raw{to_json::v1::value(chart->view())}, "chart_ace", to_json::v1::raw{ace}));
     send(to_json::v1::object("chart", chart->view(), "chart_ace", to_json::v1::raw{ace}));
 
@@ -227,7 +227,7 @@ void Command_ace::run()
 {
     const size_t projection_no = 0;
 
-    const auto ace = c2().ace_uncompressed(session().id(), static_cast<std::string>(data()["id"]), projection_no + 1);
+    const auto ace = c2().ace_uncompressed(session().id(), data()["id"].to<std::string>(), projection_no + 1);
     acmacs::chart::ChartModify chart(acmacs::chart::import_from_data(ace, acmacs::chart::Verify::None, report_time::no));
     auto antigens = chart.antigens_modify();
     antigens->set_continent();
@@ -254,10 +254,10 @@ void Command_pdf::run()
 {
     const size_t projection_no = 0;
 
-    const auto ace = c2().ace_uncompressed(session().id(), static_cast<std::string>(data()["id"]), projection_no + 1);
+    const auto ace = c2().ace_uncompressed(session().id(), data()["id"].to<std::string>(), projection_no + 1);
     ChartDraw chart_draw(std::make_shared<acmacs::chart::ChartModify>(acmacs::chart::import_from_data(ace, acmacs::chart::Verify::None, report_time::no)), rjson::get_or(data(), "projection_no", 0UL));
     chart_draw.calculate_viewport();
-    send_binary(static_cast<std::string>(data()["id"]) + ".pdf", chart_draw.draw_pdf(800));
+    send_binary(data()["id"].to<std::string>() + ".pdf", chart_draw.draw_pdf(800));
 
 } // Command_pdf::run
 
@@ -280,8 +280,8 @@ const char* Command_pdf::description()
 
 void Command_download_ace::run()
 {
-    const auto ace = c2().ace_uncompressed(session().id(), static_cast<std::string>(data()["id"]));
-    send_binary(static_cast<std::string>(data()["id"]) + ".ace", acmacs::file::xz_compress(ace));
+    const auto ace = c2().ace_uncompressed(session().id(), data()["id"].to<std::string>());
+    send_binary(data()["id"].to<std::string>() + ".ace", acmacs::file::xz_compress(ace));
 
 } // Command_download_ace::run
 
@@ -299,9 +299,9 @@ const char* Command_download_ace::description()
 
 void Command_download_lispmds_save::run()
 {
-    const auto ace = c2().ace_uncompressed(session().id(), static_cast<std::string>(data()["id"]));
+    const auto ace = c2().ace_uncompressed(session().id(), data()["id"].to<std::string>());
     auto chart = acmacs::chart::import_from_data(ace, acmacs::chart::Verify::None, report_time::no);
-    send_binary(static_cast<std::string>(data()["id"]) + ".save", acmacs::chart::export_lispmds(*chart, "acmacs-api"));
+    send_binary(data()["id"].to<std::string>() + ".save", acmacs::chart::export_lispmds(*chart, "acmacs-api"));
 
 } // Command_download_lispmds_save::run
 
@@ -319,10 +319,10 @@ const char* Command_download_lispmds_save::description()
 
 void Command_download_layout::run()
 {
-    const auto ace = c2().ace_uncompressed(session().id(), static_cast<std::string>(data()["id"]));
+    const auto ace = c2().ace_uncompressed(session().id(), data()["id"].to<std::string>());
     auto chart = acmacs::chart::import_from_data(ace, acmacs::chart::Verify::None, report_time::no);
     std::string layout, suffix;
-    if (data()["format"].to_string_view() == "csv") {
+    if (data()["format"].to<std::string_view>() == "csv") {
         layout = acmacs::chart::export_layout<acmacs::DataFormatterCSV>(*chart, rjson::get_or(data(), "projection_no", 0UL));
         suffix = "csv";
     }
@@ -330,7 +330,7 @@ void Command_download_layout::run()
         layout = acmacs::chart::export_layout<acmacs::DataFormatterSpaceSeparated>(*chart, rjson::get_or(data(), "projection_no", 0UL));
         suffix = "txt";
     }
-    send_binary(static_cast<std::string>(data()["id"]) + ".layout." + suffix, layout);
+    send_binary(data()["id"].to<std::string>() + ".layout." + suffix, layout);
 
 } // Command_download_layout::run
 
@@ -350,10 +350,10 @@ const char* Command_download_layout::description()
 
 void Command_download_table_map_distances::run()
 {
-    const auto ace = c2().ace_uncompressed(session().id(), static_cast<std::string>(data()["id"]));
+    const auto ace = c2().ace_uncompressed(session().id(), data()["id"].to<std::string>());
     auto chart = acmacs::chart::import_from_data(ace, acmacs::chart::Verify::None, report_time::no);
     std::string distances, suffix;
-    if (data()["format"].to_string_view() == "csv") {
+    if (data()["format"].to<std::string_view>() == "csv") {
         distances = acmacs::chart::export_table_map_distances<acmacs::DataFormatterCSV>(*chart, rjson::get_or(data(), "projection_no", 0UL));
         suffix = "csv";
     }
@@ -361,7 +361,7 @@ void Command_download_table_map_distances::run()
         distances = acmacs::chart::export_table_map_distances<acmacs::DataFormatterSpaceSeparated>(*chart, rjson::get_or(data(), "projection_no", 0UL));
         suffix = "txt";
     }
-    send_binary(static_cast<std::string>(data()["id"]) + ".table-map-distances." + suffix, distances);
+    send_binary(data()["id"].to<std::string>() + ".table-map-distances." + suffix, distances);
 
 } // Command_download_table_map_distances::run
 
@@ -381,10 +381,10 @@ const char* Command_download_table_map_distances::description()
 
 void Command_download_error_lines::run()
 {
-    const auto ace = c2().ace_uncompressed(session().id(), static_cast<std::string>(data()["id"]));
+    const auto ace = c2().ace_uncompressed(session().id(), data()["id"].to<std::string>());
     auto chart = acmacs::chart::import_from_data(ace, acmacs::chart::Verify::None, report_time::no);
     std::string error_lines, suffix;
-    if (data()["format"].to_string_view() == "csv") {
+    if (data()["format"].to<std::string_view>() == "csv") {
         error_lines = acmacs::chart::export_error_lines<acmacs::DataFormatterCSV>(*chart, rjson::get_or(data(), "projection_no", 0UL));
         suffix = "csv";
     }
@@ -392,7 +392,7 @@ void Command_download_error_lines::run()
         error_lines = acmacs::chart::export_error_lines<acmacs::DataFormatterSpaceSeparated>(*chart, rjson::get_or(data(), "projection_no", 0UL));
         suffix = "txt";
     }
-    send_binary(static_cast<std::string>(data()["id"]) + ".error-lines." + suffix, error_lines);
+    send_binary(data()["id"].to<std::string>() + ".error-lines." + suffix, error_lines);
 
 } // Command_download_error_lines::run
 
@@ -411,10 +411,10 @@ const char* Command_download_error_lines::description()
 
 void Command_download_distances_between_all_points::run()
 {
-    const auto ace = c2().ace_uncompressed(session().id(), static_cast<std::string>(data()["id"]));
+    const auto ace = c2().ace_uncompressed(session().id(), data()["id"].to<std::string>());
     auto chart = acmacs::chart::import_from_data(ace, acmacs::chart::Verify::None, report_time::no);
     std::string distances, suffix;
-    if (data()["format"].to_string_view() == "csv") {
+    if (data()["format"].to<std::string_view>() == "csv") {
         distances = acmacs::chart::export_distances_between_all_points<acmacs::DataFormatterCSV>(*chart, rjson::get_or(data(), "projection_no", 0UL));
         suffix = "csv";
     }
@@ -422,7 +422,7 @@ void Command_download_distances_between_all_points::run()
         distances = acmacs::chart::export_distances_between_all_points<acmacs::DataFormatterSpaceSeparated>(*chart, rjson::get_or(data(), "projection_no", 0UL));
         suffix = "txt";
     }
-    send_binary(static_cast<std::string>(data()["id"]) + ".map-distances." + suffix, distances);
+    send_binary(data()["id"].to<std::string>() + ".map-distances." + suffix, distances);
 
 } // Command_download_distances_between_all_points::run
 
@@ -442,7 +442,7 @@ const char* Command_download_distances_between_all_points::description()
 
 void Command_sequences_of_chart::run()
 {
-    auto chart = acmacs::chart::import_from_data(c2().ace_uncompressed(session().id(), static_cast<std::string>(data()["id"])), acmacs::chart::Verify::None, report_time::no);
+    auto chart = acmacs::chart::import_from_data(c2().ace_uncompressed(session().id(), data()["id"].to<std::string>()), acmacs::chart::Verify::None, report_time::no);
     send(seqdb::sequences_of_chart_for_ace_view_1(*chart));
 
 } // Command_sequences_of_chart::run
@@ -460,8 +460,8 @@ const char* Command_sequences_of_chart::description()
 
 void Command_download_sequences_of_chart_as_fasta::run()
 {
-    auto chart = acmacs::chart::import_from_data(c2().ace_uncompressed(session().id(), static_cast<std::string>(data()["id"])), acmacs::chart::Verify::None, report_time::no);
-    send_binary(static_cast<std::string>(data()["id"]) + ".fasta", seqdb::sequences_of_chart_as_fasta(*chart));
+    auto chart = acmacs::chart::import_from_data(c2().ace_uncompressed(session().id(), data()["id"].to<std::string>()), acmacs::chart::Verify::None, report_time::no);
+    send_binary(data()["id"].to<std::string>() + ".fasta", seqdb::sequences_of_chart_as_fasta(*chart));
 
 } // Command_download_sequences_of_chart_as_fasta::run
 
@@ -478,8 +478,8 @@ const char* Command_download_sequences_of_chart_as_fasta::description()
 
 void Command_download_layout_sequences_as_csv::run()
 {
-    auto chart = acmacs::chart::import_from_data(c2().ace_uncompressed(session().id(), static_cast<std::string>(data()["id"])), acmacs::chart::Verify::None, report_time::no);
-    send_binary(static_cast<std::string>(data()["id"]) + ".layeout-sequences.csv", export_layout_sequences_into_csv(std::string{}, *chart, rjson::get_or(data(), "projection_no", 0UL)));
+    auto chart = acmacs::chart::import_from_data(c2().ace_uncompressed(session().id(), data()["id"].to<std::string>()), acmacs::chart::Verify::None, report_time::no);
+    send_binary(data()["id"].to<std::string>() + ".layeout-sequences.csv", export_layout_sequences_into_csv(std::string{}, *chart, rjson::get_or(data(), "projection_no", 0UL)));
 
 } // Command_download_layout_sequences_as_csv::run
 
