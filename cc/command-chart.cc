@@ -5,7 +5,7 @@
 #include "acmacs-base/to-json-v1.hh"
 #include "locationdb/locdb.hh"
 #include "hidb-5/vaccines.hh"
-#include "seqdb/seqdb.hh"
+#include "seqdb-3/seqdb.hh"
 #include "acmacs-chart-2/factory-import.hh"
 #include "acmacs-chart-2/chart-modify.hh"
 #include "acmacs-chart-2/ace-export.hh"
@@ -232,7 +232,7 @@ void Command_ace::run()
     auto antigens = chart.antigens_modify();
     antigens->set_continent();
     hidb::update_vaccines(chart, true);
-    seqdb::add_clades(chart, seqdb::ignore_errors::yes, seqdb::report::yes);
+    acmacs::seqdb::get().add_clades(chart);
     const auto exported = export_ace(chart, "mod_acmacs", 0);
     send(exported);
 
@@ -443,7 +443,7 @@ const char* Command_download_distances_between_all_points::description()
 void Command_sequences_of_chart::run()
 {
     auto chart = acmacs::chart::import_from_data(c2().ace_uncompressed(session().id(), data()["id"].to<std::string>()), acmacs::chart::Verify::None, report_time::no);
-    send(seqdb::sequences_of_chart_for_ace_view_1(*chart));
+    send(acmacs::seqdb::get().sequences_of_chart_for_ace_view_1(*chart));
 
 } // Command_sequences_of_chart::run
 
@@ -461,7 +461,7 @@ const char* Command_sequences_of_chart::description()
 void Command_download_sequences_of_chart_as_fasta::run()
 {
     auto chart = acmacs::chart::import_from_data(c2().ace_uncompressed(session().id(), data()["id"].to<std::string>()), acmacs::chart::Verify::None, report_time::no);
-    send_binary(data()["id"].to<std::string>() + ".fasta", seqdb::sequences_of_chart_as_fasta(*chart));
+    send_binary(data()["id"].to<std::string>() + ".fasta", acmacs::seqdb::get().sequences_of_chart_as_fasta(*chart));
 
 } // Command_download_sequences_of_chart_as_fasta::run
 
