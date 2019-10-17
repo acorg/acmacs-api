@@ -1,5 +1,6 @@
 #pragma once
 
+#include "acmacs-webserver/print.hh"
 #include "mongo-access.hh"
 
 // ----------------------------------------------------------------------
@@ -12,12 +13,20 @@ class MongoAcmacsC2Access
     MongoAcmacsC2Access(std::string aMongoURI, AcmacsC2& aAcmacsC2)
         : mMongoURI{aMongoURI}, mAcmacsC2{aAcmacsC2} {}
 
-    auto& client() { return mClient; }
+    auto& client()
+    {
+        if (!mClient)
+            create_client();
+        return mClient;
+    }
     auto& acmacs_c2() { return mAcmacsC2; }
 
     void create_client()
         {
+            print_cerr("MongoAcmacsC2Access::create_client, URI: ", mMongoURI);
             mClient = mongocxx::client(mMongoURI.empty() ? mongocxx::uri{} : mongocxx::uri{mMongoURI});
+            if (!mClient)
+                print_cerr("MongoAcmacsC2Access::create_client FAILED, URI: ", mMongoURI);
         }
 
  private:
