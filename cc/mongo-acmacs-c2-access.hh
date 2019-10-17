@@ -23,7 +23,6 @@ class MongoAcmacsC2Access
 
     void create_client()
         {
-            print_cerr("MongoAcmacsC2Access::create_client, URI: ", mMongoURI);
             mClient = mongocxx::client(mMongoURI.empty() ? mongocxx::uri{} : mongocxx::uri{mMongoURI});
             if (!mClient)
                 print_cerr("MongoAcmacsC2Access::create_client FAILED, URI: ", mMongoURI);
