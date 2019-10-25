@@ -5,6 +5,7 @@
 #include <csignal>
 #include <fstream>
 
+#include "hidb-5/hidb-set.hh"
 #include "seqdb-3/seqdb.hh"
 #include "acmacs-map-draw/setup-dbs.hh"
 #include "acmacs-webserver/server-settings.hh"
@@ -128,7 +129,8 @@ int main(int argc, char* const argv[])
         // std::cout << "mongodb_uri: [" << settings.mongodb_uri() << "]" << std::endl;
         // std::cout << "acmacs_c2_uri: [" << settings.acmacs_c2_uri() << "]" << std::endl;
         // setup_dbs("", false);
-        acmacs::seqdb::get();           // preload seqdb
+        acmacs::seqdb::get();   // preload seqdb before making threads
+        hidb::load_all(report_time::yes);   // preload hidb before making threads
         AcmacsC2 acmacs_c2;
         acmacs_c2.uri(settings.acmacs_c2_uri());
         auto thread_maker = [&settings,&acmacs_c2](Wspp& aWspp) -> WsppThread* {
