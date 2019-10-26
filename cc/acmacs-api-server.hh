@@ -11,7 +11,7 @@
 class WsppThreadWithMongoAccess : public WsppThread
 {
  public:
-    WsppThreadWithMongoAccess(Wspp& aWspp, std::string aMongoURI, AcmacsC2& aAcmacsC2)
+    WsppThreadWithMongoAccess(Wspp& aWspp, const std::string& aMongoURI, AcmacsC2& aAcmacsC2)
         : WsppThread{aWspp}, mongo_access_(aMongoURI, aAcmacsC2) {}
 
     auto& mongo_access() { return mongo_access_; }
