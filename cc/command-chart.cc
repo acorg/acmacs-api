@@ -231,7 +231,7 @@ void Command_ace::run()
     acmacs::chart::ChartModify chart(acmacs::chart::import_from_data(ace, acmacs::chart::Verify::None, report_time::no));
     auto antigens = chart.antigens_modify();
     antigens->set_continent();
-    hidb::update_vaccines(chart, true);
+    hidb::update_vaccines(chart);
     acmacs::seqdb::get().add_clades(chart);
     const auto exported = export_ace(chart, "mod_acmacs", 0);
     send(exported);

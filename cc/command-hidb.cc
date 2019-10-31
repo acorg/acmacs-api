@@ -42,7 +42,7 @@ std::string Command_hidb_antigen_serum::make_table(const hidb::Table& table)
 void Command_hidb_antigen::run()
 {
     try {
-        const auto& hidb = hidb::get(get_virus_type(), report_time::no);
+        const auto& hidb = hidb::get(acmacs::virus::type_subtype_t{get_virus_type()}, report_time::no);
         auto hidb_antigens = hidb.antigens();
         auto hidb_tables = hidb.tables();
         hidb::AntigenPList found;
@@ -76,7 +76,7 @@ std::string Command_hidb_antigen::make_entry(const hidb::Tables& tables, const h
         "passage", static_cast<std::string>(antigen.passage()),
         "reassortant", static_cast<std::string>(antigen.reassortant()),
         "annotations", to_json::v1::raw(to_json::v1::array(annotations.begin(), annotations.end())),
-        "lineage", static_cast<std::string>(antigen.lineage()),
+        "lineage", antigen.lineage().to_string(),
         "lab_ids", to_json::v1::raw(to_json::v1::array(lab_ids.begin(), lab_ids.end())),
         "tables", to_json::v1::raw(make_tables(tables, antigen.tables()))
         );
@@ -102,7 +102,7 @@ const char* Command_hidb_antigen::description()
 void Command_hidb_serum::run()
 {
     try {
-        const auto& hidb = hidb::get(get_virus_type(), report_time::no);
+        const auto& hidb = hidb::get(acmacs::virus::type_subtype_t{get_virus_type()}, report_time::no);
         auto hidb_sera = hidb.sera();
         auto hidb_tables = hidb.tables();
         hidb::SerumPList found;
@@ -134,7 +134,7 @@ std::string Command_hidb_serum::make_entry(const hidb::Tables& tables, const hid
         "annotations", to_json::v1::raw(to_json::v1::array(annotations.begin(), annotations.end())),
         "serum_id", static_cast<std::string>(serum.serum_id()),
         "serum_species", static_cast<std::string>(serum.serum_species()),
-        "lineage", static_cast<std::string>(serum.lineage()),
+        "lineage", serum.lineage().to_string(),
         "tables", to_json::v1::raw(make_tables(tables, serum.tables()))
         );
 
