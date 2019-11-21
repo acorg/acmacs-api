@@ -33,7 +33,9 @@ if [[ "$(hostname)" == "i19" ]]; then
     echo "using settings from ${SERVER_ROOT}/settings.json"
     cd ${SERVER_ROOT}
     ${ACMACSD_ROOT}/bin/acmacs-api-server "${SERVER_ROOT}/settings.json" >"${LOG_DIR}/stdout.log" 2>"${LOG_DIR}/stderr.log" </dev/null &
-    sleep 5
+    WAIT_TIME=20
+    echo "waiting ${WAIT_TIME} seconds for acmacs-api-server to start"
+    sleep ${WAIT_TIME}
     if ! ps aux | grep acmacs-api-server >/dev/null 2>&1; then
         ldd ${ACMACSD_ROOT}/bin/acmacs-api-server
         fail "${ACMACSD_ROOT}/bin/acmacs-api-server not started, see /scp:${HOSTNAME}:${LOG_DIR}/stderr.log"
