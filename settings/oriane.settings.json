@@ -1,0 +1,22 @@
+{
+    "host": "localhost",
+    "port": 10067,
+    "mongodb_uri": "mongodb://localhost:27017/",
+    "?acmacs_c2_uri": "https://localhost:1168/api",
+    "acmacs_c2_uri": "https://oriane.antigenic-cartography.org/api",
+    "number_of_threads": 16,
+
+    "certificate_chain_file": "fullchain.pem",
+    "private_key_file": "privkey.pem",
+    "tmp_dh_file": "dh.pem",
+    "?make tmp_dh_file": "openssl dhparam -out dh.pem 2048",
+
+    "log_access": "log/access.log",
+    "log_error": "log/error.log",
+    "log_send_receive": "log/send-receive.log",
+
+    "root_page": "root.html",
+    "locations": [
+        {"location": "/favicon.ico", "files": ["favicon.ico"]}
+        ]
+}
