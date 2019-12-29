@@ -39,7 +39,7 @@ export class Dispatcher {
             doc: doc_info
         };
 
-        const url_pathname_fields = new URL(document.location).pathname.replace(/^\/ads/, "").split("/");
+        const url_pathname_fields = new URL(document.location).pathname.replace(/^\/aw-chains/, "").split("/");
         // console.log("url_pathname_fields", url_pathname_fields);
         switch (url_pathname_fields[1]) {
         case "list_commands":

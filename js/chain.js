@@ -84,7 +84,7 @@ class Chains {
 
     show_chain_(node, chain) {
         const span_name = `<a href="${api_utils.url_prefix()}chain/${chain._id}" target="_blank" class='chains-chain-name'>${chain.name}</a>`;
-        const span_id = `<span class='chains-chain-id ads-id-popup'>${chain._id}</span>`;
+        const span_id = `<span class='chains-chain-id aw-chains-id-popup'>${chain._id}</span>`;
         let classes = this.keyword_classes_(chain);
         const title = (chain.keywords && chain.keywords.length) ? "keywords: " + JSON.stringify(chain.keywords) : "";
 
@@ -226,7 +226,7 @@ const Chain_cell_type_to_name = {i: "incremental", s: "from scratch", "1": "indi
 const Chain_acmacs_web_title_html = "\
 <span class='chain-min-col-basis'>&gt;=${min_col_basis}</span>\
 <span class='chain-date'><span class='chain-begin-date'></span><span class='chain-date-dash'>-</span><span class='chain-end-date'></span></span>\
-<span class='chain-id ads-id-popup'>${id}</span>\
+<span class='chain-id aw-chains-id-popup'>${id}</span>\
 ";
 
 const Chain_html = "<ul class='chain'></ul>";
@@ -251,7 +251,7 @@ const Chain_source_row_html = "\
   <div>\
    <div class='chain-title-row'>\
     <a class='chain-step-title' target='_blank'>Step</a>\
-    <span class='chain-step-id ads-id-popup'>${id}</span>\
+    <span class='chain-step-id aw-chains-id-popup'>${id}</span>\
    </div>\
    <table class='chain-step-maps'>\
     <tr class='chain-step-maps'></tr>\
@@ -312,7 +312,7 @@ class Chain {
     }
 
     make_map_cell(node, cell_type) {
-        return $(`<td><div class='map-cell-title'>${Chain_cell_type_to_name[cell_type]}<span class='chart-id ads-id-popup'></span></div></td>`).appendTo(node);
+        return $(`<td><div class='map-cell-title'>${Chain_cell_type_to_name[cell_type]}<span class='chart-id aw-chains-id-popup'></span></div></td>`).appendTo(node);
     }
 
     make_text_cell(node, cell_type) {
@@ -356,7 +356,7 @@ const ChainStep_source_html = "\
  <td>\
   <div>\
    <div class='chain-title-row'>\
-    Chain source <span class='chain-step-id ads-id-popup'>${id}</span>\
+    Chain source <span class='chain-step-id aw-chains-id-popup'>${id}</span>\
    </div>\
   </div>\
  </td>\
@@ -401,7 +401,7 @@ class ChainStep {
     }
 
     make_map_cell(node, cell_type) {
-        return $(`<td><div class='map-cell-title'>${Chain_cell_type_to_name[cell_type]}<span class='chart-id ads-id-popup'></span></div></td>`).appendTo(node);
+        return $(`<td><div class='map-cell-title'>${Chain_cell_type_to_name[cell_type]}<span class='chart-id aw-chains-id-popup'></span></div></td>`).appendTo(node);
     }
 
     cell_map_add_content(cell, cell_type, message) {
