@@ -10,36 +10,40 @@ trap fail ERR
 
 # ----------------------------------------------------------------------
 
-if [[ ! -d "${ACMACSD_ROOT}" || ! -d "${ACMACSD_ROOT}/sources/acmacs-api/settings" ]]; then
-    fail "ACMACSD_ROOT not set or invalid"
+if [[ ! -d "${ACMACSD_ROOT}" ]]; then
+    export ACMACSD_ROOT="${HOME}/AD"
+fi
+
+HOSTNAME=$(hostname)
+if [[ "${HOSTNAME}" != "i19" && "${HOSTNAME}" != "i22" ]]; then
+    fail "Usupported host: ${HOSTNAME}"
+fi
+
+SERVER_ROOT=/syn/eu/acmacs-api-server/${HOSTNAME}
+if [[ ! -d "${SERVER_ROOT}" ]]; then
+    fail "No SERVER_ROOT dir: ${SERVER_ROOT}"
 fi
 
 NOW=$(date "+%Y-%m%d-%H%M")
-if [[ -d /syn/eu/acmacs-api-server ]]; then
-    SERVER_ROOT=/syn/eu/acmacs-api-server
-else
-    SERVER_ROOT=.
-fi
 LOG_DIR="${SERVER_ROOT}/log"
 
-if [[ "$(hostname)" == "i19" ]]; then
-    pkill -f 'acmacs-api-server.+settings.json' || true
+pkill -f 'acmacs-api-server.+settings.json' || true
+if [[ -f "${LOG_DIR}/stdout.log" ]]; then
+    mkdir -p "${LOG_DIR}/old"
     for log in "${LOG_DIR}/"*.log; do
         bn=$(basename "${log}")
         /usr/bin/xz -9ec "${LOG_DIR}/${bn}" > "${LOG_DIR}/old/${NOW}.${bn}.xz"
         /bin/rm "${LOG_DIR}/${bn}"
     done
-    echo "log files are in ${LOG_DIR}"
-    echo "using settings from ${SERVER_ROOT}/settings.json"
-    cd ${SERVER_ROOT}
-    ${ACMACSD_ROOT}/bin/acmacs-api-server "${SERVER_ROOT}/settings.json" >"${LOG_DIR}/stdout.log" 2>"${LOG_DIR}/stderr.log" </dev/null &
-    WAIT_TIME=20
-    echo "waiting ${WAIT_TIME} seconds for acmacs-api-server to start"
-    sleep ${WAIT_TIME}
-    if ! ps aux | grep acmacs-api-server >/dev/null 2>&1; then
-        ldd ${ACMACSD_ROOT}/bin/acmacs-api-server
-        fail "${ACMACSD_ROOT}/bin/acmacs-api-server not started, see /scp:${HOSTNAME}:${LOG_DIR}/stderr.log"
-    fi
-else
-    fail "Usupported host: $(hostname)"
+fi
+echo "log files are in ${LOG_DIR}"
+echo "using settings from ${SERVER_ROOT}/settings.json"
+cd ${SERVER_ROOT}
+${ACMACSD_ROOT}/bin/acmacs-api-server "${SERVER_ROOT}/settings.json" >"${LOG_DIR}/stdout.log" 2>"${LOG_DIR}/stderr.log" </dev/null &
+WAIT_TIME=20
+echo "waiting ${WAIT_TIME} seconds for acmacs-api-server to start"
+sleep ${WAIT_TIME}
+if ! pgrep -f acmacs-api-server >/dev/null 2>&1; then
+    ldd ${ACMACSD_ROOT}/bin/acmacs-api-server
+    fail "${ACMACSD_ROOT}/bin/acmacs-api-server not started, see /scp:${HOSTNAME}:${LOG_DIR}/stderr.log"
 fi
