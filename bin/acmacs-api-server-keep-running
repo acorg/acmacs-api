@@ -1,0 +1,11 @@
+#! /bin/bash
+
+if [[ ! -f settings.json || ! -d log ]]; then
+    echo "ERROR: Use acmacs-api-server-restart to run and keep acmacs-api-server" >&2
+    exit 1
+fi
+
+while true; do
+    ${ACMACSD_ROOT}/bin/acmacs-api-server settings.json >log/stdout.log 2>log/stderr.log
+    printf "[$(date '+%Y-%m-%d %H:%M:%S')]: acmacs-api-server exited with code $?  restarting...\n"
+done

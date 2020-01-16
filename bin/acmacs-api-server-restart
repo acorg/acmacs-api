@@ -27,7 +27,10 @@ fi
 NOW=$(date "+%Y-%m%d-%H%M")
 LOG_DIR="${SERVER_ROOT}/log"
 
+pkill -f 'acmacs-api-server-keep-running' || true
 pkill -f 'acmacs-api-server.+settings.json' || true
+
+# rotate log
 if [[ -f "${LOG_DIR}/stdout.log" ]]; then
     mkdir -p "${LOG_DIR}/old"
     for log in "${LOG_DIR}/"*.log; do
@@ -36,14 +39,18 @@ if [[ -f "${LOG_DIR}/stdout.log" ]]; then
         /bin/rm "${LOG_DIR}/${bn}"
     done
 fi
+
 echo "log files are in ${LOG_DIR}"
 echo "using settings from ${SERVER_ROOT}/settings.json"
+
 cd ${SERVER_ROOT}
-${ACMACSD_ROOT}/bin/acmacs-api-server "${SERVER_ROOT}/settings.json" >"${LOG_DIR}/stdout.log" 2>"${LOG_DIR}/stderr.log" </dev/null &
-WAIT_TIME=20
-echo "waiting ${WAIT_TIME} seconds for acmacs-api-server to start"
-sleep ${WAIT_TIME}
-if ! pgrep -f acmacs-api-server >/dev/null 2>&1; then
-    ldd ${ACMACSD_ROOT}/bin/acmacs-api-server
-    fail "${ACMACSD_ROOT}/bin/acmacs-api-server not started, see /scp:${HOSTNAME}:${LOG_DIR}/stderr.log"
-fi
+nohup ${ACMACSD_ROOT}/bin/acmacs-api-server-keep-running >"${LOG_DIR}/acmacs-api-server-keep-running.log" 2>&1 </dev/null &
+
+# ${ACMACSD_ROOT}/bin/acmacs-api-server "${SERVER_ROOT}/settings.json" >"${LOG_DIR}/stdout.log" 2>"${LOG_DIR}/stderr.log" </dev/null &
+# WAIT_TIME=20
+# echo "waiting ${WAIT_TIME} seconds for acmacs-api-server to start"
+# sleep ${WAIT_TIME}
+# if ! pgrep -f acmacs-api-server >/dev/null 2>&1; then
+#     ldd ${ACMACSD_ROOT}/bin/acmacs-api-server
+#     fail "${ACMACSD_ROOT}/bin/acmacs-api-server not started, see /scp:${HOSTNAME}:${LOG_DIR}/stderr.log"
+# fi
