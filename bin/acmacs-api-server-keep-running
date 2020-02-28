@@ -1,11 +1,44 @@
-#! /bin/bash
+#! /usr/bin/env python3
 
-if [[ ! -f settings.json || ! -d log ]]; then
-    echo "ERROR: Use acmacs-api-server-restart to run and keep acmacs-api-server" >&2
-    exit 1
-fi
+import os, sys, datetime, subprocess
+from pathlib import Path
 
-while true; do
-    ${ACMACSD_ROOT}/bin/acmacs-api-server settings.json >log/stdout.log 2>log/stderr.log
-    printf "[$(date '+%Y-%m-%d %H:%M:%S')]: acmacs-api-server exited with code $?  restarting...\n"
-done
+runtime_threshold = 60
+
+try:
+    log_dir = Path("log")
+    if not Path("settings.json").exists() or not log_dir.is_dir():
+        raise RuntimeError("Use acmacs-api-server-restart to run and keep acmacs-api-server")
+    if not os.environ.get("ACMACSD_ROOT") or not Path(os.environ["ACMACSD_ROOT"]).is_dir():
+        raise RuntimeError("ACMACSD_ROOT not set or invalid")
+    acmacs_api_server = Path(os.environ["ACMACSD_ROOT"], "bin", "acmacs-api-server")
+    if not acmacs_api_server.is_file():
+        raise RuntimeError(f"{acmacs_api_server} not found")
+
+    log_dir = log_dir.resolve()
+    stdout_pathname = log_dir.joinpath("stdout.log")
+    stderr_pathname = log_dir.joinpath("stderr.log")
+    while True:
+        started = datetime.datetime.now()
+        exit_code = subprocess.run([acmacs_api_server, "settings.json"], stdout=stdout_pathname.open("w"), stderr=stderr_pathname.open("w"))
+        completed = datetime.datetime.now()
+        if (completed - started).seconds < runtime_threshold:
+            message = f"""\
+$(hostname) acmacs-api-server restarting too often, {sys.argv[0]} cancelled
+
+
+/ssh:$(hostname):{log_dir.joinpath("stdout.log")}
+{stdout_pathname.open().read()}
+
+
+/ssh:$(hostname):{log_dir.joinpath("stderr.log")}
+{stderr_pathname.open().read()}
+
+"""
+            subprocess.run(f"echo \"{message}\" | /usr/bin/mail -s \"$(hostname) acmacs-api-server restarting too often\" eu@antigenic-cartography.org", shell=True)
+            raise RuntimeError("acmacs-api-server restarting too often")
+        print(f"[{completed.strftime('+%Y-%m-%d %H:%M:%S')}]: acmacs-api-server exited with code {exit_code}  restarting...")
+
+except Exception as err:
+    print(f"ERROR: {err}", file=sys.stderr)
+    exit(1)
