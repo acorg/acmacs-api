@@ -12,6 +12,9 @@ ACMACS_API_SERVER_SOURCES = acmacs-api-server.cc mongo-access.cc session.cc acma
 API_DIRECT = $(DIST)/api-direct
 API_DIRECT_SOURCES = api-direct.cc mongo-access.cc session.cc acmacs-c2.cc curl.cc client-connection.cc $(COMMANDS_SOURCES)
 
+API_ACE = $(DIST)/api-ace
+API_ACE_SOURCES = api-ace.cc
+
 ACMACS_C2 = $(DIST)/acmacs-c2
 ACMACS_C2_SOURCES = acmacs-c2.cc curl.cc acmacs-c2-main.cc
 
@@ -46,7 +49,7 @@ LDLIBS = \
   $(AD_LIB)/$(call shared_lib_name,libacmacsmapdraw,2,0) \
   -lpthread $(XZ_LIBS) $(LIBCURL_LIBS) $(CXX_LIBS)
 
-PROGS = $(API_DIRECT) $(ACMACS_API_SERVER) $(ACMACS_C2)
+PROGS = $(API_DIRECT) $(ACMACS_API_SERVER) $(ACMACS_C2) $(API_ACE)
 RTAGS_TARGET = $(PROGS)
 
 # ----------------------------------------------------------------------
@@ -56,6 +59,7 @@ CC = cc
 install: $(PROGS)
 	$(call symbolic_link_wildcard,$(abspath bin)/*,$(AD_BIN))
 	$(call symbolic_link,$(DIST)/acmacs-api-server,$(AD_BIN))
+	$(call symbolic_link,$(DIST)/api-ace,$(AD_BIN))
 	mkdir -p $(AD_SHARE)/js/acmacs-api
 	$(call symbolic_link_wildcard,$(abspath js)/*,$(AD_SHARE)/js/acmacs-api)
 
@@ -68,6 +72,10 @@ test: install
 $(API_DIRECT): $(patsubst %.cc,$(BUILD)/%.o,$(API_DIRECT_SOURCES)) | $(DIST)
 	$(call echo_link_exe,$@)
 	$(CXX) $(LDFLAGS) -o $@ $^ $(MONGO_LIBS) $(OPENSSL_LIBS) $(LDLIBS) $(AD_RPATH)
+
+$(API_ACE): $(patsubst %.cc,$(BUILD)/%.o,$(API_ACE_SOURCES)) | $(DIST)
+	$(call echo_link_exe,$@)
+	$(CXX) $(LDFLAGS) -o $@ $^ $(LDLIBS) $(AD_RPATH)
 
 $(ACMACS_API_SERVER): $(patsubst %.cc,$(BUILD)/%.o,$(ACMACS_API_SERVER_SOURCES)) | $(DIST)
 	$(call echo_link_exe,$@)
