@@ -232,7 +232,13 @@ void Command_ace::run()
     auto antigens = chart.antigens_modify();
     antigens->set_continent();
     hidb::update_vaccines(chart); // updates semantic attirubutes (not implemented)
-    acmacs::seqdb::get().add_clades(chart);
+    try {
+        acmacs::seqdb::get().add_clades(chart);
+    }
+    catch (std::exception& err) {
+        fmt::print(stderr, "> ERROR add clades for {} failed: {}\n", data()["id"].to<std::string>(), err);
+        // throw;
+    }
     const auto exported = export_ace(chart, "mod_acmacs", 0);
     send(exported);
 
