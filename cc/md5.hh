@@ -4,7 +4,14 @@
 #include <iomanip>
 #include <string>
 
+#pragma GCC diagnostic push
+#ifdef __clang__
+#pragma GCC diagnostic ignored "-Wreserved-id-macro"
+#endif
+
 #include <openssl/md5.h>
+
+#pragma GCC diagnostic pop
 
 // ----------------------------------------------------------------------
 
