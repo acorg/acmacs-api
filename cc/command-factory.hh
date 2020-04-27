@@ -11,7 +11,7 @@
 #include <mongocxx/database.hpp>
 #pragma GCC diagnostic pop
 
-#include "acmacs-base/rjson.hh"
+#include "acmacs-base/rjson-v2.hh"
 
 // ----------------------------------------------------------------------
 

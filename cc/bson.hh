@@ -8,7 +8,7 @@
 #include <bsoncxx/types/value.hpp>
 #pragma GCC diagnostic pop
 
-#include "acmacs-base/rjson.hh"
+#include "acmacs-base/rjson-v2.hh"
 #include "acmacs-base/to-json-v1.hh"
 
 // ----------------------------------------------------------------------
