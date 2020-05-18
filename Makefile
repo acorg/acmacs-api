@@ -60,7 +60,7 @@ install: $(PROGS)
 	$(call symbolic_link_wildcard,$(abspath bin)/*,$(AD_BIN))
 	$(call symbolic_link,$(DIST)/acmacs-api-server,$(AD_BIN))
 	$(call symbolic_link,$(DIST)/api-ace,$(AD_BIN))
-	mkdir -p $(AD_SHARE)/js/acmacs-api
+	$(call make_dir,$(AD_SHARE)/js/acmacs-api)
 	$(call symbolic_link_wildcard,$(abspath js)/*,$(AD_SHARE)/js/acmacs-api)
 
 test: install
