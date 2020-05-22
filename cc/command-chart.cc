@@ -262,7 +262,7 @@ void Command_pdf::run()
 
     const auto ace = c2().ace_uncompressed(session().id(), data()["id"].to<std::string>(), projection_no + 1);
     ChartDraw chart_draw(std::make_shared<acmacs::chart::ChartModify>(acmacs::chart::import_from_data(ace, acmacs::chart::Verify::None, report_time::no)), rjson::get_or(data(), "projection_no", 0UL));
-    chart_draw.calculate_viewport("acmacs-api Command_pdf::run");
+    chart_draw.calculate_viewport();
     send_binary(data()["id"].to<std::string>() + ".pdf", chart_draw.draw_pdf(800));
 
 } // Command_pdf::run
