@@ -14,12 +14,11 @@ class Session : public StoredInMongodb
  public:
     class Error : public std::runtime_error { public: using std::runtime_error::runtime_error; };
 
-    inline Session(mongocxx::database aDb)
+    Session(mongocxx::database aDb)
         : StoredInMongodb{aDb, "sessions"}, mCommands{0}, mExpirationInSeconds{3600} {}
-    inline Session(const Session& aSrc)
+    Session(const Session& aSrc)
         : StoredInMongodb{aSrc}, mId{aSrc.mId}, mUser{aSrc.mUser}, mDisplayName{aSrc.mDisplayName},
           mGroups{aSrc.mGroups}, mCommands{aSrc.mCommands}, mExpirationInSeconds{aSrc.mExpirationInSeconds} {}
-    // virtual ~Session();
 
     void use_session(std::string aSessionId); // throws Error
     std::string login_nonce(std::string aUser);
@@ -28,16 +27,16 @@ class Session : public StoredInMongodb
 
     void login(std::string aUser, std::string aPassword);
 
-    inline SessionId id() const { return mId; }
-    inline std::string user() const { return mUser; }
-    inline std::string display_name() const { return mDisplayName; }
-    inline const std::vector<std::string>& groups() const { return mGroups; }
+    SessionId id() const { return mId; }
+    std::string user() const { return mUser; }
+    std::string display_name() const { return mDisplayName; }
+    const std::vector<std::string>& groups() const { return mGroups; }
 
-    inline void increment_commands() { ++mCommands; }
+    void increment_commands() { ++mCommands; }
 
     bson_value read_permissions() const;
 
-    inline bool is_admin() const
+    bool is_admin() const
         {
             if (!mId)
                 throw Error{"Session has no id"};
@@ -45,8 +44,8 @@ class Session : public StoredInMongodb
         }
 
  protected:
-    virtual void add_fields_for_creation(bld_doc& aDoc);
-    virtual void add_fields_for_updating(bld_doc& aDoc);
+    void add_fields_for_creation(bld_doc& aDoc) override;
+    void add_fields_for_updating(bld_doc& aDoc) override;
 
  private:
     mutable std::mutex mAccess;

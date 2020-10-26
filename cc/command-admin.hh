@@ -26,7 +26,7 @@ class Command_users : public CommandAdmin
     static const char* description();
 
  protected:
-    virtual void run_admin();
+    void run_admin() override;
 
 }; // class Command_users
 
