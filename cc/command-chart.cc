@@ -229,8 +229,7 @@ void Command_ace::run()
 
     const auto ace = c2().ace_uncompressed(session().id(), data()["id"].to<std::string>(), projection_no + 1);
     acmacs::chart::ChartModify chart(acmacs::chart::import_from_data(ace, acmacs::chart::Verify::None, report_time::no));
-    auto antigens = chart.antigens_modify();
-    antigens->set_continent();
+    chart.antigens_modify().set_continent();
     hidb::update_vaccines(chart); // updates semantic attirubutes (not implemented)
     try {
         acmacs::seqdb::get().add_clades(chart);
