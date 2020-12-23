@@ -1,7 +1,6 @@
 #include <iostream>
 #include <getopt.h>
 
-#include "acmacs-base/stream.hh"
 #include "acmacs-base/to-json-v1.hh"
 
 #include "mongo-access.hh"
