@@ -57,11 +57,8 @@ RTAGS_TARGET = $(PROGS)
 CC = cc
 
 install: $(PROGS)
-	$(call symbolic_link_wildcard,$(abspath bin)/*,$(AD_BIN))
-	$(call symbolic_link,$(DIST)/acmacs-api-server,$(AD_BIN))
-	$(call symbolic_link,$(DIST)/api-ace,$(AD_BIN))
-	$(call make_dir,$(AD_SHARE)/js/acmacs-api)
-	$(call symbolic_link_wildcard,$(abspath js)/*,$(AD_SHARE)/js/acmacs-api)
+	$(call install_all,$(AD_PACKAGE_NAME))
+	$(call install_wildcard,$(abspath js)/*,$(AD_SHARE)/js/acmacs-api)
 
 test: install
 	test/test

@@ -10,11 +10,10 @@
 #include "acmacs-map-draw/setup-dbs.hh"
 #include "acmacs-webserver/server-settings.hh"
 #include "acmacs-webserver/print.hh"
-
-#include "acmacs-api-server.hh"
-#include "acmacs-c2.hh"
-#include "command.hh"
-#include "command-factory.hh"
+#include "acmacs-api/acmacs-api-server.hh"
+#include "acmacs-api/acmacs-c2.hh"
+#include "acmacs-api/command.hh"
+#include "acmacs-api/command-factory.hh"
 
 // ----------------------------------------------------------------------
 
