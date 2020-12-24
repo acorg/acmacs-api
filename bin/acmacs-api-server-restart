@@ -11,7 +11,8 @@ trap fail ERR
 # ----------------------------------------------------------------------
 
 if [[ ! -d "${ACMACSD_ROOT}" ]]; then
-    export ACMACSD_ROOT="${HOME}/AD"
+    echo ACMACSD_ROOT not set
+    exit 1
 fi
 
 HOSTNAME=$(hostname)
