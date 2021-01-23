@@ -1,6 +1,6 @@
 #pragma once
 
-#include "command.hh"
+#include "acmacs-api/command.hh"
 
 class AcmacsC2;
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "acmacs-webserver/print.hh"
-#include "mongo-access.hh"
+#include "acmacs-api/mongo-access.hh"
 
 // ----------------------------------------------------------------------
 

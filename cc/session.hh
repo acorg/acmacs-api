@@ -4,8 +4,8 @@
 #include <thread>
 #include <mutex>
 
-#include "mongo-access.hh"
-#include "session-id.hh"
+#include "acmacs-api/mongo-access.hh"
+#include "acmacs-api/session-id.hh"
 
 // ----------------------------------------------------------------------
 

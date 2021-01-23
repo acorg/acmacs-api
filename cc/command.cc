@@ -1,9 +1,8 @@
 #include <iostream>
 
 #include "acmacs-webserver/print.hh"
-
-#include "command.hh"
-#include "mongo-acmacs-c2-access.hh"
+#include "acmacs-api/command.hh"
+#include "acmacs-api/mongo-acmacs-c2-access.hh"
 
 // ----------------------------------------------------------------------
 

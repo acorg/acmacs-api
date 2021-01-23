@@ -3,12 +3,12 @@
 
 #include "acmacs-base/to-json-v1.hh"
 
-#include "mongo-access.hh"
-#include "session.hh"
-#include "command-factory.hh"
-#include "command.hh"
-#include "acmacs-c2.hh"
-#include "mongo-acmacs-c2-access.hh"
+#include "acmacs-api/mongo-access.hh"
+#include "acmacs-api/session.hh"
+#include "acmacs-api/command-factory.hh"
+#include "acmacs-api/command.hh"
+#include "acmacs-api/acmacs-c2.hh"
+#include "acmacs-api/mongo-acmacs-c2-access.hh"
 
 // ----------------------------------------------------------------------
 

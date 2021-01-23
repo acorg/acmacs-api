@@ -1,9 +1,8 @@
 #include <limits>
 
 #include "acmacs-webserver/print.hh"
-
-#include "command-chain.hh"
-#include "session.hh"
+#include "acmacs-api/command-chain.hh"
+#include "acmacs-api/session.hh"
 
 // ----------------------------------------------------------------------
 
