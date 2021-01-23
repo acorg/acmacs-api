@@ -1,14 +1,13 @@
 #include <algorithm>
 
-#include "hidb-5/hidb.hh"
 #include "hidb-5/hidb-set.hh"
-#include "command-hidb.hh"
+#include "acmacs-api/command-hidb.hh"
 
 // ----------------------------------------------------------------------
 
-std::string Command_hidb_antigen_serum::make_tables(const hidb::Tables& tables, const hidb::indexes_t& indexes)
+std::string Command_hidb_antigen_serum::make_tables(const hidb::Tables& tables, const hidb::TableIndexList& indexes)
 {
-    return to_json::v1::array(indexes.begin(), indexes.end(), [this,&tables](size_t index) -> to_json::v1::raw { return this->make_table(*tables[index]); });
+    return to_json::v1::array(indexes.begin(), indexes.end(), [this,&tables](hidb::TableIndex index) -> to_json::v1::raw { return this->make_table(*tables[index]); });
 
     // if (indexes.empty())
     //     return "{}";

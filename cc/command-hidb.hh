@@ -1,8 +1,7 @@
 #pragma once
 
-#include "command.hh"
-
-namespace hidb { class Antigen; class Serum; class Tables; class Table; using indexes_t = std::vector<size_t>; }
+#include "hidb-5/hidb.hh"
+#include "acmacs-api/command.hh"
 
 // ----------------------------------------------------------------------
 
@@ -17,7 +16,7 @@ class Command_hidb_antigen_serum : public Command
     const rjson::value& get_annotations() const { return data()["annotations"]; }
 
  protected:
-    std::string make_tables(const hidb::Tables& tables, const hidb::indexes_t& indexes);
+    std::string make_tables(const hidb::Tables& tables, const hidb::TableIndexList& indexes);
     std::string make_table(const hidb::Table& table);
 
 }; // class Command_hidb_antigen_serum
