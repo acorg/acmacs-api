@@ -3,8 +3,7 @@
 #include <functional>
 
 #include "acmacs-base/to-json-v1.hh"
-
-#include "mongo-access.hh"
+#include "acmacs-api/mongo-access.hh"
 
 // ----------------------------------------------------------------------
 
