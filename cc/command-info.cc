@@ -1,7 +1,6 @@
-#include "command-info.hh"
-#include "command-factory.hh"
-
 #include "acmacs-base/json-writer.hh"
+#include "acmacs-api/command-info.hh"
+#include "acmacs-api/command-factory.hh"
 
 // ----------------------------------------------------------------------
 

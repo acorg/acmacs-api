@@ -1,5 +1,5 @@
-#include "command-admin.hh"
-#include "session.hh"
+#include "acmacs-api/command-admin.hh"
+#include "acmacs-api/session.hh"
 
 // ----------------------------------------------------------------------
 

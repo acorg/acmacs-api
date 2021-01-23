@@ -1,11 +1,10 @@
-#include "command-factory.hh"
-
-#include "command-info.hh"
-#include "command-session.hh"
-#include "command-admin.hh"
-#include "command-chart.hh"
-#include "command-chain.hh"
-#include "command-hidb.hh"
+#include "acmacs-api/command-factory.hh"
+#include "acmacs-api/command-info.hh"
+#include "acmacs-api/command-session.hh"
+#include "acmacs-api/command-admin.hh"
+#include "acmacs-api/command-chart.hh"
+#include "acmacs-api/command-chain.hh"
+#include "acmacs-api/command-hidb.hh"
 
 // ----------------------------------------------------------------------
 

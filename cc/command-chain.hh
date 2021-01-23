@@ -2,7 +2,7 @@
 
 #include <regex>
 
-#include "command.hh"
+#include "acmacs-api/command.hh"
 
 // ----------------------------------------------------------------------
 
