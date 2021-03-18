@@ -1,4 +1,5 @@
 #include "acmacs-base/argv.hh"
+#include "acmacs-base/log.hh"
 #include "acmacs-base/read-file.hh"
 #include "hidb-5/vaccines.hh"
 #include "seqdb-3/seqdb.hh"
@@ -23,10 +24,11 @@ int main(int argc, char* const argv[])
     int exit_code = 0;
     try {
         Options opt(argc, argv);
+        acmacs::log::enable(acmacs::log::hi_name_matching);
         acmacs::chart::ChartModify chart{acmacs::chart::import_from_file(opt.input_chart)};
         chart.antigens_modify().set_continent();
         hidb::update_vaccines(chart); // updates semantic attirubutes (not implemented)
-        acmacs::seqdb::get().populate(chart, acmacs::verbose::yes);
+        acmacs::seqdb::get().populate(chart);
         const auto exported = export_ace(chart, "mod_acmacs", 0);
         acmacs::file::write(opt.output_ace ? *opt.output_ace : "-", exported);
     }
