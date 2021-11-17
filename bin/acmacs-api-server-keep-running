@@ -36,7 +36,7 @@ $(hostname) acmacs-api-server restarting too often, {sys.argv[0]} cancelled
 
 """
             subprocess.run(f"echo \"{message}\" | /usr/bin/mail -s \"$(hostname) acmacs-api-server restarting too often\" eu@antigenic-cartography.org", shell=True)
-            raise RuntimeError("acmacs-api-server restarting too often")
+            exit(2)
         print(f"[{completed.strftime('+%Y-%m-%d %H:%M:%S')}]: acmacs-api-server exited with code {exit_code}  restarting...")
 
 except Exception as err:
