@@ -15,6 +15,11 @@ if [[ ! -d "${ACMACSD_ROOT}" ]]; then
     exit 1
 fi
 
+if [[ ! -d "${HIDB_V5}" ]]; then
+    echo ACMACSD_ROOT not set
+    exit 1
+fi
+
 HOSTNAME=$(hostname)
 if [[ "${HOSTNAME}" != "i19" && "${HOSTNAME}" != "i22" ]]; then
     fail "Usupported host: ${HOSTNAME}"

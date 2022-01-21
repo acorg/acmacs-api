@@ -9,8 +9,9 @@ try:
     log_dir = Path("log")
     if not Path("settings.json").exists() or not log_dir.is_dir():
         raise RuntimeError(f"Use acmacs-api-server-restart to run and keep acmacs-api-server (check settings.json in \"{os.getcwd()}\" and \"{log_dir}\")")
-    if not os.environ.get("ACMACSD_ROOT") or not Path(os.environ["ACMACSD_ROOT"]).is_dir():
-        raise RuntimeError("ACMACSD_ROOT not set or invalid")
+    for env in ["ACMACSD_ROOT", "HIDB_V5"]:
+        if not os.environ.get(env) or not Path(os.environ[env]).is_dir():
+            raise RuntimeError(f"{env} not set or invalid")
     acmacs_api_server = Path(os.environ["ACMACSD_ROOT"], "bin", "acmacs-api-server")
     if not acmacs_api_server.is_file():
         raise RuntimeError(f"{acmacs_api_server} not found")
